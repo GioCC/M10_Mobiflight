@@ -1,0 +1,14 @@
+.hg/
+.pio/
+.vscode/
+_bak/
+bin/
+build/
+_lib_add/
+_superati/
+examples/
+
+*.pdf
+.hgignore
+Release_Notes.html
+
