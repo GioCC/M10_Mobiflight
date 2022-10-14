@@ -8,8 +8,8 @@
 const static uint16_t wmasks[] PROGMEM =
 { 0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000 };
 #define wbit(w, bit) (w & wmasks[(bit)&0x0F])
-#define wset(w, bit) ( w |= wmasks[(bit)&0x0F])
-#define wclr(w, bit) ( w &= (~wmasks[(bit)&0x0F]))
+#define wset(w, bit) do { w |= wmasks[(bit)&0x0F]; } while(0);
+#define wclr(w, bit) do { w &= (~wmasks[(bit)&0x0F]); } while(0);
 
 const static uint32_t lwmasks[] PROGMEM =
 {
@@ -19,7 +19,7 @@ const static uint32_t lwmasks[] PROGMEM =
     0x01000000,0x02000000,0x04000000,0x08000000,0x10000000,0x20000000,0x40000000,0x80000000
  };
 #define lwbit(w, bit) (w & lwmasks[(bit)&0x1F])
-#define lwset(w, bit) ( w |= lwmasks[(bit)&0x1F])
-#define lwclr(w, bit) ( w &= (~lwmasks[(bit)&0x1F]))
+#define lwset(w, bit) do { w |= lwmasks[(bit)&0x1F]; } while(0);
+#define lwclr(w, bit) do { w &= (~lmasks[(bit)&0x1F]); } while(0);
 
 #endif // BITMASKS_H_INCLUDED

@@ -21,9 +21,7 @@
 #define DP(a)   Serial.print(a)
 #define DPN(a)  Serial.println(a)
 
-#if !defined(CONTROLLER)    // Controller requires no HW interface resources
 M10board board;
-#endif
 
 // Fn prototypes
 void lights_on(ButtonGrp *but);

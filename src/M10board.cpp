@@ -7,7 +7,7 @@
 
 // Define static objects, so they require no run-time allocation
 //M10board    board    = M10board(...);    // Done in main file
-InOutLink       _IOL;   // Temporarily using the USB-only variant, so no parameters
+SerLink       _IOL;   // Temporarily using the USB-only variant, so no parameters
 
 MCPS            _MCPIO1(0,10);
 #ifdef BANK2

@@ -24,8 +24,8 @@
 #include "MCP23S17.h"
 #include "EncoderM10.h"
 #include "conversions.h"
-//#include "InOutLink.h"    // Temporarily using the USB-only variant, so no parameters
-#include "InOutLinkUSB.h"
+//#include "SerLink.h"    // Temporarily using the USB-only variant, so no parameters
+#include "SerLink.h"
 
 #include "ButtonManager.h"
 #include "EncManager.h"
@@ -167,7 +167,7 @@ class M10board
 
         // Links to global objects:
 
-        InOutLink       *IOL;
+        SerLink       *IOL;
 
         MCP             *MCPIO1;
 #ifdef BANK2

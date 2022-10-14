@@ -5,7 +5,6 @@
 //
 // This file defines the peripheral set of the board, i.e. for which actual model of board
 // we are building the firmware.
-// The communication role (controller, standalone or slave) is configured in config_build.h
 
 #include <Arduino.h>
 #include <binary.h>

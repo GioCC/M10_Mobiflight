@@ -75,6 +75,9 @@ class ButtonManager
     //static ButtonManager *s_instance;
     //ButtonManager();
 
+    // Helper for checkButtons()/initButtons()
+    void _checkInit(uint8_t *vecIO, uint8_t doinit=0);
+
 public:
 
     //static ButtonGroupManager *instance();
@@ -100,9 +103,6 @@ public:
     uint8_t setAnalogSource(uint8_t *aVals, uint8_t nVals);
 
     // Polling:
-
-    // Helper for checkButtons()/initButtons()
-    void _checkInit(uint8_t *vecIO, uint8_t doinit=0);
 
     // WARNING: in vecIO, '1' bits are considered ACTIVE,
     // therefore any input inversion (ie switches/pushbuttons closing to GND when active)

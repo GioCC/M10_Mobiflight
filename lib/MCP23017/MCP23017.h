@@ -14,6 +14,7 @@
 //#include "mbed.h"
 //#include <I2C.h>    // Mbed I2C Master library
 #include "MCP23x17.h"
+#include <Arduino.h>
 #include <Wire.h>
 
 class MCP0 :
