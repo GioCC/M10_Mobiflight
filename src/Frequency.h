@@ -84,9 +84,9 @@ class Frequency
 
         void        setInt(uint16_t f);
         void        addInt(int16_t df, uint8_t isCOM); //      { return setInt(_Intfreq + df); }
-        uint16_t    trimNAV(uint16_t f)     { if(f<MINNAV6) return MINNAV6; else if(f>MAXNAV6) f=MAXNAV6; else return f; }
-        uint16_t    trimCOM(uint16_t f)     { if(f<MINCOM6) return MINCOM6; else if(f>MAXCOM6) f=MAXCOM6; else return f; }
-
+        uint16_t    trimNAV(uint16_t f)     { return ((f<MINNAV6) ? MINNAV6 : ((f>MAXNAV6) ? MAXNAV6 : f)); }
+        uint16_t    trimCOM(uint16_t f)     { return ((f<MINCOM6) ? MINCOM6 : ((f>MAXCOM6) ? MAXCOM6 : f)); }
+        
 };
 
 // ADF Frequency in FSUIPC:

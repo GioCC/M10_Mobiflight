@@ -35,16 +35,14 @@ class CmdEventManager
 {
 friend class CmdEvent;
 
+    CMCompare   _compare;
+    CECallback  _fallbackCallback;  // just couldn't resist naming it this :)
+
     int         numCmdEvents;
     uint8_t     currCmd;
     uint8_t     lastPos;
     CmdEvent    *cmdevents[MAXCMDEVENTS];
-
     CmdEvent    matcher;            // internal instance for service purposes
-
-    CMCompare   _compare;
-
-    CECallback  _fallbackCallback;  // just couldn't resist naming it this :)
 
     //static CmdEventManager *s_instance;
     //CmdEventManager();

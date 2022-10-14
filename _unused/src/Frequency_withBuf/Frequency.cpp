@@ -121,7 +121,7 @@ Frequency::swap(Frequency *f)
 // See also http://ww1.jeppesen.com/documents/aviation/notices-alerts/change-sets/Radio-Aids.pdf
 
 ADFFrequency::ADFFrequency()
-:_BCDfreqExt(0), _BCDfreqMain(0), _Intfreq(0)
+:_BCDfreqMain(0), _BCDfreqExt(0), _Intfreq(0)
 {
     for(uint8_t i=0; i<6; i++) _ASCfreq[i] = 0;
 }

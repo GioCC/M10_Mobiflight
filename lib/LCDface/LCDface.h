@@ -30,6 +30,9 @@ enum {
 class LCDface
 {
     private:
+        // Output connection
+        LiquidCrystal *_out;
+
         // Data link
         char *_src;
         byte _sstart;
@@ -38,9 +41,6 @@ class LCDface
         byte _dstartc;
         byte _dlen;
         byte _align;
-
-        // Output connection
-        LiquidCrystal *_out;
 
         // generic
         byte        _nolead0;

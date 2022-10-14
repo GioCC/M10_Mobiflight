@@ -73,6 +73,7 @@ Frequency::ASC(char *ASCdst, uint8_t trimmed)
         BCDtoASC(_BCDfreq, (trimmed ? ASCdst : &ASCdst[1]), _BCDfrac);
         if(!trimmed) ASCdst[0]='1';
     }
+    return ASCdst;
 }
 
 void
@@ -141,7 +142,7 @@ Frequency::swap(Frequency *f)
 // See also http://ww1.jeppesen.com/documents/aviation/notices-alerts/change-sets/Radio-Aids.pdf
 
 ADFFrequency::ADFFrequency()
-:_BCDfreqExt(0), _BCDfreqMain(0), _Intfreq(0)
+:_BCDfreqMain(0), _BCDfreqExt(0), _Intfreq(0)
 {
 }
 

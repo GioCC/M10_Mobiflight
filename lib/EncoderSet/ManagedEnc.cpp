@@ -30,8 +30,9 @@ ManagedEnc::ManagedEnc( uint8_t     index,
                         uint8_t     numModes
                         )
 : idx(index),
-  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
-  lastCount(0), lastDiff(0), fastStep(10), flags(0), nModes(numModes)
+  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), 
+  _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
+  nModes(numModes), lastCount(0), lastDiff(0), fastStep(10), flags(0)
 {
     setName(nm);
     //if(EncMgr) EncMgr->addEnc(this);
@@ -50,8 +51,9 @@ ManagedEnc::ManagedEnc( uint8_t     index,
                         uint8_t     numModes
                         )
 : idx(index),
-  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
-  lastCount(0), lastDiff(0), fastStep(10), flags(0), nModes(numModes)
+  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), 
+  _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
+  nModes(numModes), lastCount(0), lastDiff(0), fastStep(10), flags(0)
 {
     setTag(codeh, codel);
     //if(EncMgr) EncMgr->addEnc(this);

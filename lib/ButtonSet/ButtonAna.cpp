@@ -161,7 +161,7 @@ ButtonAna::check(uint8_t ival)
             // is only used to spare computing time, skipping the check of the whole condition.
             if ((TlastPress != 0) || now >= TstartPress + times100(repeatDelay)) {
                 // is it time for a repeat keypress call?
-                if ((now - TlastPress) >= times10(repeatRate)) {
+                if ((now - TlastPress) >= (unsigned long)times10(repeatRate)) {
                     TlastPress = now;
                     _OnPress(this);
                     //now = millis();     // callback may have taken some time

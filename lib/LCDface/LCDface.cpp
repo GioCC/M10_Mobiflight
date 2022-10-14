@@ -9,14 +9,14 @@
 
 LCDface::LCDface(void)
 : _out((LiquidCrystal *)0),
-  _src((char *)0), _sstart(0), _slen(0), _align(0),
-  _dlen(0), _dstartr(0), _dstartc(0), _nolead0(0)
+  _src((char *)0), _sstart(0), _slen(0),
+  _dstartr(0), _dstartc(0), _dlen(0), _align(0), _nolead0(0)
 {
 }
 
 LCDface::LCDface(LiquidCrystal *lc)
-: _src((char *)0), _sstart(0), _slen(0), _align(0),
-  _dlen(0), _dstartr(0), _dstartc(0), _nolead0(0)
+: _src((char *)0), _sstart(0), _slen(0),
+  _dstartr(0), _dstartc(0), _dlen(0), _align(0), _nolead0(0)
 {
     _out = lc;
 }

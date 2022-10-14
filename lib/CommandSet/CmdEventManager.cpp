@@ -136,7 +136,7 @@ CmdEventManager::_check(CmdEvent *toFind, char *payload, uint8_t multiple)
 {
     CmdEvent    *found;
     uint8_t     firstMatch = 0xFF;
-    if(found = seekFirst(toFind, lastPos)) {
+    if((found = seekFirst(toFind, lastPos)) != NULL) {
         firstMatch = lastPos;
         do {
             if(found->_callback) { found->_callback(toFind, payload); }

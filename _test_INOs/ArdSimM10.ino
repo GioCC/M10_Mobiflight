@@ -78,8 +78,6 @@ char *counter2buf(byte cntno) {
 void setup() {
 
     //BoardNumber 1;
-
-
     board.ModeIO_L(0xFFFF);            // All inputs
     board.ModePU_L(0xFFFF);            // Pull-ups on all inputs
 #ifdef BANK2

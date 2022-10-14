@@ -153,13 +153,6 @@ private:
     } name;
 
     uint8_t     idx;
-    CountType   lastCount;
-    uint8_t     nMode;      // Current mode (used only for change detection)
-    uint8_t     nModes;     // Number of modes (used only as storage, accessible for custom inits and operations)
-    uint8_t     fastStep;
-    int8_t      lastDiff;
-
-    uint8_t     flags;
 
     MEcallback _OnChange;
     MEcallback _OnUp;
@@ -167,6 +160,14 @@ private:
     MEcallback _OnFastUp;
     MEcallback _OnFastDn;
     MEcallback _OnModeChg;
+
+    uint8_t     nMode;      // Current mode (used only for change detection)
+    uint8_t     nModes;     // Number of modes (used only as storage, accessible for custom inits and operations)
+    CountType   lastCount;
+    int8_t      lastDiff;
+    uint8_t     fastStep;
+
+    uint8_t     flags;
 
 };
 

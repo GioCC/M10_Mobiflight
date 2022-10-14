@@ -148,7 +148,7 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
 
     // is the startdelay passed?
     if ((repeatInterval) && (now >= lastPress + times100(repeatDelay))) {
-        if ((now - lastRepeat) >= times10(repeatInterval)) {
+        if ((now - lastRepeat) >= (unsigned long)times10(repeatInterval)) {
             // Mark active inputs for repeat
             // This could be a single flag for all; however, marking all individual repeats
             // could allow every single button to handle its repeat flag at its own time

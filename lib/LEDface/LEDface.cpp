@@ -9,14 +9,15 @@
 
 LEDface::LEDface(void)
 : _out((LedControl *)0),
-  _src((char *)0), _slen(0), _align(0),
-  _dlen(0), _dstart(0), _dpmask(0), _nolead0(0)
+  _src((char *)0), _slen(0), _dstart(0),  _dlen(0),
+  _align(0), _dpmask(0), _nolead0(0)
 {
 }
 
 LEDface::LEDface(LedControl *lc)
-: _src((char *)0), _slen(0), _align(0),
-  _dlen(0), _dstart(0), _dpmask(0), _nolead0(0)
+: _src((char *)0), _slen(0), _dstart(0),  _dlen(0),
+  _align(0), _dpmask(0), _nolead0(0)
+
 {
     _out = lc;
 }

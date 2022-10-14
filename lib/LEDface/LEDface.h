@@ -39,6 +39,9 @@ enum {
 class LEDface
 {
     private:
+        // Output connection
+        LedControl *_out;
+
         // Data link
         char *_src;
         byte _sstart;
@@ -46,9 +49,6 @@ class LEDface
         byte _dstart;
         byte _dlen;
         byte _align;
-
-        // Output connection
-        LedControl *_out;
 
         // generic
         uint16_t    _dpmask;        // Leftmost bit (15) is the leftmost digit

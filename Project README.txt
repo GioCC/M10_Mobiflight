@@ -1,11 +1,10 @@
-ArdSim M10
+## M10_MobiFlight
 
 Progetto Arduino per serie pannelli FSP-M10
 
-Inizialmente basato su libreria ArdSim (v1.5), da cui il nome, non è più dipendente da quella.
+Progetto principale (DA REALIZZARE) - Arduino Mega
+- FW Basato su PlatformIO / VSCode
+- HW basato su scheda M10 Single controller `[KiCAD]\FSPanels\FSP_M10Panels\Schematics\15 M10-SingleController`
 
-Sostituisce il precedente progetto FSP_M10Panels.
-
-Rispetto al precedente, oltre a gestire il prelevamento dei dati verso un buffer interno, introduce classi relative ad elementi istanziabili (pulsanti, LED, encoder...), dotati di una funzione di callback per l'azione corrispondente e associabili ai dati del buffer.
-
-Esiste una versione MBED per usare una scheda ARM ST-Nucleo come test rig (associata a un Arduino UNO come proxy).
+FW da ricavare come fusione fra FW Mobiflight e FW `ArdSim M10` (configurato per la dotazione completa) in modo da interfacciare il set di schede M10 con MF
+_Nota: tutta la parte di connessione network e configurazione interfaccia simulatore (come minimo) in `ArdSim M10` sono da rimuovere._ 

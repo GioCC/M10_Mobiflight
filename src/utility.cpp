@@ -29,7 +29,6 @@ uint16_t BCD4touint(uint16_t src) {
 uint16_t uinttoBCD4(uint16_t src) {
     uint16_t dst = 0;
     uint16_t mul = 1000;
-    uint16_t r;
     uint16_t a;
     // ....
     //r = src%mul;

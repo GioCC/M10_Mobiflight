@@ -206,8 +206,8 @@ public:
 
 private:
 
-    BAcallback  _OnRelease;
     BAcallback  _OnPress;
+    BAcallback  _OnRelease;
     BAcallback  _OnLong;
 
     uint8_t         debounceTime;       // internally in ms
