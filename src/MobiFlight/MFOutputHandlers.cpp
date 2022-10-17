@@ -12,7 +12,7 @@ namespace Output {
         int pin = cmdMessenger.readInt16Arg();
         int state = cmdMessenger.readInt16Arg();
         //TODO: insert operation function (attach as callback?)
-        analogWrite(pin, state);
+        // analogWrite(pin, state);
     }
 
 }

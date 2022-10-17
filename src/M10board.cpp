@@ -25,10 +25,10 @@ uint8_t         _EncModes[ENCSLOTS];
 #ifndef HAS_LCD
 LedControl      _LEDCTRL1(3,2,4, 2);   //pin #s (dta, clk, cs, cnt), #units
 LedControl      _LEDCTRL2(5,2,6, 2);   //pin #s (dta, clk, cs, cnt), #units
-LEDface         _LEDD[6];
+//LEDface         _LEDD[6];
 #else
 LiquidCrystal   _LCDCTRL(8,2,3, 4,5,6,7);
-LCDface         _LCDD[12];
+//LCDface         _LCDD[12];
 #endif
 
 // -----------------------------------------------------
@@ -99,21 +99,21 @@ M10board::setBoardCfg(M10board_cfg *c)
     LEDCTRL[0]->setDeviceCount(cfg.led.nDisplays1, 1);     // also inits
     LEDCTRL[1]->setDeviceCount(cfg.led.nDisplays2, 1);     // also inits
 
-    for(byte v=0; v<6; v++) {
-        LEDD[v] = &_LEDD[v];
-        if(cfg.led.viewport[v].led.disp!=0) {
-            LEDD[v]->setController(LEDCTRL[cfg.led.viewport[v].led.disp-1]);
-            LEDD[v]->MapDst(cfg.led.viewport[v].led.start, cfg.led.viewport[v].led.len);
-        }
+    // for(byte v=0; v<6; v++) {
+    //     LEDD[v] = &_LEDD[v];
+    //     if(cfg.led.viewport[v].led.disp!=0) {
+    //         LEDD[v]->setController(LEDCTRL[cfg.led.viewport[v].led.disp-1]);
+    //         LEDD[v]->MapDst(cfg.led.viewport[v].led.start, cfg.led.viewport[v].led.len);
+    //     }
     }
 #else
     //LCDCTRL->.....
     // ...other settings..?
-    for(byte v=0; v<12; v++) {
-        LCDD[v] = &_LCDD[v];
-        LCDD[v]->setController(&_LCDCTRL);
-        LCDD[v]->MapDst(cfg.lcd.viewport[v].lcd.startr, cfg.lcd.viewport[v].lcd.startc, cfg.lcd.viewport[v].lcd.len);
-    }
+    // for(byte v=0; v<12; v++) {
+    //     LCDD[v] = &_LCDD[v];
+    //     LCDD[v]->setController(&_LCDCTRL);
+    //     LCDD[v]->MapDst(cfg.lcd.viewport[v].lcd.startr, cfg.lcd.viewport[v].lcd.startc, cfg.lcd.viewport[v].lcd.len);
+    // }
 #endif
 }
 
@@ -343,8 +343,7 @@ M10board::ScanComms(void)
     if(IOL->incomingMsg()) {
         uint16_t lowcode;
         m = IOL->fetchMsg();
-        lowcode = Hextouint16(m, 4);
-        CmdEventMgr.check(0, lowcode, m+9);
+        //TODO: Process incoming message <m>
     }
 }
 

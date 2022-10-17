@@ -40,20 +40,6 @@ char dispbuf[8];
 
 M10board_cfg    cfg;
 
-//MCP         MCPIO(0,10);
-//uint16_t    digIO;
-//uint16_t    digIO2;
-
-/*
-//  Control elements
-#define CABIN_PIN 10
-ManagedEnc  testEnc  = ManagedEnc(1, 1234, 5678, NULL, NULL, NULL, NULL, NULL, NULL);
-ButtonEnc   testBEnc = ButtonEnc(1, 4321, 8765, NULL, NULL, NULL);
-ButtonGrp   testGrp  = ButtonGrp(CABIN_PIN,"cabin", NULL, lights_on, lights_off, NULL, 0, &lights, 9);
-Button      testBtn  = Button(5, 0, "pippo", 0);
-
-ButtonGrp cabin_lights = ButtonGrp();
-*/
 char *counter2buf(byte cntno) {
     unsigned long cc = counter[cntno&0x03];
     register byte h;
@@ -66,9 +52,8 @@ char *counter2buf(byte cntno) {
     return dispbuf;
 }
 
-
 //================================
-#include "board_code.h"
+//#include "board_code.h"
 //================================
 
 

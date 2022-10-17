@@ -46,10 +46,10 @@ void OnGetConfig()
 void OnGetInfo()
 {
     cmdMessenger.sendCmdStart(kInfo);
-    cmdMessenger.sendCmdArg(type);
-    cmdMessenger.sendCmdArg(name);
-    cmdMessenger.sendCmdArg(serial);
-    cmdMessenger.sendCmdArg(VERSION);
+    cmdMessenger.sendCmdArg(MFtype);
+    cmdMessenger.sendCmdArg(MFname);
+    cmdMessenger.sendCmdArg(MFserial);
+    cmdMessenger.sendCmdArg(MFVERSION);
     cmdMessenger.sendCmdEnd();
 }
 
@@ -58,7 +58,7 @@ void OnGetInfo()
 // ************************************************************
 void OnGenNewSerial()
 {
-    cmdMessenger.sendCmd(kInfo, serial);
+    cmdMessenger.sendCmd(kInfo, MFserial);
 }
 
 // ************************************************************
@@ -66,7 +66,7 @@ void OnGenNewSerial()
 // ************************************************************
 void OnSetName()
 {
-    cmdMessenger.sendCmd(kStatus, name);
+    cmdMessenger.sendCmd(kStatus, MFname);
 }
 
 // config.cpp

@@ -33,10 +33,10 @@
 
 #ifndef HAS_LCD
 #include "LedControlMod.h"
-#include "LEDface.h"
+// #include "LEDface.h"
 #else
 #include "LiquidCrystal.h"
-#include "LCDface.h"
+// #include "LCDface.h"
 #endif
 
 #define UNUSED(x) ((void)(x))
@@ -175,10 +175,10 @@ class M10board
 #endif
 #ifndef HAS_LCD
         LedControl      *LEDCTRL[2];
-        LEDface         *LEDD[6];
+        //LEDface         *LEDD[6];
 #else
         LiquidCrystal   *LCDCTRL;
-        LCDface         *LCDD[12];
+        // LCDface         *LCDD[12];
 #endif
         EncoderM10      *ENCS;
         EncoderM10      *VENCS;
@@ -357,7 +357,7 @@ class M10board
         // **********
 
         // Viewport is 1..N
-        LEDface  *Viewport(byte n)   { return LEDD[(n>6||n==0 ? 0 : n-1)]; }      // return LEDface ref, read-only
+        // LEDface  *Viewport(byte n)   { return LEDD[(n>6||n==0 ? 0 : n-1)]; }      // return LEDface ref, read-only
 #endif
 
 #ifdef HAS_LCD

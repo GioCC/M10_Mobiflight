@@ -73,9 +73,9 @@ namespace InputShifter
     {
         // Retrigger all the input shifters. This automatically sends
         // the release events first followed by press events.
-        for (uint8_t i = 0; i < inputShiftersRegistered; i++) {
-            inputShifters[i]->retrigger();
-        }
+        // for (uint8_t i = 0; i < inputShiftersRegistered; i++) {
+        //     inputShifters[i]->retrigger();
+        // }
 
         // inputShifters[i]->retrigger() is: 
         // (_lastState[m] and _name are attributes of the i-th ShReg)
