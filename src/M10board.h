@@ -79,85 +79,24 @@ typedef struct //M10board_cfg
     // Number of virtual (logical) encoders
     uint8_t     nVirtEncoders;
 
-//#ifndef HAS_LCD
     union {
         struct {
             // LED display drivers (actually connected; max 4)
             uint8_t     nDisplays1;         // Number of displays on the first port (0,1,2) - These are numbered 1 / 2
             uint8_t     nDisplays2;         // Number of displays on the second port (0,1,2) - These are numbered 3 / 4
-            t_viewport  viewport[6];        // Up to 6 defined display viewports (unused positions have disp=0)
-        } led;
-//#else
+        }; // led;  // uncomment if compiler doesn't allow anon structs (gcc should)
         struct {
             // LCD display
             uint8_t     LCDCols;
             uint8_t     LCDLines;
-            t_viewport  viewport[12];       // Up to 12 defined display viewports (unused positions have disp=0)
-        } lcd;
+        }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
     };
+    t_viewport  viewport[12];       // Up to 12 defined display viewports (unused positions have disp=0)
 //#endif
 } M10board_cfg;
 
-#define pat(a, b)   ((((uint16_t)(a))<<8)|(b))
-
-///
-/// These definitions are filled with the values defined in config_board.h
-///
-#ifndef HAS_LCD
-const static
-M10board_cfg BOARD_CFG PROGMEM =
-{
-    DIG_INPUTS,         // digInputs
-    DIG_OUTPUTS,        // digOutputs
-    DIG_INPUTS2,        // digInputs2
-    DIG_OUTPUTS2,       // digOutputs2
-    ANA_INPUTS,         // anaInputs
-    N_ENCODERS,         // nEncoders        (physically connected Encoders)
-    N_VIRT_ENCODERS,    // nVirtEncoders    (virtual Encoders provided by M10Board.cpp)
-    {{
-        N_DISPLAYS1,    // nDisplays1
-        N_DISPLAYS2,    // nDisplays2
-        {
-        {VIEWPORT1},    // viewport #n (Disp#, start, len)
-        {VIEWPORT2},
-        {VIEWPORT3},
-        {VIEWPORT4},
-        {VIEWPORT5},
-        {VIEWPORT6},
-        }
-    }}
-};
-#else
-const static
-M10board_cfg BOARD_CFG PROGMEM =
-{
-    DIG_INPUTS,         // digInputs
-    DIG_OUTPUTS,        // digOutputs
-    DIG_INPUTS2,        // digInputs2
-    DIG_OUTPUTS2,       // digOutputs2
-    ANA_INPUTS,         // anaInputs
-    N_ENCODERS,         // nEncoders        (physically connected Encoders)
-    N_VIRT_ENCODERS,    // nVirtEncoders    (virtual Encoders provided by M10Board.cpp)
-    {{
-        LCD_COLS,
-        LCD_LINES,
-        {
-        {VIEWPORT1},    // viewport #n (StartRow, StartCol, len)
-        {VIEWPORT2},
-        {VIEWPORT3},
-        {VIEWPORT4},
-        {VIEWPORT5},
-        {VIEWPORT6},
-        {VIEWPORT7},
-        {VIEWPORT8},
-        {VIEWPORT9},
-        {VIEWPORT10},
-        {VIEWPORT11},
-        {VIEWPORT12},
-        }
-    }}
-};
-#endif
+extern const uint8_t        MaxBoards;
+extern const M10board_cfg   Boards[] PROGMEM;
 
 class M10board
 {

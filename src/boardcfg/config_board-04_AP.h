@@ -6,24 +6,42 @@
 // This file defines the peripheral set of the board, i.e. for which actual model of board
 // we are building the firmware.
 
-#include <Arduino.h>
 #include <binary.h>
 
-#ifndef BOARDTYPE
+// Clean-slate the #define namespace
+#include "config_board-undef.h"
+
 #define BOARDTYPE   M10_04_AP
-#endif
 
-// Currently available M10 board types:
-// M10_01_Radio
-// M10_02_ADF_DME
-// M10_03_XPDR_OBS_CLK
-// M10_04_AP
-// M10_05_Radio_LCD
-// M10_06_Multi_LCD
-// M10_07_AP_LCD
-// M10_08_Audio
-// M10_09_EFIS
+#define BANK2
 
+#define MAXBUTTONS 20
+#define MAXENCS 8
+// #define MAXCMDEVENTS 30
+
+// I/O numbering:           16......9  8......1
+#define DIG_INPUTS      pat(B11111110,B00000000)
+#define DIG_OUTPUTS     pat(B00000000,B00000000)
+#define DIG_INPUTS2     pat(B11111111,B00000000)
+#define DIG_OUTPUTS2    pat(B00000000,B00000000)
+#define ANA_INPUTS      pat(B00000000,B00000000)
+#define N_ENCODERS      5
+#define N_VIRT_ENCODERS 0
+#define N_DISPLAYS1     2
+#define N_DISPLAYS2     1
+
+#define VIEWPORT1       {0,0,0}
+#define VIEWPORT2       {0,0,0}
+#define VIEWPORT3       {0,0,0}
+#define VIEWPORT4       {0,0,0}
+#define VIEWPORT5       {0,0,0}
+#define VIEWPORT6       {0,0,0}
+
+// ==================================================
+//  Constants specific to the board
+// ==================================================
+
+// TODO Add board-specific prefix to avoid name clashes!
 #define ENC_ALT         1
 #define ENC_VS          2
 #define ENC_SPD         3
@@ -68,52 +86,5 @@
 #define LD_VNAV         SEG_B28
 #define LD_APP          SEG_C28
 #define LD_REV          SEG_D28
-
-#define pat(a, b)   ((((uint16_t)(a))<<8)|(b))
-
-#define BANK2
-#undef HAS_LCD
-
-// Define number of control elements and input datarefs:
-// Buttons/switches/digital inputs
-#define MAXBUTTONS 20
-// Encoders (INCLUDING VIRTUAL ONES!)
-#define MAXENCS 8
-// Datarefs (FS 'offsets') used
-#define MAXCMDEVENTS 30
-
-// Neither encoder nor enc. switches are to be considered as part of digital inputs;
-// they have their own setup.
-// I/O numbering:           16......9  8......1
-#define DIG_INPUTS      pat(B11111110,B00000000)
-#define DIG_OUTPUTS     pat(B00000000,B00000000)
-#define DIG_INPUTS2     pat(B11111111,B00000000)
-#define DIG_OUTPUTS2    pat(B00000000,B00000000)
-#define ANA_INPUTS      pat(B00000000,B00000000)
-#define N_ENCODERS      5
-#define N_VIRT_ENCODERS 0
-#define N_DISPLAYS1     2
-#define N_DISPLAYS2     1
-//#define LCD_COLS
-//#define LCD_LINES
-
-// LED Viewport definitions:
-// Channel, start digit, len
-// (all index-1 based)
-// "Channel" is each sequence of MAX drivers; in each channel, digit numbering starts with 1
-// (first MAX, leftmost digit) through 8 (first MAX, rightmost digit), 9 (2nd MAX, leftmost digit),
-// 16 (2nd MAX, rightmost digit) and so on
-#define VIEWPORT1       {0,0,0}
-#define VIEWPORT2       {0,0,0}
-#define VIEWPORT3       {0,0,0}
-#define VIEWPORT4       {0,0,0}
-#define VIEWPORT5       {0,0,0}
-#define VIEWPORT6       {0,0,0}
-//#define VIEWPORT7
-//#define VIEWPORT8
-//#define VIEWPORT9
-//#define VIEWPORT10
-//#define VIEWPORT11
-//#define VIEWPORT12
 
 // end
