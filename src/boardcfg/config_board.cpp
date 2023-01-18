@@ -13,16 +13,19 @@
 #include "M10board.h"
 
 // Currently available M10 board types:
-// M10_01_Radio1
-// M10_01_Radio2
-// M10_02_ADF_DME
-// M10_03_XPDR_OBS_CLK
-// M10_04_AP
-// M10_05_Radio_LCD
-// M10_06_Multi_LCD
-// M10_07_AP_LCD
-// M10_08_Audio
-// M10_09_EFIS
+enum {
+    M10_01_Radio1,
+    M10_01_Radio2,
+    M10_02_ADF_DME,
+    M10_03_XPDR_OBS_CLK,
+    M10_04_AP,
+    M10_05_Radio_LCD,
+    M10_06_Multi_LCD,
+    M10_07_AP_LCD,
+    M10_08_Kbd,
+    M10_09_EFIS,
+};
+
 
 constexpr uint8_t MaxBoards = 12;
 
@@ -30,31 +33,40 @@ const
 M10board_cfg Boards[MaxBoards] PROGMEM = {
 
 #include "config_board-01_Radio.h"
-#include "config_board-line.h"
+#include "config_board-board.inc"
+
+#include "config_board-01_Radio.h"
+#include "config_board-board.inc"
 
 #include "config_board-02_ADF_DME.h"
-#include "config_board-line.h"
+#include "config_board-board.inc"
 
 #include "config_board-03_XPDR_OBS_CLK.h"
-#include "config_board-line.h"
+#include "config_board-board.inc"
 
 #include "config_board-04_AP.h"
-#include "config_board-line.h"
-
-#include "config_board-05_Radio_LCD.h"
-#include "config_board-line.h"
-
-#include "config_board-06_Multi_LCD.h"
-#include "config_board-line.h"
-
-#include "config_board-07_AP_LCD.h"
-#include "config_board-line.h"
-
-#include "config_board-08_Audio.h"
-#include "config_board-line.h"
+#include "config_board-board.inc"
 
 #include "config_board-09_EFIS.h"
-#include "config_board-line.h"
+#include "config_board-board.inc"
+
+#include "config_board-05_Radio_LCD.h"
+#include "config_board-board.inc"
+
+#include "config_board-06_Multi_LCD.h"
+#include "config_board-board.inc"
+
+#include "config_board-07_AP_LCD.h"
+#include "config_board-board.inc"
+
+#include "config_board-08_Kbd.h"    // AP
+#include "config_board-board.inc"
+
+#include "config_board-08_Kbd.h"    // Radio (Audio)
+#include "config_board-board.inc"
+
+#include "config_board-08_Kbd.h"    // Aux
+#include "config_board-board.inc"
 
 };
 

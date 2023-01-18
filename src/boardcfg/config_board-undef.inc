@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-undef.h
+//  config_board-undef.inc
 //
 // Board peripheral set compile-time configuration
 //

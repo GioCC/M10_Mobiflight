@@ -9,7 +9,7 @@
 #include <binary.h>
 
 // Clean-slate the #define namespace
-#include "config_board-undef.h"
+#include "config_board-undef.inc"
 
 #define BOARDTYPE   M10_03_XPDR_OBS_CLK
 

@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-08_Audio.h
+//  config_board-08_Kbd.h
 //
 //  Board peripheral set compile-time configuration
 //
@@ -9,12 +9,12 @@
 #include <binary.h>
 
 // Clean-slate the #define namespace
-#include "config_board-undef.h"
+#include "config_board-undef.inc"
 
-#define BOARDTYPE   M10_08_Audio
+#define BOARDTYPE   M10_08_Kbd
 
 #define MAXBUTTONS 10
-#define MAXENCS 1
+#define MAXENCS 0
 //#define MAXCMDEVENTS 20
 
 #define DIG_INPUTS      pat(B11111111,B00000000)

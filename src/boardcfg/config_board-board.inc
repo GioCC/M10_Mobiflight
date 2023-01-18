@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-line.h
+//  config_board-board.inc
 //
 // Board peripheral set compile-time configuration
 //
