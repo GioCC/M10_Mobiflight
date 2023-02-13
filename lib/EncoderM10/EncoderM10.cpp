@@ -49,7 +49,7 @@ EncoderM10::init(uint8_t n)
     eflags_inv = 0;
     //flags = 0;
 
-    nencs = ((n>8) ? 8 : n);
+    nencs = ((n>MAXENC) ? MAXENC : n);
 
     //trans.changed = 0;
     clearTrans();
@@ -90,17 +90,17 @@ EncoderM10::invert(uint8_t n, byte inverted)
 void
 EncoderM10::update(uint32_t vec)
 {
-    byte  _encA = 0;
-    byte  _encB = 0;
-    byte  _encS = 0;
+    EVEC  _encA = 0;
+    EVEC  _encB = 0;
+    EVEC  _encS = 0;
 
-    static byte     p_encA;           // Previous values of input vectors
-    //static byte  p_encB;           // not used
-    static byte     p_encS;
+    static EVEC     p_encA;           // Previous values of input vectors
+    //static EVEC  p_encB;           // not used
+    static EVEC     p_encS;
     static uint32_t old_vec;
 
     uint32_t    v;
-    byte        msk;
+    EVEC        msk;
 
     /// time in ms since last call (should be <255 ms!)
     delta_ms -= (byte)(millis()&0xFF); // truncation gracefully takes care of overflow
@@ -176,7 +176,7 @@ EncoderM10::update(uint32_t vec)
         v = ((delta_ms < THR_VERYFAST) ? STEP_VERYFAST : ((delta_ms < THR_FAST) ? STEP_FAST : 1));
 
         msk = 0x01;
-        for(byte i = 0; i<nencs; i++, msk+=msk) {
+        for(byte i = 0; i<nencs; i++, msk<<=1) {
             encs.ecount[i]  += ((eflags_u&msk) ? v : ((eflags_d&msk) ? -v : 0));
         }
         encs.changed |= (eflags_d|eflags_u);
@@ -240,17 +240,17 @@ EncoderM10::update(uint32_t vec)
         swold = swvec;
         /// manage mode change
         msk = 0x01;
-        for(byte i = 0; i<8; i++, msk+=msk) {
-            if(encs.emode[i] & 0x7F) {
+        for(byte i = 0; i<nencs; i++, msk<<=1) {
+            if(encs.emode[i] & ~((byte)EncoderM10::MODE_LONGPRESS)) {
                 /// handle modechange + Push&Hold-On
                 if(sw_up & msk) {
-                    if((encs.emode[i] & 0x80) == 0) {
+                    if((encs.emode[i] & EncoderM10::MODE_LONGPRESS) == 0) {
                         incMode(i, 0x00);
                     }
                 }
                 /// handle Push&Hold-Off
                 if(sw_dn & msk) {
-                    if(encs.emode[i] == 1) {
+                    if(encs.emode[i] == EncoderM10::MODE_PUSHHOLD) {
                         setMode(i, 1);
                     }
                 }
@@ -277,7 +277,7 @@ EncoderM10::update(uint32_t vec)
                     btns.shortpress &= ~swvec;    // Therefore, none of them is SP
                     /// manage mode change
                     msk = 0x01;
-                    for(byte i = 0; i<8; i++, msk+=msk) {
+                    for(byte i = 0; i<nencs; i++, msk<<=1) {
                         if(swlpr & msk) {
                             if(encs.emode[i] & 0x80) {
                                 incMode(i, 0x00);
@@ -313,7 +313,7 @@ void
 EncoderM10::setNModes(byte n, byte nmodes)
 {
     // Value 128 (No modes + longpress) not allowed
-    if((n<1)||(n>nencs)||(nmodes==0x80)) { return; }
+    if((n<1)||(n>nencs)||(nmodes==EncoderM10::MODE_LONGPRESS)) { return; }
     encs.enmodes[n-1]=nmodes;
 }
 
@@ -327,7 +327,7 @@ EncoderM10::setMode(byte n, byte nmode)
     if((n<1) || (n>nencs)) { return; }
     // If nmode is not consistent with the range set with setNMode, call has no effect
     if(nmode == 0) { return; }
-    allowed = (encs.enmodes[n-1]) & 0x7F;
+    allowed = (encs.enmodes[n-1]) & ~((byte)EncoderM10::MODE_LONGPRESS);
     if(allowed == 0) { return; }
     if((allowed > 1) ? (nmode <= allowed) : (nmode < nencs)) {
         encs.enmodes[n-1] = nmode;
@@ -350,7 +350,7 @@ EncoderM10::incMode(byte n, byte flags)
     byte nmax;
     byte nn;
     if((n<1) || (n>nencs)) { return; }
-    nmax = (encs.enmodes[n-1]) & 0x7F;
+    nmax = (encs.enmodes[n-1]) & ~((byte)EncoderM10::MODE_LONGPRESS);
     nn = encs.emode[n-1];
     // flags&0x01: 0->inc, 1->decs
     // flags&0x02: 0->Value stops at edges, 1->Value wraps around

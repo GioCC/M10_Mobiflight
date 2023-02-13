@@ -67,7 +67,10 @@
 #define LONGPRESS 50           // Long press interval (*DEBOUNCE ms)
 
 /// Defines for future templating
-typedef EVEC    byte;
+/// Must be: EVEC_BITS >= MAXENC
+typedef     byte    EVEC;                       // Must fit (1<<(MAXENC-1))
+constexpr   byte    EVEC_BITS = sizeof(EVEC)*8;
+constexpr   EVEC    ALL_MASK  = ~((EVEC)0);     // EVEC with all bits high
 
 class EncoderM10
 {
@@ -76,18 +79,18 @@ public:
 
     /// Encoder transitions
     typedef struct {
-        byte changed;           // flags keys that have changed since last zeroing (which must be done by the user)
-        byte enUp;              // Up
-        byte enDn;              // Down
-        byte enQUp;             // Quick Up
-        byte enQDn;             // Quick Down
-        //byte enAvec;            // Encoder A lines vector
-        //byte enBvec;            // Encoder B lines vector
+        EVEC changed;           // flags keys that have changed since last zeroing (which must be done by the user)
+        EVEC enUp;              // Up
+        EVEC enDn;              // Down
+        EVEC enQUp;             // Quick Up
+        EVEC enQDn;             // Quick Down
+        //EVEC enAvec;            // Encoder A lines vector
+        //EVEC enBvec;            // Encoder B lines vector
     } t_enctstat;
 
     /// Encoder counts and modes
     typedef struct {
-        byte changed;            // Mark encoder whose counts have changed since last read (1 bit per encoder)
+        EVEC changed;            // Mark encoder whose counts have changed since last read (1 bit per encoder)
         long ecount[MAXENC];     // Net encoder counts accumulated since last read (can be neg)
         byte emode[MAXENC];      // Current mode value for each encoder
         byte enmodes[MAXENC];    // Number of modes for each encoders
@@ -96,13 +99,13 @@ public:
     /// Encoder button transitions
     /// Every struct field contains data for all encoders (1 bit per encoder)
     typedef struct {
-        byte changed;       // flags keys that have changed since last zeroing (which must be done by the user)
-        byte current;       // mirrors current (debounced) btn status
-        byte activated;     // set on ACTIVATION, reset on deactivation (or by user)
-        byte deactivated;   // set on DEACTIVATION, reset on activation (or by user)
-        byte toggled;       // toggle: set on ACTIVATION, reset on next activation (or by user)
-        byte shortpress;    // set on SHORT PRESS trigger; reset on deactivation (or by user)
-        byte longpress;     // set on LONG PRESS (past threshold time); reset on deactivation (or by user)
+        EVEC changed;       // flags keys that have changed since last zeroing (which must be done by the user)
+        EVEC current;       // mirrors current (debounced) btn status
+        EVEC activated;     // set on ACTIVATION, reset on deactivation (or by user)
+        EVEC deactivated;   // set on DEACTIVATION, reset on activation (or by user)
+        EVEC toggled;       // toggle: set on ACTIVATION, reset on next activation (or by user)
+        EVEC shortpress;    // set on SHORT PRESS trigger; reset on deactivation (or by user)
+        EVEC longpress;     // set on LONG PRESS (past threshold time); reset on deactivation (or by user)
     } t_btnstat;
 
 
@@ -129,25 +132,25 @@ private:
 
     /// Every variable below contains data for all encoders (1 bit per encoder)
 
-    byte swvec;             // (internal) current switch state
-    byte swdif;             // (internal) switch state change
-    byte sw_up;             // (internal) switch state change, activation only
-    byte sw_dn;             // (internal) switch state change, deactivation only
-    byte swold;             // (internal) switch state previous state
-    byte swlpr;             // (internal) switch long press mask stored
+    EVEC swvec;             // (internal) current switch state
+    EVEC swdif;             // (internal) switch state change
+    EVEC sw_up;             // (internal) switch state change, activation only
+    EVEC sw_dn;             // (internal) switch state change, deactivation only
+    EVEC swold;             // (internal) switch state previous state
+    EVEC swlpr;             // (internal) switch long press mask stored
 
-    //byte kflags;            // switch flags - mirrors current (debounced) btn status.
+    //EVEC kflags;            // switch flags - mirrors current (debounced) btn status.
 
     /// Variables for encoders
 
-    byte eflags_u;          // Encoder flags - up count
-    byte eflags_d;          // Encoder flags - down count
-    byte eflags_inv;        // Encoder flags - inversion
+    EVEC eflags_u;          // Encoder flags - up count
+    EVEC eflags_d;          // Encoder flags - down count
+    EVEC eflags_inv;        // Encoder flags - inversion
 
 public:
 
     /// Create a new controller for <n> encoders (up to 8)
-    EncoderM10(uint8_t n);
+    explicit EncoderM10(uint8_t n);
 
     void    init(uint8_t n);
 
@@ -164,6 +167,7 @@ public:
     /// Bit 0, 1, 2 = Enc1A, Enc1B, Enc1S
     /// Bit 3, 4, 5 = Enc2A, Enc2B, Enc2S
     /// Bit 6, 7, 8 = Enc3A, Enc3B, Enc3S
+    /// Argument must be at least 3 times wider than EVEC!
     void    update(uint32_t vec);
 
     // Following functions are meant for use in more correct OOP, if key and enc vars were made private
@@ -179,11 +183,11 @@ public:
     /// Return mask of encoders which had a transition (of the corresponding type) since last read
     /// If an enc no. != 0 is specified, the returned value is relative to that encoder only (!=0 on change)
     /// Because of inlining, no range check is performed on the encoder index
-    byte getEncChange(byte nenc=0)      __attribute__((always_inline))  { return trans.changed & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getEncChangeUp(byte nenc=0)    __attribute__((always_inline))  { return trans.enUp & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getEncChangeDn(byte nenc=0)    __attribute__((always_inline))  { return trans.enDn & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getEncChangeQUp(byte nenc=0)   __attribute__((always_inline))  { return trans.enQUp & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getEncChangeQDn(byte nenc=0)   __attribute__((always_inline))  { return trans.enQDn & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
+    EVEC getEncChange(byte nenc=0)      __attribute__((always_inline))  { return trans.changed  & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeUp(byte nenc=0)    __attribute__((always_inline))  { return trans.enUp     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeDn(byte nenc=0)    __attribute__((always_inline))  { return trans.enDn     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeQUp(byte nenc=0)   __attribute__((always_inline))  { return trans.enQUp    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeQDn(byte nenc=0)   __attribute__((always_inline))  { return trans.enQDn    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
     void clearTrans(void)               __attribute__((always_inline))  { memset(&trans, 0, sizeof(t_enctstat)); }
 
     ///
@@ -192,13 +196,13 @@ public:
     /// Return mask of encoders BUTTONS which had a transition (of the corresponding type) since last read
     /// If an enc no. != 0 is specified, the returned value is relative to that encoder only (!=0 on change)
     /// Because of inlining, no range check is performed on the encoder index
-    byte getBtnChange(byte nenc=0)      __attribute__((always_inline))  { return btns.changed & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnPress(byte nenc=0)       __attribute__((always_inline))  { return btns.activated & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnRelease(byte nenc=0)     __attribute__((always_inline))  { return btns.deactivated & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnLongP(byte nenc=0)       __attribute__((always_inline))  { return btns.longpress & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnShortP(byte nenc=0)      __attribute__((always_inline))  { return btns.shortpress & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnToggle(byte nenc=0)      __attribute__((always_inline))  { return btns.toggled & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
-    byte getBtnCurrent(byte nenc=0)     __attribute__((always_inline))  { return btns.current & (nenc==0 ? 0xFF:bmasks(nenc-1)); }
+    EVEC getBtnChange(byte nenc=0)      __attribute__((always_inline))  { return btns.changed       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnPress(byte nenc=0)       __attribute__((always_inline))  { return btns.activated     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnRelease(byte nenc=0)     __attribute__((always_inline))  { return btns.deactivated   & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnLongP(byte nenc=0)       __attribute__((always_inline))  { return btns.longpress     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnShortP(byte nenc=0)      __attribute__((always_inline))  { return btns.shortpress    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnToggle(byte nenc=0)      __attribute__((always_inline))  { return btns.toggled       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnCurrent(byte nenc=0)     __attribute__((always_inline))  { return btns.current       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
     void clearBtns(void)                __attribute__((always_inline))  { memset(&btns, 0, sizeof(t_btnstat)); }
 
 
@@ -216,13 +220,16 @@ public:
     /// Return encoder BUTTONS which had a transition (of the corresponding type) since last read
     /// For change detection: if an enc no. != 0 is specified, the returned value is relative to that encoder only (!=0 on change)
     /// Because of inlining, no range check is performed on the encoder index
-    byte getCntChange(byte encNo=0)      __attribute__((always_inline))  { return encs.changed & (encNo==0 ? 0xFF:(byte)(wmasks[encNo-1])); }
+    EVEC getCntChange(byte encNo=0)      __attribute__((always_inline))  { return encs.changed & (encNo==0 ? 0xFF:(EVEC)(wmasks[encNo-1])); }
 
     /// Define number of modes for an encoder.
     /// 0 (default) means modes are not used
-    /// 1 means Push&Hold mode (mode=1 normally, mode=2 during push)
+    /// 1 means Push&Hold mode (mode is =1 normally, =2 during push)
     /// 2..127 means that mode cycles between 1..2 to 1..127 on short press
     /// If bit 7 is set (values 130..255), cycle happens on long press
+    constexpr byte MODE_NONE = 0x00;
+    constexpr byte MODE_PUSHHOLD = 0x01;
+    constexpr byte MODE_LONGPRESS = 0x80;
     void setNModes(byte encNo, byte nmodes);
 
     /// Get current mode for an encoder (1..n).
