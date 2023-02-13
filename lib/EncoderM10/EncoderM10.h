@@ -10,40 +10,6 @@
 *
 ********************************************************************/
 
-/// Encoder flags (corresponding to HW connection) assumed in the
-/// input vector passed for evaluation:
-/// Bit 0, 1, 2 = Enc1A, Enc1B, Enc1S
-/// Bit 3, 4, 5 = Enc2A, Enc2B, Enc2S
-/// Bit 6, 7, 8 = Enc3A, Enc3B, Enc3S
-
-#ifndef EncoderM10_h
-#define EncoderM10_h
-
-#include <Arduino.h>
-#include "bitmasks.h"
-
-/// Max no of encoders managed with current implementation can be 8
-/// If you're _really_ tight on memory, reducing following parameter might help save a few bytes
-#define MAXENC 8
-
-/// Type of encoder
-/// Default is full-cycle (both A/B signals make a complete cycle from one detent to another)
-/// Define following constant for half-cycle encoders
-//#define HALF_CYCLE
-
-/// Constants for Encoder acceleration
-/// If the period (ms) between two variations is lower than THRESHOLDn, add STEPn counts instead of just 1
-#define THR_VERYFAST    5       // very fast: <5ms
-#define STEP_VERYFAST   5       // very fast: step *5
-/// To disable second threshold, set it to the same value as first one
-#define THR_FAST        5
-//#define THR_FAST        10      // fast: <10ms
-#define STEP_FAST       5       // fast: step *5
-
-/// Constants for PUSHBUTTONS
-#define DEBOUNCE  10           // Debounce validation interval (ms)
-#define LONGPRESS 50           // Long press interval (*DEBOUNCE ms)
-
 /// This class manages encoders (w/switch) basing on a "raw" digital I/O vector
 /// (likely coming from a direct port read); it does NOT read hardware
 /// inputs directly, therefore input data can also be pre-processed or simulated
@@ -68,6 +34,41 @@
 ///   Initial reset or zeroing of the counters can be done in both modes with
 ///   a "dummy" call to getEncCount(..).
 
+#ifndef EncoderM10_h
+#define EncoderM10_h
+
+#include <Arduino.h>
+#include "bitmasks.h"
+
+/// Max no of encoders managed with current implementation can be 8
+/// If you're _really_ tight on memory, reducing following parameter might help save a few bytes
+/// IMPORTANT: This class can be easily extended (or better templated) to work on a larger number
+/// of encoders (16 or even 32), by changing most of byte vars (and some constants) to uint16_t/uint32_t.
+/// However, trivial speed issues aside, on 8-bit MCUs even using 16-bit words would generate much more
+/// code with a definite penalty on code size and further on speed.
+#define MAXENC 8
+
+/// Type of encoder
+/// Default is full-cycle (both A/B signals make a complete cycle from one detent to another)
+/// Define following constant for half-cycle encoders
+//#define HALF_CYCLE
+
+/// Constants for Encoder acceleration
+/// If the period (ms) between two variations is lower than THRESHOLDn, add STEPn counts instead of just 1
+#define THR_VERYFAST    5       // very fast: <5ms
+#define STEP_VERYFAST   5       // very fast: step *5
+/// To disable second threshold, set it to the same value as first one
+#define THR_FAST        5
+//#define THR_FAST        10      // fast: <10ms
+#define STEP_FAST       5       // fast: step *5
+
+/// Constants for PUSHBUTTONS
+#define DEBOUNCE  10           // Debounce validation interval (ms)
+#define LONGPRESS 50           // Long press interval (*DEBOUNCE ms)
+
+/// Defines for future templating
+typedef EVEC    byte;
+
 class EncoderM10
 {
 
@@ -86,13 +87,14 @@ public:
 
     /// Encoder counts and modes
     typedef struct {
-        byte changed;            // Mark encoder whose counts have changed since last read
+        byte changed;            // Mark encoder whose counts have changed since last read (1 bit per encoder)
         long ecount[MAXENC];     // Net encoder counts accumulated since last read (can be neg)
         byte emode[MAXENC];      // Current mode value for each encoder
         byte enmodes[MAXENC];    // Number of modes for each encoders
     } t_enccstat;
 
     /// Encoder button transitions
+    /// Every struct field contains data for all encoders (1 bit per encoder)
     typedef struct {
         byte changed;       // flags keys that have changed since last zeroing (which must be done by the user)
         byte current;       // mirrors current (debounced) btn status
@@ -125,7 +127,7 @@ private:
     byte ctdbn;                 // input debounce counter
     byte ctlpr;                 // input long press counter
 
-    //uint16_t old_vec;                // Previous port values
+    /// Every variable below contains data for all encoders (1 bit per encoder)
 
     byte swvec;             // (internal) current switch state
     byte swdif;             // (internal) switch state change
@@ -156,6 +158,12 @@ public:
     //void    update(unsigned long ms_ticks);
 
     /// Scheduled update: no internal checks, but it is supposed be called about every 1ms
+    ///
+    /// Encoder flags (corresponding to HW connection) assumed in the
+    /// input vector passed for evaluation:
+    /// Bit 0, 1, 2 = Enc1A, Enc1B, Enc1S
+    /// Bit 3, 4, 5 = Enc2A, Enc2B, Enc2S
+    /// Bit 6, 7, 8 = Enc3A, Enc3B, Enc3S
     void    update(uint32_t vec);
 
     // Following functions are meant for use in more correct OOP, if key and enc vars were made private

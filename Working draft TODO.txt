@@ -1,0 +1,45 @@
+M10_Mobiflight - 2023-02
+
+Draft: handling of M10Board objects
+===================================
+
+MF config:
+- hardwired in the manager board, not changeable
+
+Board class:
+- #ifdef BANK2 -> if(hasBank2)
+- Try to collate code for BANK1/BANK2. E.g.: 
+  ModeL(byte pin, byte mode) 
+    -> Mode(byte bank, byte pin, byte mode) (pin=0..15)
+    or Mode(byte pin, byte mode) (pin=0..31)
+  M10Board::IOcfgL/IOcfgH 
+    -> M10Board::IOcfg[2]
+
+- ADD: inject CB for Input events (static methods) (DI, Encoders)
+
+
+Board config data:
+- try to not keep copy in RAM for every board (maybe just 1 buffer object in RAM used during setup, shared)
+
+Board config methods:
+- Used practically only by the setBoardCfg() function
+
+Digital I/Os:
+- Storage for values: Internal
+- DI: 'Bank<x>' objects unnecessary? 
+    - Value buffering and event raise done during polling (In) or value setting (out); 
+- DO: 'Bank<x>' probably required. MF commands write to the buffer, buffer written immediately or during poll (even if SPI, can't read/write at the same time)
+- Board local I/O address <-> Global I/O address: possibly straightforward (e.g. GA = LA + baseOffset[Board#])
+- After polling, function call for internal business specific to the board:
+  Function or method (=> subclassing)?
+  
+LED displays:
+- messages forwarded almost without change, except possibly internal business logic
+
+LCD displays:
+- messages forwarded almost without change, except possibly internal business logic
+
+Dataref comm functions:
+- Unused, remove (managed centrally).
+  If more complex features are required (ie more than simple forwarding of peripheral driver cmds), replace message parsing methods with custom methods for the specific features.
+ 

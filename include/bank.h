@@ -40,7 +40,7 @@ class Bank
 
         uint16_t    valW(byte pos)              { return (((uint16_t)(_data[pos+1])<<8)+_data[pos]); }
         uint8_t     writeB(byte pos, byte val)  { if(pos>=NBYTES) return 0; _data[pos] = val; return 1; }
-        uint8_t     writeW(byte pos, uint16_t wval)  { if(pos>=NBYTES) return 0; _data[pos]=(&wval)[0]; _data[pos+1]=(&wval)[1]; return 1; }
+        uint8_t     writeW(byte pos, uint16_t wval)  { if(pos>=NBYTES) return 0; _data[pos]=(wval>>8); _data[pos+1]=(wval&0xFF); return 1; }
 
         uint8_t     clr(void)                   { for(byte i=0; i<NBYTES; i++) _data[i]=0; return 1; }
 };

@@ -105,7 +105,7 @@ M10board::setBoardCfg(M10board_cfg *c)
     //         LEDD[v]->setController(LEDCTRL[cfg.led.viewport[v].led.disp-1]);
     //         LEDD[v]->MapDst(cfg.led.viewport[v].led.start, cfg.led.viewport[v].led.len);
     //     }
-    }
+    //}
 #else
     //LCDCTRL->.....
     // ...other settings..?
@@ -186,27 +186,25 @@ void
 M10board::digitalWrite(uint8_t pin, uint8_t val)
 {
     Dout.write(pin, val);
-/*
-    if(pin<=16) { Dout.writeL(pin, val); }
-#ifdef BANK2
-    else        { Dout.writeH(pin-16, val); }
-#endif
-*/
+
+//     if(pin<=16) { Dout.writeL(pin, val); }
+// #ifdef BANK2
+//     else        { Dout.writeH(pin-16, val); }
+// #endif
 }
 
 int
 M10board::digitalRead(uint8_t pin)
 {
     return Din.val(pin);
-/*
-    if(pin<=16)         { return Din.valL(pin); }
-#ifdef BANK2
-    else if(pin<=32)    { return Din.valH(pin-16); }
-#endif
-    // 'virtual' pins above 32 are reserved for encoder mirroring and are read-only
-    else if(pin>32)     { return (lwbit(virtualEncs, pin-33)!=0); }
-    else return 0;
-*/
+
+//     if(pin<=16)         { return Din.valL(pin); }
+// #ifdef BANK2
+//     else if(pin<=32)    { return Din.valH(pin-16); }
+// #endif
+//     // 'virtual' pins above 32 are reserved for encoder mirroring and are read-only
+//     else if(pin>32)     { return (lwbit(virtualEncs, pin-33)!=0); }
+//     else return 0;
 }
 
 void

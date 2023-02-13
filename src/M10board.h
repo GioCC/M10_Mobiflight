@@ -63,9 +63,11 @@ typedef union
 
 typedef struct //M10board_cfg
 {
-    // pins not defined as either input or output are configured as inputs, however it is apparent from the definition that they are unused
+    //TODO (M10) Add: IRQ and CS pins, specific addresses
+    // pins not defined as either input or output are configured as inputs anyway, however it is apparent from the definition that they are unused
     uint16_t    digInputs;      // Map of digital inputs (1=input) for MCP on main board
     uint16_t    digOutputs;     // Map of digital outputs (1=output) for MCP on main board
+    
     // following are used only for those panels having a second extension board (currently only Autopilot, LED or LCD)
     uint16_t    digInputs2;     // Map of digital inputs (1=input) for MCP on second board
     uint16_t    digOutputs2;    // Map of digital outputs (1=output) for MCP on second board
@@ -143,14 +145,16 @@ class M10board
 
         M10board(void);
 
-        /// ==========================
+        /// ====================================================
         /// Main polling entry points
+        /// ====================================================
 
         void        ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
         void        ScanComms(void);
 
-        /// =======================
+        /// ====================================================
         /// Config functions
+        /// ====================================================
 
         void        setBoardCfg(M10board_cfg *cfg);
         void        setBoardPostCfg(void);
@@ -165,8 +169,9 @@ class M10board
         void        ModePU_H(uint16_t PUmode)     { MCPIO2->pullupMode(IOpullupH = PUmode); }     // PullUp: 1 = On
 #endif
 
-        /// =======================
+        /// ====================================================
         /// Digital I/O management
+        /// ====================================================
 
         // R/W functions operate on buffers 'Din'/'Dout', therefore require the invocation of ScanInOut(),
         // either before (for inputs) or after (for outputs).
@@ -188,15 +193,17 @@ class M10board
         void        setOuts(uint16_t ov, byte bank=1) { (bank==1 ? MCPIO1->digitalWrite(ov) : MCPIO2->digitalWrite(ov)); }
 #endif // BANK2
 
-        /// =======================
+        /// ====================================================
         /// Analog I/O management
+        /// ====================================================
 
         void        setupAnaIns(uint16_t AIvector);
         // Read n-th configured analog input (scaled to 0..255)
         uint8_t     readAI(uint8_t n)   { return ( n < nAINS ? ((analogRead(AINS[n])+2) >> 2) : 0);  }
 
-        /// =======================
+        /// ====================================================
         /// Encoder management
+        /// ====================================================
 
         /// "Virtual' (mirrored) encoders
         ///
@@ -245,8 +252,9 @@ class M10board
         EncoderM10  *Encoders(void)             { return Encs = ENCS; }
 
 #ifndef HAS_LCD
-        /// =======================
+        /// ====================================================
         /// LED Display management
+        /// ====================================================
         ///
         // Display index is 1..4:
         // 1,2 are the first and second chained display (controllers) on the first port
@@ -300,8 +308,9 @@ class M10board
 #endif
 
 #ifdef HAS_LCD
-        /// =======================
+        /// ====================================================
         /// LCD Display management
+        /// ====================================================
         ///
         // *** 1 - Access through LiquidCrystal
 
@@ -309,8 +318,10 @@ class M10board
 
         // ...TODO
 #endif
-        /// ==============================================
+        /// ====================================================
         /// Prototypes for Dataref comm functions
+        /// ====================================================
+        
         uint16_t    *request(uint16_t offset);  // TBD
         byte        incoming(void)  { return IOL->incomingMsg(); }
         char        *fetch(void)    { return IOL->fetchMsg(); }
