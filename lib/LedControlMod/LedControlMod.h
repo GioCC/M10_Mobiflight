@@ -22,7 +22,7 @@
 #define dmask(i) (wmasks[7-i])
 #define UNUSED(x) ((void)(x))
 
-#define MAX_CHAINED     4
+#define MAX_CHAINED     2 //4
 
 /*
  * Segments to be switched on for characters and digits on
@@ -59,9 +59,9 @@ private:
 
     byte nUnits;                    // Actual number of chained devices
 
+    static byte spidata[MAX_CHAINED*2];    // The array for shifting the data to the devices
     byte digits[MAX_CHAINED*8];     // content of all digits on eack block - digits[0] is the leftmost one (and the last shifted out)
     byte digitchg[MAX_CHAINED];     // Flags of which digits have changed since last transmission - Leftmost bit (7) is the leftmost digit
-    byte spidata[MAX_CHAINED*2];    // The array for shifting the data to the devices
 
     byte fixedDPmask[MAX_CHAINED];  // the mask of fixed DPs to display
     byte width[MAX_CHAINED];        // Defines display width (1..8) by accounting for scanlimit settings
@@ -76,8 +76,10 @@ private:
 public:
     /*
      * Create a new controller.
-     * The constructor does NOT send init messages, since transmission
-     * might have to be deferred to a later phase.
+     * Passed data is only provisionally stored - no other operation (e.g. pin setup)
+     * is done at this stage, since they might have to be deferred to a later phase.
+     * Actual setup is effected later by calling hw_init().
+     * The constructor does also NOT send init messages.
      * Params :
      * dataPin		pin on the Arduino where data gets shifted out
      * clockPin		pin for the clock
@@ -86,19 +88,13 @@ public:
      */
     LedControl(byte dataPin, byte clkPin, byte csPin, byte numDevices=1);
 
-    /*
-     * Initialize one or all devices attached to this LedControl.
-     */
+    // HW resource initialization
+    void hw_init(void);
+
+    // Functional initialization
     void init(byte addr = 0xFF, byte lum=15);
 
-    /*
-     * Switch ON one or all devices attached to this LedControl.
-     */
     void switchOn(byte addr = 0xFF, byte lum=0xFF);
-
-    /*
-     * Switch OFF one or all devices attached to this LedControl.
-     */
     void switchOff(byte addr = 0xFF);
 
     /*

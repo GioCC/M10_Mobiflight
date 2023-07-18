@@ -33,19 +33,21 @@
 #define OP_DISPLAYTEST 15
 
 LedControl::LedControl(byte dataPin, byte clkPin, byte csPin, byte numDevices)
+: SPI_MOSI(dataPin), SPI_CLK(clkPin), SPI_CS(csPin)
 {
-    SPI_MOSI=dataPin;
-    SPI_CLK=clkPin;
-    SPI_CS=csPin;
-    pinMode(SPI_MOSI,OUTPUT);
-    pinMode(SPI_CLK,OUTPUT);
-    pinMode(SPI_CS,OUTPUT);
-    FdigitalWrite(SPI_CS,HIGH);
 
     for(byte i=0; i<MAX_CHAINED*8; i++) {
         digits[i]=0x00;
     }
     setDeviceCount(numDevices, 0);	// No init yet. Also sets width[]
+}
+
+void LedControl::hw_init(void)
+{
+    pinMode(SPI_MOSI,OUTPUT);
+    pinMode(SPI_CLK,OUTPUT);
+    pinMode(SPI_CS,OUTPUT);
+    FdigitalWrite(SPI_CS,HIGH);
 }
 
 void
