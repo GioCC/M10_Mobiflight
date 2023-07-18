@@ -19,7 +19,6 @@
 
 #include "bitmasks.h"
 #include "bank.h"
-//#include "varStore.h"
 #include "FastArduino.h"
 #include "MCP23S17.h"
 #include "EncoderM10.h"
@@ -29,6 +28,8 @@
 
 #include "LedControlMod.h"
 #include "LiquidCrystal.h"
+
+constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
 
 #define UNUSED(x) ((void)(x))
 
@@ -73,7 +74,7 @@ typedef struct //M10board_cfg
 } M10board_cfg;
 
 extern const uint8_t        MaxBoards;
-extern const M10board_cfg   Boards[] PROGMEM;
+extern const M10board_cfg   BoardCfgs[] PROGMEM;
 
 class M10board
 {
@@ -87,8 +88,12 @@ class M10board
         EncoderM10*      ENCS;
         EncoderM10*      VENCS;
 
-        LedControl*      LEDCTRL[2];
-        LiquidCrystal*   LCDCTRL;
+        uint8_t          _DISP[LCsize*2];   //! TODO: use MAX(LCsize *2, LCDsize)
+
+        union {
+            LedControl*      LEDCTRL;
+            LiquidCrystal*   LCDCTRL;
+        };
 
         // Internal data storage:
 
@@ -102,9 +107,20 @@ class M10board
         uint8_t         nAINS;              // Number of used analog inputs
 
     public:
-        //varStore<32>    vars;             // ENABLE IF REQUIRED
 
         M10board(void);
+
+        /// ====================================================
+        /// Config functions
+        /// ====================================================
+
+        void    init(void) {};
+
+        void    setBoardCfg(M10board_cfg *cfg);
+        void    setBoardPostCfg(void);
+
+        void    setIOMode(uint8_t bank, uint16_t IOmode);   // Mode 0 = Out, 1 = In
+        void    setPUMode(uint8_t bank, uint16_t PUmode);   // PullUp: 1 = On
 
         /// ====================================================
         /// Main polling entry points
@@ -113,33 +129,14 @@ class M10board
         void        ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
         /// ====================================================
-        /// Config functions
-        /// ====================================================
-
-        void        setBoardCfg(M10board_cfg *cfg);
-        void        setBoardPostCfg(void);
-
-        // In these functions (whether bank1 or bank2), pin = 1..16
-        // void        ModeL(byte pin, byte mode);   // Mode: INPUT, INPUT_PULLUP, OUTPUT
-        // void        ModeIO_L(uint16_t IOmode)      { MCPIO1->pinMode(IOcfgL = IOmode); }            // Mode 0 = Out, 1 = In
-        // void        ModePU_L(uint16_t PUmode)      { MCPIO1->pullupMode(IOpullupL = PUmode); }      // PullUp: 1 = On
-        
-        // void        ModeH(byte pin, byte mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
-        // void        ModeIO_H(uint16_t IOmode)     { if(board.cfg->hasBank2) MCPIO2->pinMode(IOcfgH = IOmode); }           // Mode 0 = Out, 1 = In
-        // void        ModePU_H(uint16_t PUmode)     { if(board.cfg->hasBank2) MCPIO2->pullupMode(IOpullupH = PUmode); }     // PullUp: 1 = On
-
-        void        setIOMode(uint8_t bank, uint16_t IOmode);   // Mode 0 = Out, 1 = In
-        void        setPUMode(uint8_t bank, uint16_t PUmode);   // PullUp: 1 = On
-
-        /// ====================================================
         /// Digital I/O management
         /// ====================================================
 
         // R/W functions operate on buffers 'Din'/'Dout', therefore require the invocation of ScanInOut(),
         // either before (for inputs) or after (for outputs).
 
-        Bank<64>      Din;              // Buffer for I/O vector - Inputs
-        Bank<32>      Dout;             // Buffer for I/O vector - Outputs
+        Bank<64>    Din;              // Buffer for I/O vector - Inputs
+        Bank<32>    Dout;             // Buffer for I/O vector - Outputs
 
         // Below, pin=1..32
         void        setPinMode(uint8_t pin, uint8_t mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
@@ -208,7 +205,6 @@ class M10board
         EncoderM10  *Encs;      // (syntactic sugar - defined for convenience, set = to ENCS)
         EncoderM10  *Encoders(void)             { return Encs = ENCS; }
 
-#ifndef HAS_LCD
         /// ====================================================
         /// LED Display management
         /// ====================================================
@@ -259,7 +255,7 @@ class M10board
 
 };
 
-extern M10board board;
+//extern M10board board;
 
 // overlay functions to hijack the standard direct pin access functions
 // Here, pin = 1..54(+)

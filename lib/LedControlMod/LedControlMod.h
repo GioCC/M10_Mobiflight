@@ -279,4 +279,5 @@ public:
     void DUMMYtransmit(boolean chgdonly=1);
 };
 
+constexpr uint8_t LCsize = sizeof(LedControl);
 #endif	//LedControlMod.h

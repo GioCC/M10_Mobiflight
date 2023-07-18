@@ -5,21 +5,20 @@
 
 #include "M10board.h"
 
-MCPS            _MCPIO1(0,10);
-MCPS            _MCPIO2(0,15);  // PCB v1.0
-//MCP           _MCPIO2(1,10);  // PCB v1.1
-
 // The number of physical encoders is actually defined in config_board.h;
-// however, let's reserve 6 units fornow, since they do not take up any more space anyway.
+// however, let's reserve 6 units for now, since they do not take up any more space anyway.
 #define         ENCSLOTS    6
 EncoderM10      _Encoders(ENCSLOTS);
 int             _EncCount[ENCSLOTS];
 uint8_t         _EncModes[ENCSLOTS];
 
-LedControl      _LEDCTRL1(3,2,4, 2);   //pin #s (dta, clk, cs, cnt), #units
-LedControl      _LEDCTRL2(5,2,6, 2);   //pin #s (dta, clk, cs, cnt), #units
+MCPS            _MCPIO1(0,10);
+MCPS            _MCPIO2(0,15);  // PCB v1.0
+//MCP           _MCPIO2(1,10);  // PCB v1.1
 
-LiquidCrystal   _LCDCTRL(8,2,3, 4,5,6,7);
+// LedControl      _LEDCTRL1(3,2,4, 2);   //pin #s (dta, clk, cs, cnt), #units
+// LedControl      _LEDCTRL2(5,2,6, 2);   //pin #s (dta, clk, cs, cnt), #units
+//LiquidCrystal   _LCDCTRL(8,2,3, 4,5,6,7);
 
 // -----------------------------------------------------
 
@@ -58,20 +57,26 @@ M10board::setupAnaIns(uint16_t ai)
 void
 M10board::setBoardCfg(M10board_cfg *c)
 {
+    //! TODO - WARNING: <c> is in PROGMEM! Either:
+    //  - change cfg from pointer to var (uses RAM)
+    //  - move BoardCfgs[] out of PROGMEM (uses RAM)
+    //  - assign "cfg = F(c)" rather than "cfg = c" (or whatever corrects to progmem reference)
+    
     //memcpy(&cfg, c, sizeof(M10board_cfg));
+    cfg = c;
 
     MCPIO1 = &_MCPIO1;
     _MCPIO1.begin();
     _MCPIO1.inputInvert(0xFFFF);
-    ModeIO_L(~cfg->digOutputs);
-    ModePU_L(~cfg->digOutputs);
+    setIOMode(0,~cfg->digOutputs);
+    setPUMode(0,~cfg->digOutputs);
 
     if(cfg->hasBank2) {
         MCPIO2 = &_MCPIO2;
         _MCPIO2.begin();
         _MCPIO2.inputInvert(0xFFFF);
-        ModeIO_H(~cfg->digOutputs2);
-        ModePU_H(~cfg->digOutputs2);
+        setIOMode(1,~cfg->digOutputs2);
+        setPUMode(1,~cfg->digOutputs2);
     }
 
     setupAnaIns(cfg->anaInputs);
@@ -79,14 +84,21 @@ M10board::setBoardCfg(M10board_cfg *c)
     ENCS->init(cfg->nEncoders > 8 ? 8 : cfg->nEncoders);      // Correct actual numbers of used encoders (max 8)
 
 if(cfg->hasDisplays) {
-    LEDCTRL[0] = &_LEDCTRL1;
-    LEDCTRL[1] = &_LEDCTRL2;
-    LEDCTRL[0]->setDeviceCount(cfg->nDisplays1, 1);     // also inits
-    LEDCTRL[1]->setDeviceCount(cfg->nDisplays2, 1);     // also inits
+    LedControl* base = (LedControl*)_DISP;
+
+    LEDCTRL[0] = new (base)     LedControl(1,2,4, 2); //pin #s (dta, clk, cs, cnt), #units
+    LEDCTRL[1] = new (&base[1]) LedControl(3,2,4, 2); //pin #s (dta, clk, cs, cnt), #units
+
+    LEDCTRL[0].setDeviceCount(cfg->nDisplays1, 1);     // also inits
+    LEDCTRL[1].setDeviceCount(cfg->nDisplays2, 1);     // also inits
 }
+else 
 if(cfg->hasLCD)
 {
-    //TODO: LCD init?
+    LiquidCrystal* base = (LiquidCrystal*)_DISP;
+    LCDCTRL[0] = new(base) LiquidCrystal(8,2,3, 4,5,6,7);
+
+    //TODO: LCD setup
 }
 
 
@@ -102,14 +114,14 @@ M10board::setBoardPostCfg(void)
     }
     if(cfg->hasDisplays) {
         if(cfg->nDisplays1) {
-            LEDCTRL[0]->hw_init();
-            LEDCTRL[0]->init();
-            LEDCTRL[0]->switchOn();
+            LEDCTRL[0].hw_init();
+            LEDCTRL[0].init();
+            LEDCTRL[0].switchOn();
         }
         if(cfg->nDisplays2) {
-            LEDCTRL[1]->hw_init();
-            LEDCTRL[1]->init();
-            LEDCTRL[1]->switchOn();
+            LEDCTRL[1].hw_init();
+            LEDCTRL[1].init();
+            LEDCTRL[1].switchOn();
         }
     }
     if(cfg->hasLCD) {
@@ -241,11 +253,11 @@ M10board::ScanInOut(byte mode)
     }
     /// Read Inputs
     if(mode != 2) {
-        iovec = MCPIO1->digitalRead() & IOcfgL;
+        iovec = MCPIO1->digitalRead() & IOcfg[0];
         Din.writeW(0, iovec);
 
         if(cfg->hasBank2) {
-            iovec = MCPIO2->digitalRead() & IOcfgH;
+            iovec = MCPIO2->digitalRead() & IOcfg[1];
             Din.writeW(2, iovec);
         }
 
@@ -300,14 +312,5 @@ M10board::ScanInOut(byte mode)
     }
 }
 
-/// =========================================
-///
-///  Comms functions (temporary protocol)
-///
-///  Msg format examples:
-///
-///  1234-020-030A      -> offset 0x1234; data len 02 bytes (bit #0 unused); high byte 0x03, low byte 0x0A
-///  1234-005-1         -> offset 0x1234; data len 0 bytes => 1 bit; bit position #5; bit value 1
-///  1234-05S-ABcde     -> offset 0x1234; data len 5 chars (bit #S => string); string = "ABcde"
 
 //END M10board.cpp

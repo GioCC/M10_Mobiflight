@@ -1,4 +1,4 @@
-M10_Mobiflight - 2023-02
+M10_Mobiflight - 2023-07
 
 Draft: handling of M10Board objects
 ===================================
@@ -7,19 +7,15 @@ MF config:
 - hardwired in the manager board, not changeable
 
 Board class:
-- #ifdef BANK2 -> if(hasBank2)
-- Try to collate code for BANK1/BANK2. E.g.: 
-  ModeL(byte pin, byte mode) 
-    -> Mode(byte bank, byte pin, byte mode) (pin=0..15)
-    or Mode(byte pin, byte mode) (pin=0..31)
-  M10Board::IOcfgL/IOcfgH 
-    -> M10Board::IOcfg[2]
-
 - ADD: inject CB for Input events (static methods) (DI, Encoders)
-
+- Check LCDCTRL delayed init
+- Change _MCPIO1/_MCPIO2 to MCPIO[]; (construction with placement new like LED/LCD?)
 
 Board config data:
-- try to not keep copy in RAM for every board (maybe just 1 buffer object in RAM used during setup, shared)
+- ADD PIN ASSIGNMENT / (addresses) FOR LED/LCD/MCPIO TO CONFIG! (different for each board!!!)
+- try to not keep copy in RAM for every board (maybe just 1 buffer object in RAM used during setup, shared).
+  See TODO about PROGMEM reference
+- Check specification of correct size for _DISP[]
 
 Board config methods:
 - Used practically only by the setBoardCfg() function
@@ -38,8 +34,3 @@ LED displays:
 
 LCD displays:
 - messages forwarded almost without change, except possibly internal business logic
-
-Dataref comm functions:
-- Unused, remove (managed centrally).
-  If more complex features are required (ie more than simple forwarding of peripheral driver cmds), replace message parsing methods with custom methods for the specific features.
- 

@@ -4,7 +4,7 @@
 // Board peripheral set compile-time configuration
 //
 // This file is used by config_board.c as a template to build initialization lines
-// for the Boards[] array
+// for the BoardCfgs[] array
 
 // NO INCLUDE GUARDS - this file is meant to be included repeatedly in place!
 {

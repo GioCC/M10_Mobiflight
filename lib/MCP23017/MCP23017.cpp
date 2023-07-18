@@ -10,25 +10,26 @@
 
 #include "MCP23017.h"            // Header files for this class
 
-// Here we have things for the I2C bus configuration
-
-// ....
-
 // Constructor to instantiate an instance of MCP to a specific chip (address)
 
 MCP0::MCP0(uint8_t hwaddress)
-: MCP(hwaddress)
+: MCP(hwaddress), _ibuf{0}
 {
     _hwaddress = 0x40+((hwaddress<<1)&0x0E);
-    init();
+    //init();
 }
 
 void
 MCP0::init(void)
 {
-    MCP::init();
+    begin();
 }
 
+void
+MCP0::begin()
+{
+    MCP::init();
+}
 
 char
 MCP0::_read(char regaddr)
@@ -71,11 +72,5 @@ MCP0::_writeW(char regaddr, unsigned int data)
 	Wire.write((char)(data&0xFF));
 	Wire.write((char)((data>>8)&0xFF));
     Wire.endTransmission();
-}
-
-void
-MCP0::begin()
-{
-    // ...
 }
 

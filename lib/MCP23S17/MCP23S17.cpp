@@ -15,20 +15,42 @@
 // Control byte and configuration register information - Control Byte: "0100 A2 A1 A0 R/W" -- W=0
 #define    ADDR_ENABLE   (0b00001000)  // Configuration register for MCP23S17, the only thing we change is enabling hardware addressing
 
-// Constructor to instantiate an instance of MCP to a specific chip (address)
-MCPS::MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin)
-: MCP(hwaddress), _ss(nCs_pin), _rst(nReset_pin),
-  _SPIset(1000000, MSBFIRST, SPI_MODE0)
 
+
+// Constructor to instantiate an instance of MCP to a specific chip (address)
+// Requires init() (or begin()) to be called later
+MCPS::MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin)
+: MCP(hwaddress), _ss(nCs_pin), _rst(nReset_pin), _address(0)
 {
     _make_opcode(hwaddress);
-    init();
+    //init();
+}
+
+// Constructor for delayed setup
+// ONLY STORES VALUES, does not setup pins or activate peripherals yet
+// Requires config(), then init() (or begin()) to be called later
+MCPS::MCPS(uint8_t hwaddress) 
+: MCP(hwaddress), _rst(0xFF), _ss(0xFF), _address(0)
+{
+    _make_opcode(hwaddress);
+}
+
+// Constructor to instantiate an instance of MCP to a specific chip (address)
+// ONLY STORES VALUES, does not setup pins or activate peripherals yet
+void MCPS::config(uint8_t nCs_pin, uint8_t nReset_pin)
+{
+    _ss  = nCs_pin; 
+    _rst = nReset_pin;
 }
 
 void
 MCPS::init(void)
 {
-    MCP::init();
+    begin();
+}
+
+void
+MCPS::begin() {
     ::pinMode(_ss, OUTPUT);               // Set SlaveSelect pin as an output
     ::digitalWrite(_ss, HIGH);           // Set SlaveSelect HIGH (chip de-selected)
     SPI.begin();                          // Start up the SPI bus
@@ -36,6 +58,8 @@ MCPS::init(void)
     //SPI.setBitOrder(MSBFIRST);          // Sets SPI bus bit order (this is the default, setting it for good form!)
     //SPI.setDataMode(SPI_MODE0);         // Sets the SPI bus timing mode (this is the default, setting it for good form!)
     byteWrite(MCP_IOCON, ADDR_ENABLE);
+    // Once the channel is set up, we can initialize che component:
+    MCP::init();
 }
 
 void
@@ -99,8 +123,4 @@ MCPS::_writeW(char regaddr, unsigned int data)
     SPI.endTransaction();
 }
 
-void
-MCPS::begin() {
-    //nothing to to
-}
 

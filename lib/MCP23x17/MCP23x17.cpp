@@ -34,7 +34,7 @@
 MCP::MCP(uint8_t hwaddress)
 {
     UNUSED(hwaddress);
-    // init(); // Init must be performed by derived classes - tx must already be setup
+    // init(); // Init must be performed by derived classes - tx must already be setup!
 }
 
 void

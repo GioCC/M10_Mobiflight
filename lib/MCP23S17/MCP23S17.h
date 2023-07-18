@@ -19,16 +19,18 @@ class MCPS :
 public MCP
 {
   public:
-    MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin=0);
-    virtual void init(void);
-    virtual void begin();
+    explicit MCPS(uint8_t hwaddress);
+             MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin=0);
+             void config(uint8_t nCs_pin, uint8_t nReset_pin);
+    virtual  void init(void);
+    virtual  void begin(void);
 
   private:
 
     uint8_t     _address;   // Address of the MCP23S17 in use
 	uint8_t     _ss;        // Slave-select pin
 	uint8_t     _rst;       // Reset pin
-    SPISettings _SPIset;
+    const SPISettings _SPIset = { 1000000, MSBFIRST, SPI_MODE0 }; // will be passed at each SPI transaction begin
 
     // HW address info
     uint8_t      _writeopcode;

@@ -69,7 +69,7 @@ void setup() {
     // Board base configuration
     board.setBoardCfg((M10board_cfg *)&BOARD_CFG);
     // Custom app config
-    board_init();
+    //board.init();
     // Board configuration adjustments after custom cfg
     board.setBoardPostCfg();
 

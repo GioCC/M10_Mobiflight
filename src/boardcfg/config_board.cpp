@@ -34,7 +34,7 @@ constexpr uint8_t MaxBoards = 12;
 #define HAS_BANK2 (defined(BANK2))
 
 const
-M10board_cfg Boards[MaxBoards] PROGMEM = {
+M10board_cfg BoardCfgs[MaxBoards] PROGMEM = {
 
 #include "config_board-undef.inc"
 #include "config_board-01_Radio.h"
