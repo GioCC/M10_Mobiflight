@@ -41,9 +41,10 @@ class debouncer
 
 public:
 
-    debouncer()                 {debounceTime = DEBTIME_MS;}
+    debouncer(): debounceTime(DEBTIME_MS), TlastChange(0), lastValid((T)0) {}
 
-    debouncer(uint8_t dbtime)   {debounceTime = dbtime;}
+    explicit 
+    debouncer(uint8_t dbtime): debounceTime(dbtime), TlastChange(0), lastValid((T)0) {}
 
     T update(T value)           { return (value);}
     T holder(T value);
@@ -66,5 +67,8 @@ private:
     //uint8_t         pressFlag;
 
 };
+
+// Template implementation
+#include "debouncer.hpp"
 
 #endif // DEBOUNCER_H

@@ -1,5 +1,5 @@
 /*
-* File     : debouncer.cpp
+* File     : debouncer.hpp
 * Version  : 1.0
 * Released : 20/08/2017
 * Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
@@ -9,7 +9,10 @@
 *
 */
 
+// Bogus include to satisfy IDE syntax parser
+#ifndef DEBOUNCER_H
 #include "debouncer.h"
+#endif
 
 template <class T>
 T debouncer<T>::holder(T newi)
