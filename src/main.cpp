@@ -61,12 +61,10 @@ char *counter2buf(byte cntno) {
 void setup() {
 
     //BoardNumber 1;
-    board.ModeIO_L(0xFFFF);            // All inputs
-    board.ModePU_L(0xFFFF);            // Pull-ups on all inputs
-#ifdef BANK2
-    board.ModeIO_H(0xFFFF);            // All inputs
-    board.ModePU_H(0xFFFF);            // Pull-ups on all inputs
-#endif
+    board.setIOMode(0,0xFFFF);            // All inputs
+    board.setPUMode(0,0xFFFF);            // Pull-ups on all inputs
+    board.setIOMode(1,0xFFFF);            // All inputs
+    board.setPUMode(1,0xFFFF);            // Pull-ups on all inputs
 
     // Board base configuration
     board.setBoardCfg((M10board_cfg *)&BOARD_CFG);

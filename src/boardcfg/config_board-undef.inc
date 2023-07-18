@@ -36,7 +36,6 @@
 #undef BOARDTYPE
 
 #undef BANK2        // <<< Only required if the board has 2nd bank
-#undef HAS_LCD      // <<< Only required if the board has an LCD
 
 // Number of control elements and input datarefs:
 // Buttons/switches/digital inputs
@@ -60,39 +59,13 @@
 #undef ANA_INPUTS
 #undef N_ENCODERS
 #undef N_VIRT_ENCODERS
+
+// Only required if the board has displays:
 #undef N_DISPLAYS1
 #undef N_DISPLAYS2
 
-// LED Viewport definitions:
-// Channel, start_digit, len
-// "Channel" is each sequence of MAX drivers (0..1).
-// Within each channel, digit numbering goes from left to right:
-// 1 (first MAX, leftmost digit) through 8 (first MAX, rightmost digit), and
-// 9 (2nd MAX, leftmost digit) to 16 (2nd MAX, rightmost digit) (and so on)
-// 
-// LCD Viewport definitions:
-// Row, Column, len  (R/C index 0-based)
-// 
-// Example:
-// #define VIEWPORT1  {1, 3, 5}
-
-#undef VIEWPORT1
-#undef VIEWPORT2
-#undef VIEWPORT3
-#undef VIEWPORT4
-#undef VIEWPORT5
-#undef VIEWPORT6
-
-// >>> All #defines below are only required if the board has an LCD:
-
+// Only required if the board has an LCD:
 #undef LCD_COLS
 #undef LCD_LINES
-
-#undef VIEWPORT7
-#undef VIEWPORT8
-#undef VIEWPORT9
-#undef VIEWPORT10
-#undef VIEWPORT11
-#undef VIEWPORT12
 
 // end

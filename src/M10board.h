@@ -19,46 +19,20 @@
 
 #include "bitmasks.h"
 #include "bank.h"
-#include "varStore.h"
+//#include "varStore.h"
 #include "FastArduino.h"
 #include "MCP23S17.h"
 #include "EncoderM10.h"
 #include "conversions.h"
-//#include "SerLink.h"    // Temporarily using the USB-only variant, so no parameters
-#include "SerLink.h"
-
 #include "ButtonManager.h"
 #include "EncManager.h"
-#include "CmdEventManager.h"
 
-#ifndef HAS_LCD
 #include "LedControlMod.h"
-// #include "LEDface.h"
-#else
 #include "LiquidCrystal.h"
-// #include "LCDface.h"
-#endif
 
 #define UNUSED(x) ((void)(x))
 
-// Basic data defining a display viewport
-// A d.v. is a range of a display that constitutes an independent piece of information
-typedef union
-{
-    struct {
-      byte disp;    // Physical display #
-      byte start;   // Start digit (1=leftmost, 8=rightmost)
-      byte len;     // Viewport len (no. of digits)
-    } led;
-    struct {
-      byte startr;    // Physical display #
-      byte startc;   // Start digit (1=leftmost, 8=rightmost)
-      byte len;     // Viewport len (no. of digits)
-    } lcd;
-} t_viewport;
-
 // Struct used for HW config of the board
-//
 // This struct is used to define an actual config instances as constants in config_board.h
 
 typedef struct //M10board_cfg
@@ -68,6 +42,7 @@ typedef struct //M10board_cfg
     uint16_t    digInputs;      // Map of digital inputs (1=input) for MCP on main board
     uint16_t    digOutputs;     // Map of digital outputs (1=output) for MCP on main board
     
+    bool        hasBank2;
     // following are used only for those panels having a second extension board (currently only Autopilot, LED or LCD)
     uint16_t    digInputs2;     // Map of digital inputs (1=input) for MCP on second board
     uint16_t    digOutputs2;    // Map of digital outputs (1=output) for MCP on second board
@@ -80,6 +55,8 @@ typedef struct //M10board_cfg
     uint8_t     nEncoders;
     // Number of virtual (logical) encoders
     uint8_t     nVirtEncoders;
+    bool        hasDisplays;
+    bool        hasLCD;
 
     union {
         struct {
@@ -93,8 +70,6 @@ typedef struct //M10board_cfg
             uint8_t     LCDLines;
         }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
     };
-    t_viewport  viewport[12];       // Up to 12 defined display viewports (unused positions have disp=0)
-//#endif
 } M10board_cfg;
 
 extern const uint8_t        MaxBoards;
@@ -104,33 +79,25 @@ class M10board
 {
     private:
 
-        M10board_cfg    cfg;
+        M10board_cfg*    cfg;
 
-        MCP             *MCPIO1;
-#ifdef BANK2
-        MCP             *MCPIO2;
-#endif
-#ifndef HAS_LCD
-        LedControl      *LEDCTRL[2];
-        //LEDface         *LEDD[6];
-#else
-        LiquidCrystal   *LCDCTRL;
-        // LCDface         *LCDD[12];
-#endif
-        EncoderM10      *ENCS;
-        EncoderM10      *VENCS;
+        MCP*             MCPIO1;
+        MCP*             MCPIO2;
+
+        EncoderM10*      ENCS;
+        EncoderM10*      VENCS;
+
+        LedControl*      LEDCTRL[2];
+        LiquidCrystal*   LCDCTRL;
 
         // Internal data storage:
 
         // These are public:
         //Bank<48>      Din;       (defined below) Buffer for I/O vector - Inputs
         //Bank<32>      Dout;      (defined below) Buffer for I/O vector - Outputs
-        uint16_t        IOcfgL;             // In (1) or Out (0)
-        uint16_t        IOpullupL;          // On (1) or Off (0)
-#ifdef BANK2
-        uint16_t        IOcfgH;             // In (1) or Out (0)
-        uint16_t        IOpullupH;          // On (1) or Off (0)
-#endif
+        uint16_t        IOcfg[2];           // In (1) or Out (0)
+        uint16_t        IOpullup[2];        // On (1) or Off (0)
+
         uint8_t         *AINS;              // Array of used analog inputs
         uint8_t         nAINS;              // Number of used analog inputs
 
@@ -152,15 +119,17 @@ class M10board
         void        setBoardCfg(M10board_cfg *cfg);
         void        setBoardPostCfg(void);
 
-        // In all these functions (whether bank1 or bank2), pin = 1..16
-        void        ModeL(byte pin, byte mode);   // Mode: INPUT, INPUT_PULLUP, OUTPUT
-        void        ModeIO_L(uint16_t IOmode)      { MCPIO1->pinMode(IOcfgL = IOmode); }            // Mode 0 = Out, 1 = In
-        void        ModePU_L(uint16_t PUmode)      { MCPIO1->pullupMode(IOpullupL = PUmode); }      // PullUp: 1 = On
-#ifdef BANK2
-        void        ModeH(byte pin, byte mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
-        void        ModeIO_H(uint16_t IOmode)     { MCPIO2->pinMode(IOcfgH = IOmode); }           // Mode 0 = Out, 1 = In
-        void        ModePU_H(uint16_t PUmode)     { MCPIO2->pullupMode(IOpullupH = PUmode); }     // PullUp: 1 = On
-#endif
+        // In these functions (whether bank1 or bank2), pin = 1..16
+        // void        ModeL(byte pin, byte mode);   // Mode: INPUT, INPUT_PULLUP, OUTPUT
+        // void        ModeIO_L(uint16_t IOmode)      { MCPIO1->pinMode(IOcfgL = IOmode); }            // Mode 0 = Out, 1 = In
+        // void        ModePU_L(uint16_t PUmode)      { MCPIO1->pullupMode(IOpullupL = PUmode); }      // PullUp: 1 = On
+        
+        // void        ModeH(byte pin, byte mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
+        // void        ModeIO_H(uint16_t IOmode)     { if(board.cfg->hasBank2) MCPIO2->pinMode(IOcfgH = IOmode); }           // Mode 0 = Out, 1 = In
+        // void        ModePU_H(uint16_t PUmode)     { if(board.cfg->hasBank2) MCPIO2->pullupMode(IOpullupH = PUmode); }     // PullUp: 1 = On
+
+        void        setIOMode(uint8_t bank, uint16_t IOmode);   // Mode 0 = Out, 1 = In
+        void        setPUMode(uint8_t bank, uint16_t PUmode);   // PullUp: 1 = On
 
         /// ====================================================
         /// Digital I/O management
@@ -173,18 +142,13 @@ class M10board
         Bank<32>      Dout;             // Buffer for I/O vector - Outputs
 
         // Below, pin=1..32
-        void        pinMode(uint8_t pin, uint8_t mode);
+        void        setPinMode(uint8_t pin, uint8_t mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
         void        digitalWrite(uint8_t pin, uint8_t val);
         int         digitalRead(uint8_t pin);
 
         // FOR DEBUG ONLY (no boundary checks)
-#ifndef BANK2
-        uint16_t    getIns(byte bank=1) {return MCPIO1->digitalRead(); }
-        void        setOuts(uint16_t ov, byte bank=1) { MCPIO1->digitalWrite(ov); } // Pins configured as input are ignored on write
-#else
-        uint16_t    getIns(byte bank=1) {return (bank==1 ? MCPIO1->digitalRead() : MCPIO2->digitalRead()); }
-        void        setOuts(uint16_t ov, byte bank=1) { (bank==1 ? MCPIO1->digitalWrite(ov) : MCPIO2->digitalWrite(ov)); }
-#endif // BANK2
+        uint16_t    getIns(byte bank=0) {return (bank==0 ? MCPIO1->digitalRead() : MCPIO2->digitalRead()); }
+        void        setOuts(uint16_t ov, byte bank=0) { (bank==0 ? MCPIO1->digitalWrite(ov) : MCPIO2->digitalWrite(ov)); }
 
         /// ====================================================
         /// Analog I/O management
@@ -249,68 +213,50 @@ class M10board
         /// LED Display management
         /// ====================================================
         ///
-        // Display index is 1..4:
-        // 1,2 are the first and second chained display (controllers) on the first port
-        // 3,4 same on the second port
 
-#define D_LINE  (LEDCTRL[((didx-1)>>1)&0x01])
-#define D_UNIT  ((didx-1)&0x01)
-
-        // **********
-        // *** Mode 1 - Access through LedControl
-        // **********
         // n is 0..1
-        LedControl  *Display(byte n)    { return LEDCTRL[n&0x01]; }      // return display ref, read-only
+        LedControl  *getDisplay(byte n)    { return LEDCTRL[n&0x01]; }
 
-        // Wrappers for LedControl functions
-        // Channel is 1..2
-        void setDeviceCount(byte chan, byte nUnits, byte init=1)        { LEDCTRL[((chan-1)&0x01)]->setDeviceCount(nUnits, init); }
-        byte getDeviceCount(byte chan)                                  { return LEDCTRL[((chan-1)&0x01)]->getDeviceCount(); }
+// ALL FOLLOWING DEFINITIONS ARE WRAPPERS:
+// few of them are actually used, therefore we better use direct calls to LedControl objects
 
-        // Setup functions
-        // Display index (didx) is 1..4
+//         // Wrappers for LedControl functions
+//         // Display index is 1..4:
+//         // 1,2 are the first and second chained display (controllers) on the first port
+//         // 3,4 same on the second port
+//         // Channel is 1..2
+// #define D_LINE  (LEDCTRL[((didx-1)>>1)&0x01])
+// #define D_UNIT  ((didx-1)&0x01)
+// 
+//         void setDeviceCount(byte chan, byte nUnits, byte init=1)        { LEDCTRL[((chan-1)&0x01)]->setDeviceCount(nUnits, init); }
+//         byte getDeviceCount(byte chan)                                  { return LEDCTRL[((chan-1)&0x01)]->getDeviceCount(); }
+// 
+//         // Setup functions
+//         // Display index (didx) is 1..4
+// 
+//         // An ordinary setup sequence would be:
+//         // setDeviceCount(...)      // Define how phys displays are allocated on channels
+//         // dispWidth(...)           // Define the width of each display (if required - normally not, if viewports are used)
+//         // dispInit(...)            // Init each display (or all)
+//         void dispWidth(byte didx, byte width)                           {D_LINE->setScanLimit(D_UNIT,width);}
+//         void dispInit(byte didx)                                        {D_LINE->init(D_UNIT);}
+// 
+//         // Following are provided if required (for decouplement from underlying LedControl)
+//         void dispShutdown(byte didx, bool status)                       {D_LINE->shutdown(D_UNIT,status);}
+//         void dispIntensity(byte didx, byte intensity)                   {D_LINE->setIntensity(D_UNIT,intensity);}
+//         void dispClear(byte didx)                                       {D_LINE->clearDisplay(D_UNIT);}
+// 
+//         void dispSetLed(byte didx, byte row, byte col, boolean state)   {D_LINE->setLed(D_UNIT, row, col, state);}
+//         void dispSetRow(byte didx, byte row, byte value)                {D_LINE->setRow(D_UNIT, row, value);}
+//         void dispSetColumn(byte didx, byte col, byte value)             {D_LINE->setColumn(D_UNIT, col, value);}
+//         void dispSetDigit(byte didx, byte digit, byte value, boolean dp, boolean no_tx=1)   {D_LINE->setDigit(D_UNIT, digit, value, dp, no_tx);}
+//         void dispSetChar(byte didx, byte digit, char value, boolean dp, boolean no_tx=1)    {D_LINE->setChar(D_UNIT, digit, value, dp, no_tx);}
+//         void dispWriteDigit(byte didx, byte *vals, byte dpmask, boolean no_tx=1)            {D_LINE->setAllDigits(D_UNIT, vals, dpmask, no_tx);}
+//         void dispWrite(byte didx, byte *vals, byte dpmask, boolean no_tx=1)                 {D_LINE->setAllChars(D_UNIT, vals, dpmask, no_tx);}
+//         void dispTransmit(boolean chgdonly=1)                           {LEDCTRL[0]->transmit(chgdonly); if(LEDCTRL[1]) LEDCTRL[1]->transmit(chgdonly); }
 
-        // An ordinary setup sequence would be:
-        // setDeviceCount(...)      // Define how phys displays are allocated on channels
-        // dispWidth(...)           // Define the width of each display (if required - normally not, if viewports are used)
-        // dispInit(...)            // Init each display (or all)
+// TODO: LCD management
 
-        void dispWidth(byte didx, byte width)                           {D_LINE->setScanLimit(D_UNIT,width);}
-        void dispInit(byte didx)                                        {D_LINE->init(D_UNIT);}
-
-        // Following are provided if required (for decouplement from underlying LedControl)
-        void dispShutdown(byte didx, bool status)                       {D_LINE->shutdown(D_UNIT,status);}
-        void dispIntensity(byte didx, byte intensity)                   {D_LINE->setIntensity(D_UNIT,intensity);}
-        void dispClear(byte didx)                                       {D_LINE->clearDisplay(D_UNIT);}
-
-        void dispSetLed(byte didx, byte row, byte col, boolean state)   {D_LINE->setLed(D_UNIT, row, col, state);}
-        void dispSetRow(byte didx, byte row, byte value)                {D_LINE->setRow(D_UNIT, row, value);}
-        void dispSetColumn(byte didx, byte col, byte value)             {D_LINE->setColumn(D_UNIT, col, value);}
-        void dispSetDigit(byte didx, byte digit, byte value, boolean dp, boolean no_tx=1)   {D_LINE->setDigit(D_UNIT, digit, value, dp, no_tx);}
-        void dispSetChar(byte didx, byte digit, char value, boolean dp, boolean no_tx=1)    {D_LINE->setChar(D_UNIT, digit, value, dp, no_tx);}
-        void dispWriteDigit(byte didx, byte *vals, byte dpmask, boolean no_tx=1)            {D_LINE->setAllDigits(D_UNIT, vals, dpmask, no_tx);}
-        void dispWrite(byte didx, byte *vals, byte dpmask, boolean no_tx=1)                 {D_LINE->setAllChars(D_UNIT, vals, dpmask, no_tx);}
-        void dispTransmit(boolean chgdonly=1)                           {LEDCTRL[0]->transmit(chgdonly); if(LEDCTRL[1]) LEDCTRL[1]->transmit(chgdonly); }
-
-        // **********
-        // *** Mode 2 - Access through Viewport (LEDface)
-        // **********
-
-        // Viewport is 1..N
-        // LEDface  *Viewport(byte n)   { return LEDD[(n>6||n==0 ? 0 : n-1)]; }      // return LEDface ref, read-only
-#endif
-
-#ifdef HAS_LCD
-        /// ====================================================
-        /// LCD Display management
-        /// ====================================================
-        ///
-        // *** 1 - Access through LiquidCrystal
-
-        // *** 2 - Access through Viewport (LCDface)
-
-        // ...TODO
-#endif
 };
 
 extern M10board board;

@@ -13,7 +13,7 @@
 
 #define BOARDTYPE   M10_04_AP
 
-#define BANK2
+#define BANK2           1
 
 #define MAXBUTTONS 20
 #define MAXENCS 8
@@ -27,15 +27,11 @@
 #define ANA_INPUTS      pat(B00000000,B00000000)
 #define N_ENCODERS      5
 #define N_VIRT_ENCODERS 0
+
 #define N_DISPLAYS1     2
 #define N_DISPLAYS2     1
 
-#define VIEWPORT1       {0,0,0}
-#define VIEWPORT2       {0,0,0}
-#define VIEWPORT3       {0,0,0}
-#define VIEWPORT4       {0,0,0}
-#define VIEWPORT5       {0,0,0}
-#define VIEWPORT6       {0,0,0}
+#define N_LCD           0
 
 // ==================================================
 //  Constants specific to the board

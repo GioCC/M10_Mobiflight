@@ -29,42 +29,58 @@ enum {
 
 constexpr uint8_t MaxBoards = 12;
 
+#define HAS_DISPLAYS ((N_DISPLAYS1+N_DISPLAYS2)!=0)
+#define HAS_LCD (N_LCD!=0)
+#define HAS_BANK2 (defined(BANK2))
+
 const
 M10board_cfg Boards[MaxBoards] PROGMEM = {
 
+#include "config_board-undef.inc"
 #include "config_board-01_Radio.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-01_Radio.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-02_ADF_DME.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-03_XPDR_OBS_CLK.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-04_AP.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-09_EFIS.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-05_Radio_LCD.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-06_Multi_LCD.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-07_AP_LCD.h"
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-08_Kbd.h"    // AP
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-08_Kbd.h"    // Radio (Audio)
 #include "config_board-board.inc"
 
+#include "config_board-undef.inc"
 #include "config_board-08_Kbd.h"    // Aux
 #include "config_board-board.inc"
 

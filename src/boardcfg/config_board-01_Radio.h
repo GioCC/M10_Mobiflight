@@ -27,13 +27,13 @@
 #define N_VIRT_ENCODERS 4
 #define N_DISPLAYS1     2
 #define N_DISPLAYS2     2
+#define N_LCD           0
 
-#define VIEWPORT1       {1,3, 5} //6}
-#define VIEWPORT2       {1,11,5} //6}
-#define VIEWPORT3       {2,3, 5} //6}
-#define VIEWPORT4       {2,11,5} //6}
-#define VIEWPORT5       {0,0,0}
-#define VIEWPORT6       {0,0,0}
+// Reminder for MF config:
+// #define VIEWPORT1       {1,3, 5} //6}
+// #define VIEWPORT2       {1,11,5} //6}
+// #define VIEWPORT3       {2,3, 5} //6}
+// #define VIEWPORT4       {2,11,5} //6}
 
 // ==================================================
 //  Constants specific to the board

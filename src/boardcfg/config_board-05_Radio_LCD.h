@@ -13,8 +13,6 @@
 
 #define BOARDTYPE   M10_05_Radio_LCD
 
-#define HAS_LCD
-
 #define MAXBUTTONS 10
 #define MAXENCS 8
 // #define MAXCMDEVENTS 30
@@ -27,21 +25,11 @@
 #define ANA_INPUTS      pat(B00000000,B00000000)
 #define N_ENCODERS      1
 #define N_VIRT_ENCODERS 4
+#define N_DISPLAYS1     0
+#define N_DISPLAYS2     0
+#define N_LCD           1
 #define LCD_COLS        16  
 #define LCD_LINES       2
-
-#define VIEWPORT1       {0,0,0}
-#define VIEWPORT2       {0,0,0}
-#define VIEWPORT3       {0,0,0}
-#define VIEWPORT4       {0,0,0}
-#define VIEWPORT5       {0,0,0}
-#define VIEWPORT6       {0,0,0}
-#define VIEWPORT7       {0,0,0}
-#define VIEWPORT8       {0,0,0}
-#define VIEWPORT9       {0,0,0}
-#define VIEWPORT10      {0,0,0}
-#define VIEWPORT11      {0,0,0}
-#define VIEWPORT12      {0,0,0}
 
 // ==================================================
 //  Constants specific to the board
