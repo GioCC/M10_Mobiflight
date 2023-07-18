@@ -19,7 +19,7 @@ namespace Output {
 
 namespace LedSegment
 {
-    void OnInitModule()
+    void OnInit()
     {
         int module     = cmdMessenger.readInt16Arg();
         int subModule  = cmdMessenger.readInt16Arg();
@@ -28,7 +28,7 @@ namespace LedSegment
         //ledSegments[module]->setBrightness(subModule, brightness);
     }
 
-    void OnSetModule()
+    void OnSet()
     {
         int     module    = cmdMessenger.readInt16Arg();
         int     subModule = cmdMessenger.readInt16Arg();
@@ -41,7 +41,7 @@ namespace LedSegment
         //void display(byte module, char *string, byte points, byte mask, bool convertPoints = false);
     }
 
-    void OnSetModuleBrightness()
+    void OnSetBrightness()
     {
         int module     = cmdMessenger.readInt16Arg();
         int subModule  = cmdMessenger.readInt16Arg();

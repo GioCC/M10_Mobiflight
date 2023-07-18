@@ -35,9 +35,9 @@ void attachCommandCallbacks()
     // cmdMessenger.attach(kSetShiftRegisterPins, OutputShifter::OnSet);
     
     // Display
-    // cmdMessenger.attach(kInitModule, LedSegment::OnInitModule);
-    // cmdMessenger.attach(kSetModule, LedSegment::OnSetModule);
-    // cmdMessenger.attach(kSetModuleBrightness, LedSegment::OnSetModuleBrightness);
+    // cmdMessenger.attach(kInitModule, LedSegment::OnInit);
+    // cmdMessenger.attach(kSetModule, LedSegment::OnSet);
+    // cmdMessenger.attach(kSetModuleBrightness, LedSegment::OnSetBrightness);
 
     // LCD
     // cmdMessenger.attach(kSetLcdDisplayI2C, LCDDisplay::OnSet);
