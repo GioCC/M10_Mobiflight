@@ -106,10 +106,6 @@ class M10board
 
         M10board_cfg    cfg;
 
-        // Links to global objects:
-
-        SerLink       *IOL;
-
         MCP             *MCPIO1;
 #ifdef BANK2
         MCP             *MCPIO2;
@@ -138,8 +134,6 @@ class M10board
         uint8_t         *AINS;              // Array of used analog inputs
         uint8_t         nAINS;              // Number of used analog inputs
 
-        char *          msghdr(uint16_t offset, uint8_t len, uint8_t bit);
-
     public:
         //varStore<32>    vars;             // ENABLE IF REQUIRED
 
@@ -150,7 +144,6 @@ class M10board
         /// ====================================================
 
         void        ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
-        void        ScanComms(void);
 
         /// ====================================================
         /// Config functions
@@ -318,25 +311,14 @@ class M10board
 
         // ...TODO
 #endif
-        /// ====================================================
-        /// Prototypes for Dataref comm functions
-        /// ====================================================
-        
-        uint16_t    *request(uint16_t offset);  // TBD
-        byte        incoming(void)  { return IOL->incomingMsg(); }
-        char        *fetch(void)    { return IOL->fetchMsg(); }
-
-        char        *outBuf(void)   { return IOL->outBuf(); }
-        void        send(uint16_t offset, uint8_t lenChars, byte *value);
-        void        send(uint16_t offset, uint8_t lenBytes, uint8_t bit, uint16_t value);
 };
 
 extern M10board board;
 
 // overlay functions to hijack the standard direct pin access functions
 // Here, pin = 1..54(+)
-void xpinMode(uint8_t pin, uint8_t mode);
-void xdigitalWrite(uint8_t pin, uint8_t val);
-int  xdigitalRead(uint8_t pin);
+// void xpinMode(uint8_t pin, uint8_t mode);
+// void xdigitalWrite(uint8_t pin, uint8_t val);
+// int  xdigitalRead(uint8_t pin);
 
 #endif // M10BOARD_H
