@@ -21,7 +21,7 @@
 #include "bank.h"
 #include "FastArduino.h"
 #include "MCP23S17.h"
-#include "EncoderM10.h"
+#include "EncoderSet.h"
 #include "conversions.h"
 #include "ButtonManager.h"
 #include "EncManager.h"
@@ -29,6 +29,7 @@
 #include "LedControlMod.h"
 #include "LiquidCrystal.h"
 
+#define   ENCSLOTS    6     // TODO REDUCE AS POSSIBLE
 constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
 
 #define UNUSED(x) ((void)(x))
@@ -85,8 +86,17 @@ class M10board
         MCP*             MCPIO1;
         MCP*             MCPIO2;
 
-        EncoderM10*      ENCS;
-        EncoderM10*      VENCS;
+        // The actual number of physical encoders is defined in config_board.h.
+        // Reserved space is #defined in EncoderSet.h and in #define ENCSLOTS above.
+        //TODO: if the AP module can be split, the max number of encoder reserved (common to all boards) can be decreased from 5 to 3
+        EncoderSet       Encs;
+        int              EncCount[ENCSLOTS];
+        uint8_t          EncModes[ENCSLOTS];
+        byte             EncMap[3];         // Actual encoder mappings; handles only up to 3 source encoders to spare memory
+
+        uint32_t         realEncInputs;     // Input vector directly read for encoders
+        uint32_t         virtEncInputs;     // Input vector formed for virtual encoders
+        //uint16_t       encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
 
         uint8_t          _DISP[LCsize*2];   //! TODO: use MAX(LCsize *2, LCDsize)
 
@@ -178,32 +188,25 @@ class M10board
         /// - read the I/O vectors (physical I/O lines) of the physical encoders
         /// - call the 'mirrorEncoder(...)', with the proper matching parameters active at the time
         /// - just go on transparently with normal encoder processing. The virtual encoder lines are found
-        ///   either in vector 'virtualEncs', or as normal read from inputs 33..56 (where 'virtualEncs' is
+        ///   either in vector 'virtEncInputs', or as normal read from inputs 33..56 (where 'virtEncInputs' is
         ///   automatically mirrored to by mirrorEncoder if 'toHighInputs' == true) just as they were normal physical inputs.
         /// If required, the original encoders' physical inputs are still accessible as they were before, without any alteration.
-        /// Warning: mirrorEncoder(..) can handle 10 units, however, class M10Encoder (which is used to manage it) only
-        /// handles up to 8!
-
+        /// Warning: mirrorEncoder(..) can handle 10 units, however, class M10Encoder (which is used to manage it) might 
+        /// handle less (default is usually 8)!
+        // 
         // Use encoder mirror to "split" a single encoder to different virtual encoders mapped to virtual inputs 33..62(+)
         // FromPos = 1..6 (in base vector)
         // ToPos = 1..10 (in virtual vector)
         // clean = if TRUE, all inputs of encoders different from the one written are set to 0
         // (makes sense only for encoders that have A=B=0 at detents).
 
-        uint32_t    realEncs;       // start
-        uint32_t    virtualEncs;
         void        mirrorEncoder(byte fromPos, byte toPos, byte clean = 1, byte toHighInputs = 1);
 
-        //uint16_t    encSwitches;      // Switches are read directly from I/O lines, not through M10Encoder
-
         // Convenience utility function - define actual encoder mappings
-        // Handles only up to 2 source encoders to spare memory
-        byte        encMap[2];
         void        remapEncoder(byte fromPos, byte toPos);
 
         // For custom processing, an encoder object made available (based on the digital input vector),
-        EncoderM10  *Encs;      // (syntactic sugar - defined for convenience, set = to ENCS)
-        EncoderM10  *Encoders(void)             { return Encs = ENCS; }
+        EncoderSet  *Encoders(void)       { return &Encs; }
 
         /// ====================================================
         /// LED Display management

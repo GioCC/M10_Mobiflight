@@ -1,5 +1,5 @@
 /********************************************************************
-*    EncoderM10.h - A library for controlling a bank of encoders
+*    EncoderSet.h - A library for controlling a bank of encoders
 *    on an M10-series card
 *    Derived from EncBank class
 *
@@ -46,7 +46,7 @@
 /// of encoders (16 or even 32), by changing most of byte vars (and some constants) to uint16_t/uint32_t.
 /// However, trivial speed issues aside, on 8-bit MCUs even using 16-bit words would generate much more
 /// code with a definite penalty on code size and further on speed.
-#define MAXENC 8
+#define MAXENC 6
 
 /// Type of encoder
 /// Default is full-cycle (both A/B signals make a complete cycle from one detent to another)
@@ -72,7 +72,7 @@ typedef     byte    EVEC;                       // Must fit (1<<(MAXENC-1))
 constexpr   byte    EVEC_BITS = sizeof(EVEC)*8;
 constexpr   EVEC    ALL_MASK  = ~((EVEC)0);     // EVEC with all bits high
 
-class EncoderM10
+class EncoderSet
 {
 
 public:
@@ -149,8 +149,11 @@ private:
 
 public:
 
+    /// Create a new controller (to be initialized)
+    EncoderSet(void) { init(0); };
+
     /// Create a new controller for <n> encoders (up to 8)
-    explicit EncoderM10(uint8_t n);
+    explicit EncoderSet(uint8_t n);
 
     void    init(uint8_t n);
 
@@ -227,9 +230,10 @@ public:
     /// 1 means Push&Hold mode (mode is =1 normally, =2 during push)
     /// 2..127 means that mode cycles between 1..2 to 1..127 on short press
     /// If bit 7 is set (values 130..255), cycle happens on long press
-    constexpr byte MODE_NONE = 0x00;
-    constexpr byte MODE_PUSHHOLD = 0x01;
-    constexpr byte MODE_LONGPRESS = 0x80;
+    static constexpr byte MODE_NONE = 0x00;
+    static constexpr byte MODE_PUSHHOLD = 0x01;
+    static constexpr byte MODE_LONGPRESS = 0x80;
+    
     void setNModes(byte encNo, byte nmodes);
 
     /// Get current mode for an encoder (1..n).

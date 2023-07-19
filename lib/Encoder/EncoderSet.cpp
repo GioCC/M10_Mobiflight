@@ -1,6 +1,6 @@
 /********************************************************************
 *
-*    EncoderM10.cpp - A library for controlling a bank of max 3 encoders
+*    EncoderSet.cpp - A library for controlling a bank of max 3 encoders
 *    on an M10-series card
 *    Derived from EncBank class
 *
@@ -13,7 +13,7 @@
 
 #define DEBUG 0
 
-#include "EncoderM10.h"
+#include "EncoderSet.h"
 #include <Arduino.h>
 
 // Flag values
@@ -23,13 +23,13 @@
 #define F_ENCTRGR   0x80       // Encoder trigger input detected & processed
 
 // Create a new controller for <n> encoders (up to 8)
-EncoderM10::EncoderM10(uint8_t n)
+EncoderSet::EncoderSet(uint8_t n)
 {
     init(n);
 }
 
 void
-EncoderM10::init(uint8_t n)
+EncoderSet::init(uint8_t n)
 {
     ctdbn = DEBOUNCE;
     ctlpr = LONGPRESS;
@@ -71,7 +71,7 @@ EncoderM10::init(uint8_t n)
 /// Bit 6, 7, 8 = Enc3A, Enc3B, Enc3S
 
 void
-EncoderM10::invert(uint8_t n, byte inverted)
+EncoderSet::invert(uint8_t n, byte inverted)
 {
     uint8_t msk = (n==0 ? 0xFF : (0x01<<((n-1)&0x07)));
     if(inverted)
@@ -83,12 +83,12 @@ EncoderM10::invert(uint8_t n, byte inverted)
 
 /// Update when convenient: pass the time counter (in ms), the object computes when to update
 //void
-//EncoderM10::update(unsigned long ms_ticks, unsigned int vec) {
+//EncoderSet::update(unsigned long ms_ticks, unsigned int vec) {
 //}
 
 /// Scheduled update: no internal checks, but it is meant be called every 1ms
 void
-EncoderM10::update(uint32_t vec)
+EncoderSet::update(uint32_t vec)
 {
     EVEC  _encA = 0;
     EVEC  _encB = 0;
@@ -241,16 +241,16 @@ EncoderM10::update(uint32_t vec)
         /// manage mode change
         msk = 0x01;
         for(byte i = 0; i<nencs; i++, msk<<=1) {
-            if(encs.emode[i] & ~((byte)EncoderM10::MODE_LONGPRESS)) {
+            if(encs.emode[i] & ~((byte)EncoderSet::MODE_LONGPRESS)) {
                 /// handle modechange + Push&Hold-On
                 if(sw_up & msk) {
-                    if((encs.emode[i] & EncoderM10::MODE_LONGPRESS) == 0) {
+                    if((encs.emode[i] & EncoderSet::MODE_LONGPRESS) == 0) {
                         incMode(i, 0x00);
                     }
                 }
                 /// handle Push&Hold-Off
                 if(sw_dn & msk) {
-                    if(encs.emode[i] == EncoderM10::MODE_PUSHHOLD) {
+                    if(encs.emode[i] == EncoderSet::MODE_PUSHHOLD) {
                         setMode(i, 1);
                     }
                 }
@@ -294,7 +294,7 @@ EncoderM10::update(uint32_t vec)
 
 /// Read counter value; resets counter and 'change' flag
 int
-EncoderM10::getEncCount(byte n, byte reset)
+EncoderSet::getEncCount(byte n, byte reset)
 {
     int res;
     if((n<1) || (n>nencs)) { return 0x0000; }
@@ -310,10 +310,10 @@ EncoderM10::getEncCount(byte n, byte reset)
 /// n = encoder no. (1..nencs)
 /// nmodes = number of modes to assign (0..127)
 void
-EncoderM10::setNModes(byte n, byte nmodes)
+EncoderSet::setNModes(byte n, byte nmodes)
 {
     // Value 128 (No modes + longpress) not allowed
-    if((n<1)||(n>nencs)||(nmodes==EncoderM10::MODE_LONGPRESS)) { return; }
+    if((n<1)||(n>nencs)||(nmodes==EncoderSet::MODE_LONGPRESS)) { return; }
     encs.enmodes[n-1]=nmodes;
 }
 
@@ -321,13 +321,13 @@ EncoderM10::setNModes(byte n, byte nmodes)
 /// n = encoder no. (1..nencs)
 /// nmodes = number of modes to assign (0..127)
 void
-EncoderM10::setMode(byte n, byte nmode)
+EncoderSet::setMode(byte n, byte nmode)
 {
     byte allowed;
     if((n<1) || (n>nencs)) { return; }
     // If nmode is not consistent with the range set with setNMode, call has no effect
     if(nmode == 0) { return; }
-    allowed = (encs.enmodes[n-1]) & ~((byte)EncoderM10::MODE_LONGPRESS);
+    allowed = (encs.enmodes[n-1]) & ~((byte)EncoderSet::MODE_LONGPRESS);
     if(allowed == 0) { return; }
     if((allowed > 1) ? (nmode <= allowed) : (nmode < nencs)) {
         encs.enmodes[n-1] = nmode;
@@ -337,7 +337,7 @@ EncoderM10::setMode(byte n, byte nmode)
 /// Get current mode for an encoder.
 /// n = encoder no. (1..nencs)
 byte
-EncoderM10::getMode(byte n)
+EncoderSet::getMode(byte n)
 {
     if((n<1) || (n>nencs)) { return 0xFF; }
     return encs.emode[n-1];
@@ -345,12 +345,12 @@ EncoderM10::getMode(byte n)
 
 /// Increment (or decrement) current mode for an encoder.
 void
-EncoderM10::incMode(byte n, byte flags)
+EncoderSet::incMode(byte n, byte flags)
 {
     byte nmax;
     byte nn;
     if((n<1) || (n>nencs)) { return; }
-    nmax = (encs.enmodes[n-1]) & ~((byte)EncoderM10::MODE_LONGPRESS);
+    nmax = (encs.enmodes[n-1]) & ~((byte)EncoderSet::MODE_LONGPRESS);
     nn = encs.emode[n-1];
     // flags&0x01: 0->inc, 1->decs
     // flags&0x02: 0->Value stops at edges, 1->Value wraps around
@@ -375,7 +375,7 @@ EncoderM10::incMode(byte n, byte flags)
 }
 
 // Global instance (singleton use, for embedded)
-//EncoderM10 EB = EncoderM10();
+//EncoderSet EB = EncoderSet();
 
-/// end class EncoderM10
+/// end class EncoderSet
 

@@ -5,12 +5,6 @@
 
 #include "M10board.h"
 
-// The number of physical encoders is actually defined in config_board.h;
-// however, let's reserve 6 units for now, since they do not take up any more space anyway.
-#define         ENCSLOTS    6
-EncoderM10      _Encoders(ENCSLOTS);
-int             _EncCount[ENCSLOTS];
-uint8_t         _EncModes[ENCSLOTS];
 
 MCPS            _MCPIO1(0,10);
 MCPS            _MCPIO2(0,15);  // PCB v1.0
@@ -27,13 +21,11 @@ M10board::M10board(void)
     //vars.set(100, 0xff);
     nAINS = 0;
 
-    ENCS = &_Encoders;
-    Encs = ENCS;
     // Provisionally map first 2 phys encoders to first 2 virtual encoders
     // -> Mapping will be changed at runtime anytime
     // -> if virtual encoders are used, no more than 2 phys encoders are realistically necessary
-    encMap[0] = 1;
-    encMap[1] = 2;
+    EncMap[0] = 1;
+    EncMap[1] = 2;
 }
 
 void
@@ -81,7 +73,7 @@ M10board::setBoardCfg(M10board_cfg *c)
 
     setupAnaIns(cfg->anaInputs);
 
-    ENCS->init(cfg->nEncoders > 8 ? 8 : cfg->nEncoders);      // Correct actual numbers of used encoders (max 8)
+    Encs.init(cfg->nEncoders > 8 ? 8 : cfg->nEncoders);      // Correct actual numbers of used encoders (max 8)
 
 if(cfg->hasDisplays) {
     LedControl* base = (LedControl*)_DISP;
@@ -110,7 +102,7 @@ M10board::setBoardPostCfg(void)
     uint8_t ne = (cfg->nVirtEncoders==0 ? cfg->nEncoders : cfg->nVirtEncoders);
     for(uint8_t i=0; i < ne; i++) {
         // Get number of configured modes from ManagedEnc into ENCS
-        ENCS->setNModes(i+1, EncMgr.getEnc(i+1)->getNModes());
+        Encs.setNModes(i+1, EncMgr.getEnc(i+1)->getNModes());
     }
     if(cfg->hasDisplays) {
         if(cfg->nDisplays1) {
@@ -198,7 +190,7 @@ M10board::digitalRead(uint8_t pin)
 //     else if(pin<=32)    { return Din.valH(pin-16); }
 // #endif
 //     // 'virtual' pins above 32 are reserved for encoder mirroring and are read-only
-//     else if(pin>32)     { return (lwbit(virtualEncs, pin-33)!=0); }
+//     else if(pin>32)     { return (lwbit(virtEncInputs, pin-33)!=0); }
 //     else return 0;
 }
 
@@ -216,15 +208,15 @@ M10board::mirrorEncoder(byte fromPos, byte toPos, byte clean, byte toHighInputs)
     if(fromPos > 6) fromPos+=7;
 
     // Only affect bits from current encoder - others should remain "frozen"
-    virtualEncs &= (clean ? 0UL : ~(7UL<<toPos));
-    virtualEncs |= ((toPos>fromPos) ?
-                    ((realEncs & (7UL<<fromPos))<<(toPos-fromPos)) :
-                    ((realEncs & (7UL<<fromPos))>>(fromPos-toPos)) );
+    virtEncInputs &= (clean ? 0UL : ~(7UL<<toPos));
+    virtEncInputs |= ((toPos>fromPos) ?
+                    ((realEncInputs & (7UL<<fromPos))<<(toPos-fromPos)) :
+                    ((realEncInputs & (7UL<<fromPos))>>(fromPos-toPos)) );
 
     // if requested, also copy virtual vector back to actual input vector
     // (from input 33 up)
     if(toHighInputs) {
-        byte *p = (byte *)&virtualEncs;
+        byte *p = (byte *)&virtEncInputs;
         for(byte i=0; i<4; i++) {
             Din.writeB(4+i, p[i]);
         }
@@ -235,7 +227,7 @@ M10board::mirrorEncoder(byte fromPos, byte toPos, byte clean, byte toHighInputs)
 void
 M10board::remapEncoder(byte fromPos, byte toPos)
 {
-    if(((fromPos-1) < 2)&&(toPos <= 8)) encMap[fromPos-1] = toPos;
+    if(((fromPos-1) < 2)&&(toPos <= 8)) EncMap[fromPos-1] = toPos;
 }
 
 void
@@ -268,12 +260,12 @@ M10board::ScanInOut(byte mode)
             encvec <<= 9;
             encvec |= (Din.valW(0) & 0x01FF);
 
-            realEncs = encvec;
+            realEncInputs = encvec;
 
             if(cfg->nVirtEncoders!=0) {
-                // remap encoders if required (writes to virtualEncs and back to inputs)
-                if(encMap[0]) { mirrorEncoder(1, encMap[0]); }
-                if(encMap[1]) { mirrorEncoder(2, encMap[1]); }
+                // remap encoders if required (writes to virtEncInputs and back to inputs)
+                if(EncMap[0]) { mirrorEncoder(1, EncMap[0]); }
+                if(EncMap[1]) { mirrorEncoder(2, EncMap[1]); }
             }
         }
 
@@ -284,9 +276,9 @@ M10board::ScanInOut(byte mode)
         if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
             // Use EITHER physical OR virtual encoders, not both
             if(cfg->nVirtEncoders==0) {
-                ENCS->update(realEncs);     // Feed inputs to encoder processors
+                Encs.update(realEncInputs);     // Feed inputs to encoder processors
             } else {
-                ENCS->update(virtualEncs);  // Feed inputs to (virtual)encoder processors
+                Encs.update(virtEncInputs);  // Feed inputs to (virtual)encoder processors
             }
             // Detect encoders transitions/counts
             // Since the version of EncManager with no callbacks is used, copy relevant data to local vars and pass those along
@@ -294,16 +286,16 @@ M10board::ScanInOut(byte mode)
             // actually, the very same ones we are using here...)
             uint8_t ne = (cfg->nVirtEncoders==0 ? cfg->nEncoders : cfg->nVirtEncoders);
             for(uint8_t i=0; i < ne; i++) {
-                _EncCount[i] = ENCS->getEncCount(i+1, 1);     // Get DIFF count
-                //_EncCount[i] = ENCS->getEncCount(i, 0);     // Get ABSOLUTE count
-                _EncModes[i] = ENCS->getMode(i+1);
+                EncCount[i] = Encs.getEncCount(i+1, 1);     // Get DIFF count
+                //EncCount[i] = Encs.getEncCount(i, 0);     // Get ABSOLUTE count
+                EncModes[i] = Encs.getMode(i+1);
             }
 
             /// Handle encoder processing
             // Register counts
-            EncMgr.checkEncs(_EncCount, _EncModes);
+            EncMgr.checkEncs(EncCount, EncModes);
             // If required, also register transitions
-            EncMgr.checkEncs(ENCS->getEncChangeUp(), ENCS->getEncChangeDn(), ENCS->getEncChangeQUp(), ENCS->getEncChangeQDn(), _EncModes);
+            EncMgr.checkEncs(Encs.getEncChangeUp(), Encs.getEncChangeDn(), Encs.getEncChangeQUp(), Encs.getEncChangeQDn(), EncModes);
 
             // Manage encoder switch lines
             // (done as ordinary switches - nothing to do here)

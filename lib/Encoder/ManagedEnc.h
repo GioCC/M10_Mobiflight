@@ -34,6 +34,9 @@
 #ifndef MANAGEDENC_H
 #define MANAGEDENC_H
 
+// Define this if callbacks are common to all ManagedEncoders
+#define  ME_STATIC_CB
+
 // Bitmasks for 'flags'
 #define ME_CntToTrn     0x80
 #define ME_TrnToCnt     0x40
@@ -60,6 +63,7 @@ public:
     // - Encoders that generate transitions will only supply 'OnUp' and 'OnDn' (and possibly 'OnFastUp'/'OnFastDn').
     // Of course this is not mandatory, and other settings, if sensible, can be chosen.
     // The name is optional.
+    
     ManagedEnc( uint8_t     index,
                 char*       name,
                 MEcallback  OnChange,
@@ -147,6 +151,22 @@ public:
 
 private:
 
+#ifdef  ME_STATIC_CB
+    static MEcallback _OnChange;
+    static MEcallback _OnUp;
+    static MEcallback _OnDn;
+    static MEcallback _OnFastUp;
+    static MEcallback _OnFastDn;
+    static MEcallback _OnModeChg;
+#else
+    MEcallback _OnChange;
+    MEcallback _OnUp;
+    MEcallback _OnDn;
+    MEcallback _OnFastUp;
+    MEcallback _OnFastDn;
+    MEcallback _OnModeChg;
+#endif  //ME_STATIC_CB
+
    union {
         char        *text;
         uint32_t    tag;
@@ -154,12 +174,6 @@ private:
 
     uint8_t     idx;
 
-    MEcallback _OnChange;
-    MEcallback _OnUp;
-    MEcallback _OnDn;
-    MEcallback _OnFastUp;
-    MEcallback _OnFastDn;
-    MEcallback _OnModeChg;
 
     uint8_t     nMode;      // Current mode (used only for change detection)
     uint8_t     nModes;     // Number of modes (used only as storage, accessible for custom inits and operations)
