@@ -96,7 +96,7 @@ class M10board
         /// Main polling entry points
         /// ====================================================
 
-        void        ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
+        void    ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
         /// ====================================================
         /// Digital I/O management

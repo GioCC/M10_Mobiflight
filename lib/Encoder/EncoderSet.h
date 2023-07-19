@@ -10,8 +10,8 @@
 *
 ********************************************************************/
 
-/// This class manages encoders (w/switch) basing on a "raw" digital I/O vector
-/// (likely coming from a direct port read); it does NOT read hardware
+/// This class manages physically connectd encoders basing on a "raw" digital 
+/// I/O vector (possibly coming from a direct port read); it does NOT read hardware
 /// inputs directly, therefore input data can also be pre-processed or simulated
 /// or whatever required.
 /// The class handles:
@@ -40,7 +40,7 @@
 #include <Arduino.h>
 #include "bitmasks.h"
 
-/// Max no of encoders managed with current implementation can be 8
+/// Max no of physical encoders managed with current implementation can be 8
 /// If you're _really_ tight on memory, reducing following parameter might help save a few bytes
 /// IMPORTANT: This class can be easily extended (or better templated) to work on a larger number
 /// of encoders (16 or even 32), by changing most of byte vars (and some constants) to uint16_t/uint32_t.

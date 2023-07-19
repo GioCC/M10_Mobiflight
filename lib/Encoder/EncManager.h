@@ -20,7 +20,7 @@
 /// The purpose of this class is:
 /// - to keep a collection of ManagedEnc objects
 /// - to scan the collected ManagedEncs (supplying them with processed encoder data, ie. transitions, counts etc.)
-///   so they can  work their stuff and call user callbacks on events.
+///   so they can work their stuff and call user callbacks on events.
 ///
 /// This class relies on the presence of a processor class that reads the status of input lines
 /// (HW or SW) and handles transition detection and counters; data from this class (usually regarding
@@ -35,8 +35,11 @@
 ///   (or set later on); the polling function requires no arguments;
 /// The class is compiled in the first variant unless USE_CALLBACKS is defined.
 ///
-/// The user code feeds inputs to the processor class, and triggers the checks of the processor class' results
-/// by the ManagedEnc class (either directly ot through an EncoderManager).
+/// The user code first feeds inputs to the processor class, and then calls the ManagedEnc objects 
+/// (either directly or through the EncoderManager) in order to act on the processed results.
+///
+/// Please note that callbacks in this class are used to FETCH ENCODER DATA, not to be confused with
+/// callbacks in the ManagedEnc's which PERFORM THE ACTIONS corresponding to encoder movements.
 
 //#define USE_CALLBACKS
 

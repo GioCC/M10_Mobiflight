@@ -10,9 +10,12 @@ Board class:
 - ADD: inject CB for Input events (static methods) (DI, Encoders)
 - Check LCDCTRL delayed init
 - Change _MCPIO1/_MCPIO2 to MCPIO[]; (construction with placement new like LED/LCD?)
+- Buttons & Encoders: Common pool for all boards (or each board has its pool?)
+- Encoder allocation (ManagedEnc): where is it done?
 
 Board config data:
 - ADD PIN ASSIGNMENT / (addresses) FOR LED/LCD/MCPIO TO CONFIG! (different for each board!!!)
+- Add dual section: CONFIG (present one) + VAR_DEFINE (definition/registration of buttons/encoders etc.) 
 - try to not keep copy in RAM for every board (maybe just 1 buffer object in RAM used during setup, shared).
   See TODO about PROGMEM reference
 
@@ -20,9 +23,9 @@ Board config methods:
 - Used practically only by the setBoardCfg() function
 
 Digital I/Os:
-- Storage for values: Internal
-- DI: 'Bank<x>' objects unnecessary? 
-    - Value buffering and event raise done during polling (In) or value setting (out); 
+- Storage for values: Internal (?)
+- DI: 'Bank<x>' objects unnecessary? (?)
+- Value buffering and event raise done during polling (In) or value setting (out); (?)
 - DO: 'Bank<x>' probably required. MF commands write to the buffer, buffer written immediately or during poll (even if SPI, can't read/write at the same time)
 - Board local I/O address <-> Global I/O address: possibly straightforward (e.g. GA = LA + baseOffset[Board#])
 - After polling, function call for internal business specific to the board:
@@ -33,3 +36,7 @@ LED displays:
 
 LCD displays:
 - messages forwarded almost without change, except possibly internal business logic
+
+Encoders:
+- (EncoderSet) Remove switch handling; upgrade to 16 encoders (15 currently required)
+- Collate EncManager and ManagedEnc?

@@ -236,14 +236,20 @@ M10board::ScanInOut(byte mode)
     uint16_t    iovec;
     uint32_t    encvec;
 
-    /// Write Outputs
+    // ==============================
+    //  Write Digital Outputs
+    // ==============================
     if(mode != 1) {
         iovec = Dout.valW(0);  //Dout.val()[0] + (Dout.val()[1] << 8);
         MCPIO1->digitalWrite(iovec);   // Pins configured as input are ignored on write
-        iovec = Dout.valW(2);  //Dout.val()[2] + (Dout.val()[3] << 8);
-        MCPIO2->digitalWrite(iovec);   // Pins configured as input are ignored on write
+        if(cfg->hasBank2) {
+            iovec = Dout.valW(2);  //Dout.val()[2] + (Dout.val()[3] << 8);
+            MCPIO2->digitalWrite(iovec);   // Pins configured as input are ignored on write
+        }
     }
-    /// Read Inputs
+    // ==============================
+    //  Read Digital Inputs
+    // ==============================
     if(mode != 2) {
         iovec = MCPIO1->digitalRead() & IOcfg[0];
         Din.writeW(0, iovec);
@@ -253,7 +259,8 @@ M10board::ScanInOut(byte mode)
             Din.writeW(2, iovec);
         }
 
-        /// Handle encoder input mirroring
+        //  Handle encoder input mirroring
+        // ===================================
         if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
             // collect enc inputs
             encvec = (Din.valW(2) & 0x01FF);
@@ -269,17 +276,21 @@ M10board::ScanInOut(byte mode)
             }
         }
 
-        /// Handle button/switch processing
+        //  Handle button/switch processing
+        // ===================================
         ButtonMgr.checkButtons(Din.val());
 
-        /// Handle encoder input processing
+        //  Handle encoder input processing
+        // ===================================
         if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
+            
             // Use EITHER physical OR virtual encoders, not both
             if(cfg->nVirtEncoders==0) {
                 Encs.update(realEncInputs);     // Feed inputs to encoder processors
             } else {
                 Encs.update(virtEncInputs);  // Feed inputs to (virtual)encoder processors
             }
+            
             // Detect encoders transitions/counts
             // Since the version of EncManager with no callbacks is used, copy relevant data to local vars and pass those along
             // (the version with callbacks would inquire the encoder data directly through indexed provider functions -
@@ -291,7 +302,9 @@ M10board::ScanInOut(byte mode)
                 EncModes[i] = Encs.getMode(i+1);
             }
 
-            /// Handle encoder processing
+            //  Handle encoder processing
+            // ===================================
+            
             // Register counts
             EncMgr.checkEncs(EncCount, EncModes);
             // If required, also register transitions

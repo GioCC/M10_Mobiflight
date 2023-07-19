@@ -170,10 +170,8 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
     }
 
     {
-        byte msk;
         byte sts;
         byte pin;
-        byte bnk;
         for (int i=0; i< numButtons; i++) {
             // Setup values (where not done implicitly) for each button
             sts = 0;
@@ -187,8 +185,8 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
                     sts = analogVals[pin];
                 }
             } else {
-                bnk = pin>>3;
-                msk = (0x01 << (pin&0x07));
+                byte bnk = pin>>3;
+                byte msk = (0x01 << (pin&0x07));
                 if(vecIO[bnk]       & msk) sts |= S_Curr;
                 if(vec[bnk].Down    & msk) sts |= S_Dn;
                 if(vec[bnk].Up      & msk) sts |= S_Up;

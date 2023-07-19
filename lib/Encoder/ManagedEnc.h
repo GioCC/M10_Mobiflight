@@ -52,10 +52,45 @@ typedef     int  CountType;
 class ManagedEnc
 {
 
+private:
+
+#ifdef  ME_STATIC_CB
+    static MEcallback _OnChange;
+    static MEcallback _OnUp;
+    static MEcallback _OnDn;
+    static MEcallback _OnFastUp;
+    static MEcallback _OnFastDn;
+    static MEcallback _OnModeChg;
+#else
+    MEcallback _OnChange;
+    MEcallback _OnUp;
+    MEcallback _OnDn;
+    MEcallback _OnFastUp;
+    MEcallback _OnFastDn;
+    MEcallback _OnModeChg;
+#endif  //ME_STATIC_CB
+
+   union {
+        char        *text;
+        uint32_t    tag;
+    } name;
+
+    uint8_t     idx;
+
+    uint8_t     nMode;      // Current mode (used only for change detection)
+    uint8_t     nModes;     // Number of modes (used only as storage, accessible for custom inits and operations)
+    CountType   lastCount;
+    int8_t      lastDiff;
+    uint8_t     fastStep;
+
+    uint8_t     flags;
+
+    static EncManager* EncMgr;     // Referens to object collector if required
+
 public:
 
-    // This constructor allows to define each individual encoder.
-    // Encoders are automatically added to the collection in the EncManager named 'EncMgr'
+    // These constructors allow to define each individual encoder.
+    // Encoders are automatically added to the collection in the EncManager named 'EncMgr' (if set)
     // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage, two types of encoders may be defined:
@@ -66,29 +101,35 @@ public:
     
     ManagedEnc( uint8_t     index,
                 char*       name,
+#ifndef  ME_STATIC_CB
                 MEcallback  OnChange,
                 MEcallback  OnUp        = NULL,
                 MEcallback  OnDn        = NULL,
                 MEcallback  OnFastUp    = NULL,
                 MEcallback  OnFastDn    = NULL,
                 MEcallback  OnModeChg   = NULL,
+#endif
                 uint8_t     nModes = 0
                 );
 
     ManagedEnc( uint8_t     index,
                 uint16_t    codeh,
                 uint16_t    codel,
+#ifndef  ME_STATIC_CB
                 MEcallback  OnChange,
                 MEcallback  OnUp        = NULL,
                 MEcallback  OnDn        = NULL,
                 MEcallback  OnFastUp    = NULL,
                 MEcallback  OnFastDn    = NULL,
                 MEcallback  OnModeChg   = NULL,
+#endif
                 uint8_t     nModes = 0
                 );
 
     // =============
     // Setup methods
+
+    static void setManager(EncManager* mgr) { EncMgr = mgr; }
 
     void setOnChange(MEcallback f)  __attribute__((always_inline))  {_OnChange = (*f);}
     void setOnUp(MEcallback f)      __attribute__((always_inline))  {_OnUp = (*f);}
@@ -148,40 +189,6 @@ public:
     // is used to correctly update the counter, but the callback for each
     // affected transition is invoked only once.
     void    checkTrn(int8_t dPulses, int8_t dFastPulses=0, uint8_t mode=0);
-
-private:
-
-#ifdef  ME_STATIC_CB
-    static MEcallback _OnChange;
-    static MEcallback _OnUp;
-    static MEcallback _OnDn;
-    static MEcallback _OnFastUp;
-    static MEcallback _OnFastDn;
-    static MEcallback _OnModeChg;
-#else
-    MEcallback _OnChange;
-    MEcallback _OnUp;
-    MEcallback _OnDn;
-    MEcallback _OnFastUp;
-    MEcallback _OnFastDn;
-    MEcallback _OnModeChg;
-#endif  //ME_STATIC_CB
-
-   union {
-        char        *text;
-        uint32_t    tag;
-    } name;
-
-    uint8_t     idx;
-
-
-    uint8_t     nMode;      // Current mode (used only for change detection)
-    uint8_t     nModes;     // Number of modes (used only as storage, accessible for custom inits and operations)
-    CountType   lastCount;
-    int8_t      lastDiff;
-    uint8_t     fastStep;
-
-    uint8_t     flags;
 
 };
 

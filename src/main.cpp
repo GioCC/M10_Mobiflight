@@ -56,6 +56,7 @@ char *counter2buf(byte cntno) {
 //----------------------
 void setup() {
 
+// FOR EACH (installed) BOARD:
     //BoardNumber 1;
     board.setIOMode(0,0xFFFF);            // All inputs
     board.setPUMode(0,0xFFFF);            // Pull-ups on all inputs
@@ -80,6 +81,7 @@ void setup() {
     board.dispWrite(3, (byte *)"67890 ", 0x08);
     board.dispWrite(4, (byte *)"F0123 ", 0x08);
     board.dispTransmit(0);
+// END FOR
 
     counter[0] = 0x00000000;
     counter[1] = 0x00000000;

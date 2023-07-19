@@ -25,14 +25,14 @@ EncManager  EncMgr;
 
 #ifdef USE_CALLBACKS
 EncManager::EncManager(
-                        int  (*getCount)(byte),
-                        byte (*getUp)(byte),
-                        byte (*getDn)(byte),
-                        byte (*getFastUp)(byte),
-                        byte (*getFastDn)(byte),
-                        byte (*getMode)(byte),
-                        void (*clean)(byte)
-                        )
+    int  (*getCount)(byte),
+    byte (*getUp)(byte),
+    byte (*getDn)(byte),
+    byte (*getFastUp)(byte),
+    byte (*getFastDn)(byte),
+    byte (*getMode)(byte),
+    void (*clean)(byte)
+    )
 {
     numEncs = 0;
     currEnc = 0;
@@ -44,28 +44,21 @@ EncManager::EncManager(
     _getMode = getMode;
     _clean = clean;
 }
+#endif // USE_CALLBACKS
 
 EncManager::EncManager(void)
 {
     numEncs = 0;
     currEnc = 0;
+#ifdef USE_CALLBACKS
     _getCount = NULL;
     _getUp = NULL;
     _getDn = NULL;
     _getFastUp = NULL;
     _getFastDn = NULL;
     _clean = NULL;
-}
-
-#else // USE_CALLBACKS
-
-EncManager::EncManager(void)
-{
-    numEncs = 0;
-    currEnc = 0;
-}
-
 #endif // USE_CALLBACKS
+}
 
 void
 EncManager::addEnc(ManagedEnc* enc)

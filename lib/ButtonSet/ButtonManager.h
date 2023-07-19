@@ -125,5 +125,3 @@ public:
 extern  ButtonManager ButtonMgr;
 
 #endif
-
-

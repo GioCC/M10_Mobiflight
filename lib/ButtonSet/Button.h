@@ -145,13 +145,15 @@ public:
     //   Slong    The long press interval just expired
     // All flags except Scurr are expected to be set for one call only,
     // right after the event occurs.
-    virtual void check(ButtonStatus_t value) { UNUSED(value); } // = 0;
+    // virtual 
+    void check(ButtonStatus_t value) { UNUSED(value); } // = 0;
 
     // initState is used to assign the initial value.
     // It differs from check() because it only triggers _OnPress/_OnRelease events.
     // These are usually associated to stable switches (rather than temporary pushbuttons),
     // which require to have their position recorded at startutp
-    virtual void initState(ButtonStatus_t value) { UNUSED(value); }
+    // virtual 
+    void initState(ButtonStatus_t value) { UNUSED(value); }
 
     // === Bulk setup methods
 
@@ -218,11 +220,10 @@ public:
 #endif // MIRRORVAR
 
 protected:
-
     uint8_t         pin;
+    uint8_t         flags;
     RawData         _tag;
     RawData         _data;
-    uint8_t         flags;
 #if defined(SOURCEVAR)||defined(MIRRORVAR)
     uint8_t         bitno;
 #endif
@@ -234,5 +235,8 @@ protected:
 #endif // MIRRORVAR
 
 };
+
+constexpr uint8_t RDsize = sizeof(RawData);
+constexpr uint8_t BBsize = sizeof(Button);
 
 #endif

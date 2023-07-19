@@ -80,7 +80,6 @@ EncoderSet::invert(uint8_t n, byte inverted)
         { eflags_inv &= ~msk; }
 }
 
-
 /// Update when convenient: pass the time counter (in ms), the object computes when to update
 //void
 //EncoderSet::update(unsigned long ms_ticks, unsigned int vec) {
@@ -110,28 +109,23 @@ EncoderSet::update(uint32_t vec)
     }
 
     msk = 0;
-    // Collect data from ports
     v = vec;
-    if(v != old_vec) {
-        msk = 1;
-        old_vec = v;
+    if(v == old_vec) return;
+    msk = 1;
+    old_vec = v;
 //    _encS &= 0xF8;
 //    _encA &= 0xF8;
 //    _encB &= 0xFC;
-        uint16_t m1 = 0x01;
-        uint8_t  m2 = 0x01;
-        for(byte e=0; e<nencs; e++) {
-            if(v & m1) { _encA |= m2; }
-            m1 <<= 1;
-            if(v & m1) { _encB |= m2; }
-            m1 <<= 1;
-            if(v & m1) { _encS |= m2; }
-            m1 <<= 1;
-            m2 <<= 1;
-        }
-    } else {
-
-        return;
+    uint16_t m1 = 0x01;
+    uint8_t  m2 = 0x01;
+    for(byte e=0; e<nencs; e++) {
+        if(v & m1) { _encA |= m2; }
+        m1 <<= 1;
+        if(v & m1) { _encB |= m2; }
+        m1 <<= 1;
+        if(v & m1) { _encS |= m2; }
+        m1 <<= 1;
+        m2 <<= 1;
     }
 
     /// No debounce for encoders. Beware that this may not suit some particular devices.
@@ -191,7 +185,6 @@ EncoderSet::update(uint32_t vec)
             trans.enQDn |= eflags_d;
             // trans.changed is set by enUp/enDn
         }
-
     }
 
     ///
@@ -216,14 +209,14 @@ EncoderSet::update(uint32_t vec)
         /// Line vector is validated; we can update the status of the switches now.
         ctdbn = DEBOUNCE;
 
-        /// Switch State Logic:
+        /// Switch State Logic (for any given switch):
         ///
-        /// swvec         ___---___---______  sampled & debounced switches (active high)
         /// swold         ____---___---_____  previous state
+        /// swvec         ___---___---______  sampled & debounced switches (active high)
         /// swdif         ___-__-__-__-_____  changes, press or release
         /// sw_up         ___-_____-________  filter 'press' bits only
         /// sw_dn         ______-_____-_____  filter 'release' bits only
-        /// keys.toggled  ___------_________  toggle flag bits for main (toggle is on rising edges)
+        /// btns.toggled  ___------_________  toggle flag bits for main (toggle is on rising edges)
         ///
 
         swvec = _encS;
@@ -232,7 +225,7 @@ EncoderSet::update(uint32_t vec)
         sw_up = (swdif & swvec);
         sw_dn = (swdif & swold);
 
-        btns.changed |= swdif;    // keys.changed must be reset by the caller
+        btns.changed |= swdif;    // btns.changed must be reset by the caller
         btns.current = swvec;
         btns.activated = ((btns.activated | sw_up) & ~sw_dn);
         btns.deactivated = ((btns.deactivated | sw_dn) & ~sw_up);
@@ -304,7 +297,6 @@ EncoderSet::getEncCount(byte n, byte reset)
     encs.changed &= (~(1<<n));
     return res;
 };     // resets counter and 'change' flag
-
 
 /// Define number of modes for an encoder.
 /// n = encoder no. (1..nencs)

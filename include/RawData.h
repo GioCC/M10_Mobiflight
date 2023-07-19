@@ -10,7 +10,7 @@ public:
         struct {
             uint16_t hi;
             uint16_t lo;
-        }               code;
+        } code;
     };
 
     RawData(void) {};

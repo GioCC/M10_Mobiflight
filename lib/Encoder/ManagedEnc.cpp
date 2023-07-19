@@ -19,45 +19,77 @@
 #include "EncManager.h"
 #include "ManagedEnc.h"
 
-ManagedEnc::ManagedEnc( uint8_t     index,
-                        char*       nm,
-                        MEcallback  OnChange,
-                        MEcallback  OnUp,
-                        MEcallback  OnDn,
-                        MEcallback  OnFastUp,
-                        MEcallback  OnFastDn,
-                        MEcallback  OnModeChg,
-                        uint8_t     numModes
-                        )
+EncManager* ManagedEnc::EncMgr = nullptr;
+
+ManagedEnc::ManagedEnc(
+    uint8_t     index,
+    char*       nm,
+#ifndef  ME_STATIC_CB
+    MEcallback  OnChange,
+    MEcallback  OnUp,
+    MEcallback  OnDn,
+    MEcallback  OnFastUp,
+    MEcallback  OnFastDn,
+    MEcallback  OnModeChg,
+#endif
+    uint8_t     numModes
+    )
 : idx(index),
-  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), 
-  _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
   nModes(numModes), lastCount(0), lastDiff(0), fastStep(10), flags(0)
+#ifndef  ME_STATIC_CB
+  , _OnChange(OnChange),
+    _OnUp(OnUp),
+    _OnDn(OnDn), 
+    _OnFastUp(OnFastUp),
+    _OnFastDn(OnFastDn),
+    _OnModeChg(OnModeChg)
+#endif
 {
     setName(nm);
-    //if(EncMgr) EncMgr->addEnc(this);
-    EncMgr.addEnc(this);
+    if(EncMgr) EncMgr->addEnc(this);
+
+#ifdef  ME_STATIC_CB
+    _OnChange = nullptr;
+    _OnUp = nullptr;
+    _OnDn = nullptr;
+    _OnFastUp = nullptr;
+    _OnFastDn = nullptr;
+    _OnModeChg = nullptr;
+#endif
 }
 
-ManagedEnc::ManagedEnc( uint8_t     index,
-                        uint16_t    codeh,
-                        uint16_t    codel,
-                        MEcallback  OnChange,
-                        MEcallback  OnUp,
-                        MEcallback  OnDn,
-                        MEcallback  OnFastUp,
-                        MEcallback  OnFastDn,
-                        MEcallback  OnModeChg,
-                        uint8_t     numModes
+ManagedEnc::ManagedEnc( 
+    uint8_t     index,
+    uint16_t    codeh,
+    uint16_t    codel,
+#ifndef  ME_STATIC_CB
+    MEcallback  OnChange,
+    MEcallback  OnUp,
+    MEcallback  OnDn,
+    MEcallback  OnFastUp,
+    MEcallback  OnFastDn,
+    MEcallback  OnModeChg,
+#endif
+    uint8_t     numModes
                         )
 : idx(index),
-  _OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), 
-  _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg),
   nModes(numModes), lastCount(0), lastDiff(0), fastStep(10), flags(0)
+#ifndef  ME_STATIC_CB
+  ,_OnChange(OnChange), _OnUp(OnUp), _OnDn(OnDn), 
+  _OnFastUp(OnFastUp), _OnFastDn(OnFastDn), _OnModeChg(OnModeChg)
+#endif
 {
     setTag(codeh, codel);
-    //if(EncMgr) EncMgr->addEnc(this);
-    EncMgr.addEnc(this);
+    if(EncMgr) EncMgr->addEnc(this);
+
+#ifdef  ME_STATIC_CB
+    _OnChange = nullptr;
+    _OnUp = nullptr;
+    _OnDn = nullptr;
+    _OnFastUp = nullptr;
+    _OnFastDn = nullptr;
+    _OnModeChg = nullptr;
+#endif
 }
 
 // Encoder count arguments:
@@ -102,18 +134,21 @@ ManagedEnc::checkTrn(int8_t dPulses, int8_t dFastPulses, uint8_t mode)
 {
     lastDiff = dPulses + dFastPulses*fastStep;
     lastCount += lastDiff;
+    
     if(_OnUp && dPulses>0) {
         _OnUp(this);
     } else
     if(_OnDn && dPulses<0) {
         _OnDn(this);
     }
-    if(_OnFastUp && dPulses>0) {
+
+    if(_OnFastUp && dFastPulses>0) {
         _OnFastUp(this);
     } else
-    if(_OnFastDn && dPulses<0) {
+    if(_OnFastDn && dFastPulses<0) {
         _OnFastDn(this);
     }
+    
     if(mode !=nMode) {
         nMode = mode;
         if(_OnModeChg) _OnModeChg(this);
