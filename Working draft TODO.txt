@@ -15,7 +15,6 @@ Board config data:
 - ADD PIN ASSIGNMENT / (addresses) FOR LED/LCD/MCPIO TO CONFIG! (different for each board!!!)
 - try to not keep copy in RAM for every board (maybe just 1 buffer object in RAM used during setup, shared).
   See TODO about PROGMEM reference
-- Check specification of correct size for _DISP[]
 
 Board config methods:
 - Used practically only by the setBoardCfg() function

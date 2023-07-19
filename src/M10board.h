@@ -14,8 +14,8 @@
 
 //================================
 // Board I/O configuration
-#include "config_board.h"
 //================================
+#include "config_board.h"
 
 #include "bitmasks.h"
 #include "bank.h"
@@ -30,52 +30,12 @@
 #include "LiquidCrystal.h"
 
 #define   ENCSLOTS    6     // TODO REDUCE AS POSSIBLE
+
 constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
+constexpr uint8_t LCsize  = sizeof(LedControl);
+constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
 
 #define UNUSED(x) ((void)(x))
-
-// Struct used for HW config of the board
-// This struct is used to define an actual config instances as constants in config_board.h
-
-typedef struct //M10board_cfg
-{
-    //TODO (M10) Add: IRQ and CS pins, specific addresses
-    // pins not defined as either input or output are configured as inputs anyway, however it is apparent from the definition that they are unused
-    uint16_t    digInputs;      // Map of digital inputs (1=input) for MCP on main board
-    uint16_t    digOutputs;     // Map of digital outputs (1=output) for MCP on main board
-    
-    bool        hasBank2;
-    // following are used only for those panels having a second extension board (currently only Autopilot, LED or LCD)
-    uint16_t    digInputs2;     // Map of digital inputs (1=input) for MCP on second board
-    uint16_t    digOutputs2;    // Map of digital outputs (1=output) for MCP on second board
-
-    uint16_t    anaInputs;      // Map of analog inputs used; remember that A0,A3,A4,A5 are preallocated (IORQ, DRDY, SDA, SCL). See comments.
-
-    // Number of encoders (actually connected; max 6)
-    // Encoders #1,#2,#3 are allocated on DIO pins 1..3, 4..6 and 7...9; pins used are defined as inputs overriding the definition as GPIO.
-    // Encoders #4,#5,[#6] are allocated on DIO pins 1..3, 4..6 [and 7...9] on the extension board.
-    uint8_t     nEncoders;
-    // Number of virtual (logical) encoders
-    uint8_t     nVirtEncoders;
-    bool        hasDisplays;
-    bool        hasLCD;
-
-    union {
-        struct {
-            // LED display drivers (actually connected; max 4)
-            uint8_t     nDisplays1;         // Number of displays on the first port (0,1,2) - These are numbered 1 / 2
-            uint8_t     nDisplays2;         // Number of displays on the second port (0,1,2) - These are numbered 3 / 4
-        }; // led;  // uncomment if compiler doesn't allow anon structs (gcc should)
-        struct {
-            // LCD display
-            uint8_t     LCDCols;
-            uint8_t     LCDLines;
-        }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
-    };
-} M10board_cfg;
-
-extern const uint8_t        MaxBoards;
-extern const M10board_cfg   BoardCfgs[] PROGMEM;
 
 class M10board
 {
@@ -98,7 +58,7 @@ class M10board
         uint32_t         virtEncInputs;     // Input vector formed for virtual encoders
         //uint16_t       encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
 
-        uint8_t          _DISP[LCsize*2];   //! TODO: use MAX(LCsize *2, LCDsize)
+        uint8_t          _DISP[DispSize];
 
         union {
             LedControl*      LEDCTRL;
@@ -145,6 +105,7 @@ class M10board
         // R/W functions operate on buffers 'Din'/'Dout', therefore require the invocation of ScanInOut(),
         // either before (for inputs) or after (for outputs).
 
+        //TODO These should be private:
         Bank<64>    Din;              // Buffer for I/O vector - Inputs
         Bank<32>    Dout;             // Buffer for I/O vector - Outputs
 
@@ -214,7 +175,7 @@ class M10board
         ///
 
         // n is 0..1
-        LedControl  *getDisplay(byte n)    { return LEDCTRL[n&0x01]; }
+        LedControl  *getDisplay(byte n)    { return &LEDCTRL[n&0x01]; }
 
 // ALL FOLLOWING DEFINITIONS ARE WRAPPERS:
 // few of them are actually used, therefore we better use direct calls to LedControl objects

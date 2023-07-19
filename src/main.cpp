@@ -10,11 +10,7 @@
 // (aggiunta opzioni "-lc -lm -lc")
 
 #include <Arduino.h>
-//================================
-//   Compile-time configuration
-#include "config_build.h"
-//================================
-//#include <ArdSim_Interface.h>          //  -- ArdSim library
+#include "M10board.h"
 
 #define DW(a)   Serial.write(a)
 #define DSPC    Serial.write(' ')

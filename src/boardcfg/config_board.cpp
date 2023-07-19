@@ -9,8 +9,7 @@
 // This is achieved by invoking the .h definition files for each board in sequence
 // and using the contained macros to build the initial values for the config struct.
 
-#include <Arduino.h>
-#include "M10board.h"
+#include "config_board.h"
 
 // Currently available M10 board types:
 enum {
