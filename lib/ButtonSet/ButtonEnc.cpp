@@ -18,32 +18,28 @@
 
 #include "ButtonEnc.h"
 
-ButtonEnc::ButtonEnc(uint8_t    index,
-                    char        *name,
-                    EBcallback  OnKeyPress,
-                    EBcallback  OnKeyRelease,
-                    EBcallback  OnKeyLong,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
-: Button(index, 0, name, mirrorvar, mirrorbit),
-_OnPress(OnKeyPress), _OnRelease(OnKeyRelease), _OnLong(OnKeyLong)
-{
-}
+EBcallback ButtonEnc::_OnPress = nullptr;
+EBcallback ButtonEnc::_OnRelease = nullptr;
+EBcallback ButtonEnc::_OnLong = nullptr;
+
+ButtonEnc::ButtonEnc(
+    uint8_t    index,
+    char        *name,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
+: Button(index, 0, name, mirrorvar, mirrorbit)
+{}
 
 
-ButtonEnc::ButtonEnc(uint8_t    index,
-                    uint16_t    codeh, uint16_t codel,
-                    EBcallback  OnKeyPress,
-                    EBcallback  OnKeyRelease,
-                    EBcallback  OnKeyLong,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
-: Button(index, 0, codeh, codel, mirrorvar, mirrorbit),
-_OnPress(OnKeyPress), _OnRelease(OnKeyRelease), _OnLong(OnKeyLong)
-{
-}
+ButtonEnc::ButtonEnc(
+    uint8_t    index,
+    uint16_t    codeh, uint16_t codel,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
+: Button(index, 0, codeh, codel, mirrorvar, mirrorbit)
+{}
 
 void
 ButtonEnc::check(Button::ButtonStatus_t ival)
@@ -51,26 +47,26 @@ ButtonEnc::check(Button::ButtonStatus_t ival)
     flagChg(flags, F_lastState, ((ival & S_Curr) != 0));
 
     if ((ival & S_Dn) /*&& (cur == HIGH)*/) {
-        if (_OnPress)   _OnPress(this);
         setBit();
+        if (_OnPress != nullptr)   _OnPress(this);
     }
     if (ival & S_Up) {
-        if (_OnRelease) _OnRelease(this);
         clearBit();
+        if (_OnRelease != nullptr) _OnRelease(this);
     }
     if ((ival & S_Long) /*&& (cur == HIGH)*/) {
-        if (_OnLong)    _OnLong(this);
+        if (_OnLong != nullptr)    _OnLong(this);
     }
 }
 
 void ButtonEnc::initState(Button::ButtonStatus_t ival)
 {
     if ((ival & S_Curr) != 0) {
-        if (_OnPress)   _OnPress(this);
         setBit();
+        if (_OnPress != nullptr)   _OnPress(this);
     } else {
-        if (_OnRelease) _OnRelease(this);
         clearBit();
+        if (_OnRelease != nullptr) _OnRelease(this);
     }
 }
 

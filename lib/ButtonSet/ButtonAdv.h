@@ -61,7 +61,7 @@ Better: a mode flag tells whether to use two available callbacks either as "Pres
 
 class ButtonAdv;
 
-typedef void (*BAcallback)(ButtonAdv*);
+using BAcallback = void (*)(ButtonAdv*);
 
 class ButtonAdv
 : public Button
@@ -69,14 +69,15 @@ class ButtonAdv
 
 public:
 
+    // ======================================
+    // === Constructors
+    // ======================================
+
     ButtonAdv() {}     // for objects that will be completely filled in later
 
     ButtonAdv(  uint8_t     in,
                 uint8_t     hardware,
                 char        *name,
-                BAcallback  OnPress,
-                BAcallback  OnRelease=NULL,
-                BAcallback  OnLong=NULL,
                 uint16_t    repeatDelay=0,
                 uint16_t    repeatRate=0,
                 uint16_t    longPress=0,
@@ -90,9 +91,6 @@ public:
                 uint8_t     hardware,
                 uint16_t    codeh,
                 uint16_t    codel,
-                BAcallback  OnPress,
-                BAcallback  OnRelease=NULL,
-                BAcallback  OnLong=NULL,
                 uint16_t    repeatDelay=0,
                 uint16_t    repeatRate=0,
                 uint16_t    longPress=0,
@@ -110,76 +108,58 @@ public:
                 uint8_t     uthreshold
             );
 
-    // Checks the state of the button and triggers events accordingly;
-    // Will be called from the ButtonGroupManager
-    // 'value' is either:
-    // - an analog value (0..255)
-    // - for digital values, a bit pattern of type Button::ButtonStatus_t,
-    //   with following meaning (see also base class):
-    //      S_curr    Current input status
-    //      S_dn      Input just became active
-    //      S_up      Input was just released
-    //      S_rpt     A repeat interval just expired
-    //      S_long    The long press interval just expired
-    //   All flags except S_curr are expected to be only set for the call right after the event occurs.
-    // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
-    virtual
-    void    check(Button::ButtonStatus_t value);
+    // ======================================
+    // === Setup methods: common
+    // ======================================
+    // Must redefine methods with the derived type - in this case, static type matching is what is required.
+    // These are all and the same (normally they also do the exact same thing) as defined in the Button class,
+    // except for the return type.
+    // For details, see comments in Button.h.
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startup.
-    // Argument: same as check(..).
-    virtual
-    void    initState(Button::ButtonStatus_t value);
+    ButtonAdv& info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return *this; }
 
-    // A variant of 'check()' for digital inputs only (specific to derived class)
-    // Gets its input source from the passed byte array according to pin#:
-    // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
-    // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
-    //
-    // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
-    void    check(uint8_t *bytevec);
+    ButtonAdv& tag(const char *s)               { Button::tag(s); return *this; }
+    ButtonAdv& tag(uint16_t hi, uint16_t lo)    { Button::tag(hi, lo); return *this; }
 
-    // Variant of initState
-    void    initState(uint8_t *bytevec);
-
-    // === Bulk setup methods
-
-    // Must redefine methods with the derived type - in this case, static type matching is what is required!
-    ButtonAdv *info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return this; }
+    ButtonAdv& data(const char *s)              { Button::data(s); return *this; }
+    ButtonAdv& data(byte *b)                    { Button::data(b); return *this; }
+    ButtonAdv& data(uint16_t hi, uint16_t lo)   { Button::data(hi, lo); return *this; }
 
     // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
-    ButtonAdv *mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return this; }
-    ButtonAdv *source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return this; }
+    ButtonAdv& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
+    ButtonAdv& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
 
-    ButtonAdv *tag(const char *s)               { Button::tag(s); return this; }
-    ButtonAdv *tag(uint16_t hi, uint16_t lo)    { Button::tag(hi, lo); return this; }
+    // ======================================
+    // === Setup methods: specialized
+    // ======================================
 
-    ButtonAdv *data(const char *s)              { Button::data(s); return this; }
-    ButtonAdv *data(byte *b)                    { Button::data(b); return this; }
-    ButtonAdv *data(uint16_t hi, uint16_t lo)   { Button::data(hi, lo); return this; }
+    ButtonAdv& callbacks(BAcallback OnPress, BAcallback OnRelease = nullptr, BAcallback OnLong = nullptr)
+    { 
+        setOnPress((*OnPress)); 
+        setOnRelease((*OnRelease)); 
+        setOnLong((*OnLong)); 
+        return *this; 
+    }
 
-    ButtonAdv *callbacks(BAcallback OnPress, BAcallback OnRelease, BAcallback OnLong)
-        { setOnPress((*OnPress)); setOnRelease((*OnRelease)); setOnLong((*OnLong)); return this; }
-
-    ButtonAdv *params(uint16_t repeatDelay=0, uint16_t repeatRate=0, uint16_t longPress=0)
+    ButtonAdv& params(uint16_t repeatDelay = 0, uint16_t repeatRate = 0, uint16_t longPress = 0)
     {
         setRepeatDelay(repeatDelay);
         setRepeatRate(repeatRate);
         setLongPDelay(longPress);
-        return this;
+        return *this;
     }
 
-    ButtonAdv *parana(uint8_t lthreshold = 0, uint8_t uthreshold=0)
+    ButtonAdv& parana(uint8_t lthreshold = 0, uint8_t uthreshold = 0)
     {
         lowerAnaThrs=lthreshold;
         upperAnaThrs=uthreshold;
         flagChg(flags, F_Analog, (lthreshold==uthreshold));
-        return this;
+        return *this;
     }
+
+    // ======================================
     // === Setters (single params)
+    // ======================================
 
     // Sets the debounce time (milliseconds)
     void    setDebounce(unsigned int delay)    { debounceTime = delay; };
@@ -193,22 +173,61 @@ public:
     // Rounded to nearest 100 ms; effective range 100ms..25.5s
     void    setLongPDelay(uint16_t delay);
 
-    void    setHysteresis(uint8_t hys)  __attribute__((always_inline))  {hysteresis = hys;}
+    void    setHysteresis(uint8_t hys)  {hysteresis = hys;}
 
-    void    setOnPress(BAcallback f)   {_OnPress =  (*f);}
-    void    setOnRelease(BAcallback f) {_OnRelease =  (*f);}
-    void    setOnLong(BAcallback f)    {_OnLong =  (*f);}
+    void    setOnPress(BAcallback f)    {_OnPress   = f;}
+    void    setOnRelease(BAcallback f)  {_OnRelease = f;}
+    void    setOnLong(BAcallback f)     {_OnLong    = f;}
 
+    // ======================================
     // === Getters
+    // ======================================
 
     //Retrieve the amount of milliseconds since the input vector is validated
     uint16_t getPressTime(void) {return (uint16_t)(millis() - TstartPress);}
 
+    // ======================================
+    // === Operation methods
+    // ======================================
+
+    // Checks the state of the button and triggers events accordingly;
+    // Will be called from the ButtonGroupManager
+    // 'value' is either:
+    // - an analog value (0..255)
+    // - for digital values, a bit pattern of type Button::ButtonStatus_t,
+    //   with following meaning (see also base class):
+    //      S_curr    Current input status
+    //      S_dn      Input just became active
+    //      S_up      Input was just released
+    //      S_rpt     A repeat interval just expired
+    //      S_long    The long press interval just expired
+    //   All flags except S_curr are expected to be only set for the call right after the event occurs.
+    // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
+    void    check(ButtonStatus_t value) override;
+
+    // initState is used to assign the initial value.
+    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
+    // These are usually associated to stable switches (rather than temporary pushbuttons),
+    // which require to have their position recorded at startup.
+    // Argument: same as check(..).
+    void    initState(ButtonStatus_t value) override;
+
+    // A variant of 'check()' for digital inputs only (specific to derived class)
+    // Gets its input source from the passed byte array according to pin#:
+    // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
+    // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
+    //
+    // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
+    void    check(uint8_t *bytevec);
+
+    // Variant of initState
+    void    initState(uint8_t *bytevec);
+
 private:
 
-    BAcallback  _OnPress;
-    BAcallback  _OnRelease;
-    BAcallback  _OnLong;
+    static BAcallback   _OnPress;
+    static BAcallback   _OnRelease;
+    static BAcallback   _OnLong;
 
     uint8_t         debounceTime;       // internally in ms
     uint8_t         repeatDelay;        // internally in ms*100; range 100ms..25.5s

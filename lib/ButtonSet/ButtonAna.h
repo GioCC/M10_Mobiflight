@@ -36,13 +36,17 @@
 
 class ButtonAna;
 
-typedef void (*ABcallback)(ButtonAna*);
+using ABcallback = void (*)(ButtonAna*);
 
 class ButtonAna
 : public Button
 {
 
 public:
+
+    // ======================================
+    // === Constructors
+    // ======================================
 
     // This constructor allows to define each individual 'button' associated to a subrange of the
     // whole analog input range.
@@ -60,8 +64,6 @@ public:
                 char        *name,
                 uint8_t     lthreshold =128,
                 uint8_t     uthreshold =255,
-                ABcallback  OnKeyPress =NULL,
-                ABcallback  OnKeyRelease =NULL,
                 uint16_t    repeatDelay=0,
                 uint16_t    repeatRate=0,
                 uint8_t     *mirrorvar=NULL,
@@ -73,8 +75,6 @@ public:
                 uint16_t    codel,
                 uint8_t     lthreshold =128,
                 uint8_t     uthreshold =255,
-                ABcallback  OnKeyPress =NULL,
-                ABcallback  OnKeyRelease =NULL,
                 uint16_t    repeatDelay=0,
                 uint16_t    repeatRate=0,
                 uint8_t     *mirrorvar=NULL,
@@ -84,59 +84,79 @@ public:
     void
     CButtonAna(uint16_t repeatDelay, uint16_t repeatRate);
 
+    // ======================================
+    // === Operation methods
+    // ======================================
+    //TODO These (for Analog button) are NOT overrides of Button::check()/initState():
+    // these require an analog value. The argument coincidentally has the same data type 
+    // as ButtonStatus_t, but they're not the same functions!
+    // Maybe add a second arg?
+
     // Checks the state of the button and triggers events accordingly;
     // Will be called from the ButtonGroupManager
-    virtual
-    void    check(uint8_t value);
+    void check(ButtonStatus_t value) override;
 
     // initState is used to assign the initial value.
     // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
     // These are usually associated to stable switches (as opposed to temporary pushbuttons),
-    // which require to have their position recorded at startutp
-    virtual
-    void    initState(uint8_t value);
+    // which require to have their position recorded at startup
+    void initState(ButtonStatus_t value) override;
 
-    // === Bulk setup methods
+    // ======================================
+    // === Setup methods: common
+    // ======================================
+    // Must redefine methods with the derived type - in this case, static type matching is what is required.
+    // These are all and the same (normally they also do the exact same thing) as defined in the Button class,
+    // except for the return type.
+    // For details, see comments in Button.h.
 
-    // Must redefine methods with the derived type - in this case, static type matching is what is required!
-    ButtonAna *info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return this; }
+    ButtonAna& info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return *this; }
+
+    ButtonAna& tag(const char *s)                   { Button::tag(s); return *this; }
+    ButtonAna& tag(uint16_t hi, uint16_t lo)        { Button::tag(hi, lo); return *this; }
+
+    ButtonAna& data(const char *s)                  { Button::data(s); return *this; }
+    ButtonAna& data(byte *b)                        { Button::data(b); return *this; }
+    ButtonAna& data(uint16_t hi, uint16_t lo)       { Button::data(hi, lo); return *this; }
 
     // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
-    ButtonAna *mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return this; }
-    ButtonAna *source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return this; }
+    ButtonAna& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
+    ButtonAna& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
 
-    ButtonAna *tag(const char *s)               { Button::tag(s); return this; }
-    ButtonAna *tag(uint16_t hi, uint16_t lo)    { Button::tag(hi, lo); return this; }
+    // ======================================
+    // === Setup methods: specialized
+    // ======================================
 
-    ButtonAna *data(const char *s)              { Button::data(s); return this; }
-    ButtonAna *data(byte *b)                    { Button::data(b); return this; }
-    ButtonAna *data(uint16_t hi, uint16_t lo)   { Button::data(hi, lo); return this; }
+    ButtonAna& callbacks(ABcallback OnPress, ABcallback OnRelease = nullptr)
+    { 
+        setOnPress(OnPress); 
+        setOnRelease(OnRelease); 
+        return *this; 
+    }
 
-    ButtonAna *callbacks(ABcallback OnPress, ABcallback OnRelease=NULL)
-        { setOnPress(OnPress); setOnRelease(OnRelease); return this; }
 
-    // Set bulk parameters
-    //
-    ButtonAna *params(uint16_t repeatDelay=0, uint16_t repeatRate=0)
+    ButtonAna& params(uint16_t repeatDelay = 0, uint16_t repeatRate = 0)
     {
         setRepeatDelay(repeatDelay);
         setRepeatRate(repeatRate);
-        return this;
+        return *this;
     }
 
-    ButtonAna *parana(uint8_t lthreshold = 0, uint8_t uthreshold=0, uint8_t hyst=2)
+    ButtonAna& parana(uint8_t lthreshold = 0, uint8_t uthreshold = 0, uint8_t hyst = 2)
     {
-        lowerAnaThrs=lthreshold;
-        upperAnaThrs=uthreshold;
-        hysteresis = hyst;
-        flagChg(flags, F_Analog, (lthreshold==uthreshold));
-        return this;
+        lowerAnaThrs = lthreshold;
+        upperAnaThrs = uthreshold;
+        hysteresis   = hyst;
+        flagChg(flags, F_Analog, (lthreshold == uthreshold));
+        return *this;
     }
 
+    // ======================================
     // === Setters (single params)
+    // ======================================
 
     // Sets the debounce time (milliseconds)
-    void    setDebounce(unsigned int delay)     __attribute__((always_inline))  { debounceTime = delay; };
+    void    setDebounce(unsigned int delay) { debounceTime = delay; };
     // Sets the delay (milliseconds) before the keypress event is repeated
     // Rounded to nearest 100 ms; effective range 100ms..25.5s
     void    setRepeatDelay(uint16_t delay);
@@ -144,19 +164,21 @@ public:
     // Rounded to next 10 ms; effective range 10ms..2.55s
     void    setRepeatRate(uint16_t repeat);
 
-    void    setHysteresis(uint8_t hys)  __attribute__((always_inline))  {hysteresis = hys;}
+    void    setHysteresis(uint8_t hys)      {hysteresis = hys;}
 
-    void    setOnPress(ABcallback f)    __attribute__((always_inline))  {_OnPress = f;}
-    void    setOnRelease(ABcallback f)  __attribute__((always_inline))  {_OnRelease =    f;}
+    void    setOnPress(ABcallback f)        {_OnPress   = f;}
+    void    setOnRelease(ABcallback f)      {_OnRelease = f;}
 
+    // ======================================
     // === Getters
+    // ======================================
 
     // - none -
 
 private:
 
-    ABcallback  _OnPress;
-    ABcallback  _OnRelease;
+    static ABcallback   _OnPress;
+    static ABcallback   _OnRelease;
 
     uint8_t         debounceTime;       // internally in ms
     uint8_t         repeatDelay;        // internally in ms*100; range 100ms..25.5s

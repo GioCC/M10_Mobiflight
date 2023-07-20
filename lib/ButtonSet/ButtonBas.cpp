@@ -25,37 +25,37 @@
 
 #include "ButtonBas.h"
 
-ButtonBas::ButtonBas(uint8_t    pin,
-                    uint8_t     useHWinput,
-                    char        *name,
-                    BBcallback  OnPress,
-                    BBcallback  OnRelease,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+BBcallback  ButtonBas::_OnRelease = nullptr;
+BBcallback  ButtonBas::_OnPress = nullptr;
+
+
+ButtonBas::ButtonBas(
+    uint8_t    pin,
+    uint8_t     useHWinput,
+    char        *name,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(pin, useHWinput, name, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease),
-lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
+lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold), pressFlag(0)
 {
     CButtonBas(lthreshold, uthreshold);
 }
 
-ButtonBas::ButtonBas(uint8_t    pin,
-                    uint8_t     useHWinput,
-                    uint16_t    codeh,
-                    uint16_t    codel,
-                    BBcallback  OnPress,
-                    BBcallback  OnRelease,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+ButtonBas::ButtonBas(
+    uint8_t    pin,
+    uint8_t     useHWinput,
+    uint16_t    codeh,
+    uint16_t    codel,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(pin, useHWinput, codeh, codel, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease),
-lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
+lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold), pressFlag(0)
 {
     CButtonBas(lthreshold, uthreshold);
 }

@@ -42,13 +42,17 @@ Better: a mode flag tells whether to use two available callbacks either as "Pres
 
 class ButtonEnc;
 
-typedef void (*EBcallback)(ButtonEnc*);
+using EBcallback = void (*)(ButtonEnc*);
 
 class ButtonEnc
 : public Button
 {
 
 public:
+
+    // ======================================
+    // === Constructors
+    // ======================================
 
     // This constructor allows to define each individual encoder button.
     // Buttons are automatically added to the collection in the ButtonManager named 'BtnMgr'
@@ -61,9 +65,6 @@ public:
 
     ButtonEnc(  uint8_t     index,
                 char        *name,
-                EBcallback  OnKeyPress,
-                EBcallback  OnKeyRelease=NULL,
-                EBcallback  OnKeyLong=NULL,
                 uint8_t     *mirrorvar=NULL,
                 uint8_t     mirrorbit=0
             );
@@ -71,13 +72,61 @@ public:
     ButtonEnc(  uint8_t     index,
                 uint16_t    codeh,
                 uint16_t    codel,
-                EBcallback  OnKeyPress,
-                EBcallback  OnKeyRelease=NULL,
-                EBcallback  OnKeyLong=NULL,
                 uint8_t     *mirrorvar=NULL,
                 uint8_t     mirrorbit=0
             );
 
+
+    // ======================================
+    // === Setup methods: common
+    // ======================================
+    // Must redefine methods with the derived type - in this case, static type matching is what is required.
+    // These are all and the same (normally they also do the exact same thing) as defined in the Button class,
+    // except for the return type.
+    // For details, see comments in Button.h.
+
+    ButtonEnc& info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return *this; }
+
+    ButtonEnc& tag(const char *s)               { Button::tag(s); return *this; }
+    ButtonEnc& tag(uint16_t hi, uint16_t lo)    { Button::tag(hi, lo); return *this; }
+
+    ButtonEnc& data(const char *s)              { Button::data(s); return *this; }
+    ButtonEnc& data(byte *b)                    { Button::data(b); return *this; }
+    ButtonEnc& data(uint16_t hi, uint16_t lo)   { Button::data(hi, lo); return *this; }
+
+    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
+    ButtonEnc& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
+    ButtonEnc& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
+
+    // ======================================
+    // === Setup methods: specialized
+    // ======================================
+
+    ButtonEnc &callbacks(EBcallback OnPress, EBcallback OnRelease = NULL, EBcallback OnLong = NULL)
+    {
+        setOnPress(OnPress);
+        setOnRelease(OnRelease);
+        setOnLong(OnLong);
+        return *this;
+    }
+
+    // ======================================
+    // === Setters (single params)
+    // ======================================
+
+    void setOnPress(EBcallback f)   {_OnPress   = f;}
+    void setOnRelease(EBcallback f) {_OnRelease = f;}
+    void setOnLong(EBcallback f)    {_OnLong    = f;}
+
+    // ======================================
+    // === Getters
+    // ======================================
+
+    // - none -
+
+    // ======================================
+    // === Operation methods
+    // ======================================
 
     // Checks the state of the button and triggers events accordingly;
     // Will be called from the ButtonGroupManager
@@ -90,51 +139,19 @@ public:
     // All flags except S_curr are expected to be set for one call only,
     // right after the event occurs.
     // IMPORTANT: Input status is expected to be already debounced.
-    virtual
-    void    check(Button::ButtonStatus_t value);
+    void    check(ButtonStatus_t value) override;
 
     // initState is used to assign the initial value.
     // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
     // These are usually associated to stable switches (rather than temporary pushbuttons),
     // which require to have their position recorded at startup
-    virtual
-    void    initState(Button::ButtonStatus_t value);
-
-    // === Bulk setup methods
-
-    // Must redefine methods with the derived type - in this case, static type matching is what is required!
-    ButtonEnc *info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return this; }
-
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
-    ButtonEnc *mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return this; }
-    ButtonEnc *source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return this; }
-
-    ButtonEnc *tag(const char *s)               { Button::tag(s); return this; }
-    ButtonEnc *tag(uint16_t hi, uint16_t lo)    { Button::tag(hi, lo); return this; }
-
-    ButtonEnc *data(const char *s)              { Button::data(s); return this; }
-    ButtonEnc *data(byte *b)                    { Button::data(b); return this; }
-    ButtonEnc *data(uint16_t hi, uint16_t lo)   { Button::data(hi, lo); return this; }
-
-    ButtonEnc  *callbacks(EBcallback OnPress, EBcallback OnRelease=NULL, EBcallback OnLong=NULL)
-        { setOnPress(OnPress); setOnRelease(OnRelease); setOnLong(OnLong); return this; }
-
-
-    // === Setters (single params)
-
-    void setOnPress(EBcallback f)   __attribute__((always_inline))  {_OnPress = (*f);}
-    void setOnRelease(EBcallback f) __attribute__((always_inline))  {_OnRelease = (*f);}
-    void setOnLong(EBcallback f)    __attribute__((always_inline))  {_OnLong = (*f);}
-
-    // === Getters
-
-    // - none -
+    void    initState(ButtonStatus_t value) override;
 
 private:
 
-    EBcallback _OnPress;
-    EBcallback _OnRelease;
-    EBcallback _OnLong;
+    static EBcallback _OnPress;
+    static EBcallback _OnRelease;
+    static EBcallback _OnLong;
 
 };
 

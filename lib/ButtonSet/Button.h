@@ -96,6 +96,10 @@ public:
 
     typedef uint8_t ButtonStatus_t;
 
+    // ======================================
+    // === Constructors
+    // ======================================
+
     /// This empty constructor is used to pre-allocate an object that will be completely filled in later.
     /// This avoids the need for dynamic allocation support and, most importantly, allows to allocate all
     /// required objects (thereby knowing whether the required space fits memory size or not) already
@@ -133,6 +137,77 @@ public:
             uint8_t     mirrorbit
             );
 
+    // ======================================
+    // === Setup methods
+    // ======================================
+    // These methods, all returning the object itself, are meant to allow chained configuration calls like:
+    //   add().tag("MyName").data(0x6E)
+    // Derived objects can (and probably will) add further specialised methods; however, for type consistency,
+    // they will have to alias these functions by redefining them.
+    // However, these methods are NOT declared 'virtual': this allows to avoid the VTable overhead
+    // by forcing early binding. The lack of late binding (= polymorphism) is not an issue, 
+    // AS LONG AS THESE METHODS ARE ONLY USED DIRECTLY ON OBJECTS (as opposed to being usd through pointers).
+    // >>> This should be the normal case if they are only used during object creation. <<<
+    // For further details and an example, see Bruce Eckel, "Thinking in C++ (Vol.1)",
+    // from section "Upcasting" (p.662) forward.
+
+    // Register button in manager: use this ONLY for pre-allocated, still unregistered empty buttons.
+    // 
+    // The operation should conceptually belong to the manager class, however it is also defined here as a convenience wrapper.
+    // Beware: it always returns a valid pointer, even if registering fails!
+    #ifdef USE_BTN_MGR
+    Button& add(ButtonManager& b) { b.add(this); return *this;}
+    #else
+    Button& add(void) { return *this;}
+    #endif
+
+    Button& info(uint8_t npin, uint8_t isHW)
+                                            { pin = npin; flagChg(flags, F_HWinput, isHW); return *this; }
+
+    Button& tag(const char *s)              { _tag.text = s; return *this; }
+    Button& tag(uint16_t hi, uint16_t lo)   { _tag.code.hi = hi; _tag.code.lo = lo; return *this; }
+
+    Button& data(const char *s)             { _data.text = s; return *this; }
+    Button& data(byte *b)                   { _data.bytes = b; return *this; }
+    Button& data(uint16_t hi, uint16_t lo)  { _data.code.hi = hi; _data.code.lo = lo; return *this; }
+    
+    // These will be conditionally defined later
+    // Button *source(uint8_t *sourcevar, uint8_t sourcebit);
+    // Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit);
+
+    // ======================================
+    // === Setters (single params)
+    // ======================================
+
+    void    setPin(uint8_t p)       {pin = p;}
+
+    // ======================================
+    // === Getters
+    // ======================================
+
+    uint8_t getPin(void)            {return pin;}
+    uint8_t isHW(void)              {return ((flags & F_HWinput)!=0);}
+    uint8_t isAna(void)             {return ((flags & F_Analog)!=0);}
+
+    //This is kept for temporary compatibility during debug:
+    RawData *getTag(void)           {return &_tag;}
+    char*   getName(void)           {return (char*)_tag.text;}
+    void    getTag(uint16_t *lo,
+                    uint16_t *hi)   {*lo=_tag.code.lo; *hi=_tag.code.hi;}
+    RawData *getData(void)          {return &_data;}
+    void    getData(uint16_t *lo,
+                    uint16_t *hi)   {*lo=_data.code.lo; *hi=_data.code.hi;}
+
+    // ======================================
+    // === Operation methods
+    // ======================================
+
+    // initState is used to assign the initial value.
+    // It differs from check() because it only triggers _OnPress/_OnRelease events.
+    // These are usually associated to stable switches (rather than temporary pushbuttons),
+    // which require to have their position recorded at startutp
+    virtual void initState(ButtonStatus_t value) { UNUSED(value); }
+
     // Checks the state of the button and triggers events accordingly;
     // This method must be (re)defined in the specific button type classes.
     // Will be called from the ButtonGroupManager.
@@ -145,78 +220,38 @@ public:
     //   Slong    The long press interval just expired
     // All flags except Scurr are expected to be set for one call only,
     // right after the event occurs.
-    // virtual 
-    void check(ButtonStatus_t value) { UNUSED(value); } // = 0;
+    virtual void check(ButtonStatus_t value) { UNUSED(value); } // = 0;
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers _OnPress/_OnRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startutp
-    // virtual 
-    void initState(ButtonStatus_t value) { UNUSED(value); }
-
-    // === Bulk setup methods
-
-    // Register button in manager: use this ONLY for pre-allocated, still unregistered empty buttons.
-    // The operation should conceptually belong to the manager class, however it is also defined here as a convenience wrapper.
-    // Beware: it always returns a valid pointer, even if registering fails!
-    Button *add(void);
-
-    Button *info(uint8_t npin, uint8_t isHW)
-                                            __attribute__((always_inline))  { pin = npin; flagChg(flags, F_HWinput, isHW); return this; }
-
-    Button *tag(const char *s)              __attribute__((always_inline))  { _tag.text = s; return this; }
-    Button *tag(uint16_t hi, uint16_t lo)   __attribute__((always_inline))  { _tag.code.hi = hi; _tag.code.lo = lo; return this; }
-
-    Button *data(const char *s)             __attribute__((always_inline))  { _data.text = s; return this; }
-    Button *data(byte *b)                   __attribute__((always_inline))  { _data.bytes = b; return this; }
-    Button *data(uint16_t hi, uint16_t lo)  __attribute__((always_inline))  { _data.code.hi = hi; _data.code.lo = lo; return this; }
-
-    // === Setters (single params)
-
-    void    setPin(uint8_t p)       __attribute__((always_inline))  {pin = p;}
-
-    // === Getters
-
-    uint8_t getPin(void)            __attribute__((always_inline))  {return pin;}
-    uint8_t isHW(void)              __attribute__((always_inline))  {return ((flags & F_HWinput)!=0);}
-    uint8_t isAna(void)             __attribute__((always_inline))  {return ((flags & F_Analog)!=0);}
-
-    //This is kept for temporary compatibility during debug:
-    RawData *getTag(void)           __attribute__((always_inline))  {return &_tag;}
-    char*   getName(void)           __attribute__((always_inline))  {return (char*)_tag.text;}
-    void    getTag(uint16_t *lo,
-                    uint16_t *hi)   __attribute__((always_inline))  {*lo=_tag.code.lo; *hi=_tag.code.hi;}
-    RawData *getData(void)          __attribute__((always_inline))  {return &_data;}
-    void    getData(uint16_t *lo,
-                    uint16_t *hi)   __attribute__((always_inline))  {*lo=_data.code.lo; *hi=_data.code.hi;}
+    // ======================================
+    // === Conditional definitions
+    // ======================================
 
 #ifdef SOURCEVAR
     Button *source(uint8_t *sourcevar, uint8_t sourcebit)
-                                    __attribute__((always_inline))  {srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return this;}
-    uint8_t hasSrcVar(void)         __attribute__((always_inline))  {return (srcVar != NULL);}
-    uint8_t *getSrcVar(void)        __attribute__((always_inline))  {return srcVar; }
-    uint8_t getSrcVal(void)         __attribute__((always_inline))  {return ((flags&F_Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? true : false)); }
+                                    {srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return this;}
+    uint8_t hasSrcVar(void)         {return (srcVar != NULL);}
+    uint8_t *getSrcVar(void)        {return srcVar; }
+    uint8_t getSrcVal(void)         {return ((flags&F_Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? true : false)); }
 #else
     Button *source(uint8_t *sourcevar, uint8_t sourcebit)
-                                    __attribute__((always_inline))  {UNUSED(sourcevar); UNUSED(sourcebit); return this;}
-    uint8_t hasSrcVar(void)         __attribute__((always_inline))  {return false;}
-    uint8_t *getSrcVar(void)        __attribute__((always_inline))  {return NULL;}
-    uint8_t getSrcVal(void)         __attribute__((always_inline))  {return 0;}
+                                    {UNUSED(sourcevar); UNUSED(sourcebit); return this;}
+    uint8_t hasSrcVar(void)         {return false;}
+    uint8_t *getSrcVar(void)        {return NULL;}
+    uint8_t getSrcVal(void)         {return 0;}
 #endif // SOURCEVAR
 
 #ifdef MIRRORVAR
     Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
-                                    __attribute__((always_inline))  {mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return this;}
-    uint8_t *getMVar(void)          __attribute__((always_inline))  {return mirrVar; }
-    void    setBit(void)            __attribute__((always_inline))  {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
-    void    clearBit(void)          __attribute__((always_inline))  {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
+                                    {mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return this;}
+    uint8_t *getMVar(void)          {return mirrVar; }
+    void    setBit(void)            {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
+    void    clearBit(void)          {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
 #else
     Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
-                                    __attribute__((always_inline))  {UNUSED(mirrorvar); UNUSED(mirrorbit); return this;}
-    uint8_t *getMVar(void)          __attribute__((always_inline))  {return NULL;}
-    void    setBit(void)            __attribute__((always_inline))  {}
-    void    clearBit(void)          __attribute__((always_inline))  {}
+                                    {UNUSED(mirrorvar); UNUSED(mirrorbit); return this;}
+    uint8_t *getMVar(void)          {return NULL;}
+    void    setBit(void)            {}
+    void    clearBit(void)          {}
 #endif // MIRRORVAR
 
 protected:
@@ -236,6 +271,7 @@ protected:
 
 };
 
+// DEBUG
 constexpr uint8_t RDsize = sizeof(RawData);
 constexpr uint8_t BBsize = sizeof(Button);
 

@@ -26,34 +26,32 @@
 */
 
 #include "ButtonGrp.h"
+GBcallback ButtonGrp::_OnPress = nullptr;
+GBcallback ButtonGrp::_OnRelease = nullptr;
+GBcallback ButtonGrp::_OnLong = nullptr;
 
-ButtonGrp::ButtonGrp(uint8_t    npin,
-                    char        *name,
-                    GBcallback  OnPress,
-                    GBcallback  OnRelease,
-                    GBcallback  OnLong,
-                    uint8_t     hasRepeat,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
-: Button(npin, 0, name, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease), _OnLong(OnLong)
+
+ButtonGrp::ButtonGrp(
+    uint8_t     npin,
+    char        *name,
+    uint8_t     hasRepeat,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
+: Button(npin, 0, name, mirrorvar, mirrorbit)
 {
     setRepeat(hasRepeat);
 }
 
-ButtonGrp::ButtonGrp(uint8_t    npin,
-                    uint16_t    codeh,
-                    uint16_t    codel,
-                    GBcallback  OnPress,
-                    GBcallback  OnRelease,
-                    GBcallback  OnLong,
-                    uint8_t     hasRepeat,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
-: Button(npin, 0, codeh, codel, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease), _OnLong(OnLong)
+ButtonGrp::ButtonGrp(
+    uint8_t     npin,
+    uint16_t    codeh,
+    uint16_t    codel,
+    uint8_t     hasRepeat,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
+: Button(npin, 0, codeh, codel, mirrorvar, mirrorbit)
 {
     setRepeat(hasRepeat);
 }

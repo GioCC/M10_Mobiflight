@@ -25,44 +25,42 @@
 
 #include "ButtonAdv.h"
 
-ButtonAdv::ButtonAdv(uint8_t    pin,
-                    uint8_t     useHWinput,
-                    char        *name,
-                    BAcallback  OnPress,
-                    BAcallback  OnRelease,
-                    BAcallback  OnLong,
-                    uint16_t    rptDelay,
-                    uint16_t    rptRate,
-                    uint16_t    longPress,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+BAcallback      ButtonAdv::_OnPress = nullptr;
+BAcallback      ButtonAdv::_OnRelease = nullptr;
+BAcallback      ButtonAdv::_OnLong = nullptr;
+
+ButtonAdv::ButtonAdv(
+    uint8_t    pin,
+    uint8_t     useHWinput,
+    char        *name,
+    uint16_t    rptDelay,
+    uint16_t    rptRate,
+    uint16_t    longPress,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(pin, useHWinput, name, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease), _OnLong(OnLong),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAdv(rptDelay, rptRate, longPress, lthreshold, uthreshold);
 }
 
-ButtonAdv::ButtonAdv(uint8_t    pin,
-                    uint8_t     useHWinput,
-                    uint16_t    codeh,
-                    uint16_t    codel,
-                    BAcallback  OnPress,
-                    BAcallback  OnRelease,
-                    BAcallback  OnLong,
-                    uint16_t    rptDelay,
-                    uint16_t    rptRate,
-                    uint16_t    longPress,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+ButtonAdv::ButtonAdv(
+    uint8_t    pin,
+    uint8_t     useHWinput,
+    uint16_t    codeh,
+    uint16_t    codel,
+    uint16_t    rptDelay,
+    uint16_t    rptRate,
+    uint16_t    longPress,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(pin, useHWinput, codeh, codel, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease), _OnLong(OnLong),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAdv(rptDelay, rptRate, longPress, lthreshold, uthreshold);
@@ -169,14 +167,14 @@ ButtonAdv::_check(uint8_t newi)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
-            if (_OnPress != NULL) {
+            if (_OnPress != nullptr) {
                 _OnPress(this);
                 now = millis();     // callback may have taken some time
             }
         }
 
         // is repeating enabled?
-        if ((repeatRate > 0 ) && (_OnPress != NULL)) {
+        if ((repeatRate > 0 ) && (_OnPress != nullptr)) {
             // is the startdelay passed?
             // 'TlastPress != 0' (ie at least one repetition already happened)
             // is only used to spare computing time, skipping the check of the whole condition.
@@ -190,7 +188,7 @@ ButtonAdv::_check(uint8_t newi)
             }
         }
         // is long press enabled?
-        if ((longPDelay > 0) && (_OnLong != NULL)) {
+        if ((longPDelay > 0) && (_OnLong != nullptr)) {
             if (longPFlag==0 && (now >= TstartPress + times100(longPDelay))) {
                 longPFlag = 1;      // lock further activations
                 _OnLong(this);
@@ -204,7 +202,7 @@ ButtonAdv::_check(uint8_t newi)
             TstartPress = 0;
             TlastPress = 0;
             longPFlag = 0;      // release LP lock
-            if (_OnRelease != NULL) {
+            if (_OnRelease != nullptr) {
                 _OnRelease(this);
             }
         }
@@ -231,12 +229,12 @@ ButtonAdv::_initState(uint8_t newi)
     // Register new status
     if (newi == HIGH) {
         flags |= F_lastState;
-        if (_OnPress != NULL) {
+        if (_OnPress != nullptr) {
             _OnPress(this);
         }
     } else {
         flags &= ~F_lastState;
-        if (_OnRelease != NULL) {
+        if (_OnRelease != nullptr) {
             _OnRelease(this);
         }
     }

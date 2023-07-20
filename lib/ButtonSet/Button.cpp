@@ -63,7 +63,7 @@ Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
 #endif // USE_BTN_MGR
 }
 
-Button *
+Button& 
 Button::add(void)
 {
 #ifdef USE_BTN_MGR

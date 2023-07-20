@@ -29,38 +29,37 @@
 
 #include "ButtonAna.h"
 
-ButtonAna::ButtonAna(uint8_t    npin,
-                    char        *name,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    ABcallback  OnPress,
-                    ABcallback  OnRelease,
-                    uint16_t    rptDelay,
-                    uint16_t    rptRate,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+ABcallback   ButtonAna::_OnPress = nullptr;
+ABcallback   ButtonAna::_OnRelease = nullptr;
+
+ButtonAna::ButtonAna(
+    uint8_t    npin,
+    char        *name,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint16_t    rptDelay,
+    uint16_t    rptRate,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(npin, 0, name, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAna(repeatDelay, repeatRate);
 }
 
-ButtonAna::ButtonAna(uint8_t    npin,
-                    uint16_t    codeh,
-                    uint16_t    codel,
-                    uint8_t     lthreshold,
-                    uint8_t     uthreshold,
-                    ABcallback  OnPress,
-                    ABcallback  OnRelease,
-                    uint16_t    rptDelay,
-                    uint16_t    rptRate,
-                    uint8_t     *mirrorvar,
-                    uint8_t     mirrorbit
-                    )
+ButtonAna::ButtonAna(
+    uint8_t    npin,
+    uint16_t    codeh,
+    uint16_t    codel,
+    uint8_t     lthreshold,
+    uint8_t     uthreshold,
+    uint16_t    rptDelay,
+    uint16_t    rptRate,
+    uint8_t     *mirrorvar,
+    uint8_t     mirrorbit
+)
 : Button(npin, 0, codeh, codel, mirrorvar, mirrorbit),
-_OnPress(OnPress), _OnRelease(OnRelease),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAna(repeatDelay, repeatRate);
@@ -116,9 +115,10 @@ ButtonAna::_getInput(uint8_t ival)
 }
 
 void
-ButtonAna::check(uint8_t ival)
+ButtonAna::check(ButtonStatus_t bval)
 {
     unsigned long now;
+    uint8_t  ival = bval;   // UGLY CONVERSION!!!
     int8_t  h;
     uint8_t newi;
     uint8_t curi = ((flags & F_lastState) ? HIGH : LOW);
@@ -147,7 +147,7 @@ ButtonAna::check(uint8_t ival)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
-            if (_OnPress != NULL) {
+            if (_OnPress != nullptr) {
                 _OnPress(this);
                 now = millis();     // callback may have taken some time
             }
@@ -155,7 +155,7 @@ ButtonAna::check(uint8_t ival)
         }
 
         // is repeating enabled?
-        if ((repeatRate > 0 ) && (_OnPress != NULL)) {
+        if ((repeatRate > 0 ) && (_OnPress != nullptr)) {
             // is the startdelay passed?
             // 'TlastPress != 0' (ie at least one repetition already happened)
             // is only used to spare computing time, skipping the check of the whole condition.
@@ -174,7 +174,7 @@ ButtonAna::check(uint8_t ival)
             // Input LOW: reset all counters
             TstartPress = 0;
             TlastPress = 0;
-            if (_OnRelease != NULL) {
+            if (_OnRelease != nullptr) {
                 _OnRelease(this);
             }
             clearBit();
@@ -183,8 +183,9 @@ ButtonAna::check(uint8_t ival)
 }
 
 void
-ButtonAna::initState(Button::ButtonStatus_t ival)
+ButtonAna::initState(ButtonStatus_t bval)
 {
+    uint8_t  ival = bval;   // UGLY CONVERSION!!!
     uint8_t newi;
     int8_t  h;
 
@@ -194,13 +195,13 @@ ButtonAna::initState(Button::ButtonStatus_t ival)
     // Register new status
     if (newi == HIGH) {
         flags |= F_lastState;
-        if (_OnPress != NULL) {
+        if (_OnPress != nullptr) {
             _OnPress(this);
         }
         setBit();
     } else {
         flags &= ~F_lastState;
-        if (_OnRelease != NULL) {
+        if (_OnRelease != nullptr) {
             _OnRelease(this);
         }
         clearBit();
