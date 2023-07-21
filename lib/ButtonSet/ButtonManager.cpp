@@ -11,7 +11,7 @@
 #define FORALL_b    for(byte b=0; b<NBANKS; b++)
 #define vv          vec[b]
 
-ButtonManager ButtonMgr;
+// ButtonManager ButtonMgr;
 
 ButtonManager::ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRate)
 : longPDelay(lpDelay), repeatDelay(rptDelay), repeatInterval(rptRate)
@@ -187,11 +187,11 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
             } else {
                 byte bnk = pin>>3;
                 byte msk = (0x01 << (pin&0x07));
-                if(vecIO[bnk]       & msk) sts |= S_Curr;
-                if(vec[bnk].Down    & msk) sts |= S_Dn;
-                if(vec[bnk].Up      & msk) sts |= S_Up;
-                if(vec[bnk].Repeat  & msk) sts |= S_Rpt;
-                if(vec[bnk].LongP   & msk) sts |= S_Long;
+                if(vecIO[bnk]       & msk) sts |= Button::Curr;
+                if(vec[bnk].Down    & msk) sts |= Button::Dn;
+                if(vec[bnk].Up      & msk) sts |= Button::Up;
+                if(vec[bnk].Repeat  & msk) sts |= Button::Rpt;
+                if(vec[bnk].LongP   & msk) sts |= Button::Long;
             }
 
             // Let each button check its state and trigger its own action

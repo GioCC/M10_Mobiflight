@@ -10,19 +10,19 @@
 * It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input values supplied by an underlying I/O reader.
 *
-* The ButtonAdv reads a value either:
+* The ButtonBas reads a value either:
 * - directly from a digital I/O pin
 * - directly from an analog I/O pin
 * - an argument passed to the polling routine,  digital or analog
 * and, after processing, invokes callback functions accordingly.
 * Analog values are used for multi-position switches (thus are converted to a digital value
-* for a specified range); for each position a different ButtonAdv object must be defined (each
+* for a specified range); for each position a different ButtonBas object must be defined (each
 * with its own range).
 * One of the four modes above can be chosen by using the corresponding constructor.
 *
 * Timings (for debounce, repeat etc) are handled internally.
 *
-* This class is a simplified version of ButtonAdv, stripped of repeat/longpress functions
+* This class is a simplified version of ButtonBas, stripped of repeat/longpress functions
 * to substantially reduce memory footprint.
 *
 * For uniformity, the polling method always takes a ButtonStatus_t argument, which however is ignored if hardware
@@ -31,10 +31,10 @@
 * This file declares the ButtonBas class.
 *
 * Usage:
-* - Include ButtonAdv.h and ButtonGroupManager.h in your sketch
+* - Include ButtonBas.h and ButtonGroupManager.h in your sketch
 * - Add a call to ButtonGrpManager.checkButtons() in your main loop
-* - Declare each button and define the events using a ButtonAdv constructor
-* - Declare the required event functions ( void OnKeyXXX(ButtonAdv* but) )
+* - Declare each button and define the events using a ButtonBas constructor
+* - Declare the required event functions ( void OnKeyXXX(ButtonBas* but) )
 * - See the comments in the code for more help
 */
 
@@ -43,7 +43,9 @@
 
 #include <Arduino.h>
 #include "Button.h"
+#ifdef USE_BTN_MGR
 #include "ButtonManager.h"
+#endif
 
 class ButtonBas;
 
@@ -63,21 +65,20 @@ public:
 
     ButtonBas(  uint8_t     pin,
                 uint8_t     useHWinput,
-                char        *name,
-                uint8_t     lthreshold =0,
-                uint8_t     uthreshold =0,
-                uint8_t     *mirrorvar=NULL,
-                uint8_t     mirrorbit=0
+                char*       name,
+                uint8_t     lthreshold  =0,
+                uint8_t     uthreshold  =0,
+                uint8_t*    mirrorvar   =NULL,
+                uint8_t     mirrorbit   =0
             );
 
     ButtonBas(  uint8_t     pin,
                 uint8_t     useHWinput,
-                uint16_t    codeh,
-                uint16_t    codel,
-                uint8_t     lthreshold =0,
-                uint8_t     uthreshold =0,
-                uint8_t     *mirrorvar=NULL,
-                uint8_t     mirrorbit=0
+                uint16_t    code,
+                uint8_t     lthreshold  =0,
+                uint8_t     uthreshold  =0,
+                uint8_t*    mirrorvar   =NULL,
+                uint8_t     mirrorbit   =0
             );
 
     void
@@ -86,23 +87,41 @@ public:
     // ======================================
     // === Setup methods: common
     // ======================================
-    // Must redefine methods with the derived type - in this case, static type matching is what is required.
-    // These are all and the same (normally they also do the exact same thing) as defined in the Button class,
-    // except for the return type.
+    // These methods, all returning the object itself, are meant to allow chained configuration calls like:
+    //   add().tag("MyName").data(0x6E)
+    // These methods can't be overrides of 'virtual' methods in the base class: in order to insure compatibility
+    // with out specialized setup methods (if any), derived objects have to redefine these methods 
+    // WITH THE SAME NAME AND SIGNATURE but RETURNING THEIR OWN TYPE. 
+    // The redefined methods must ONLY call the corresponding base class methods and return the reference to
+    // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    ButtonBas& info(uint8_t npin, uint8_t isHW){ Button::info(npin, isHW); return *this; }
+    ButtonBas& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; }
 
-    ButtonBas& tag(const char *s)              { Button::tag(s); return *this; }
-    ButtonBas& tag(uint16_t hi, uint16_t lo)   { Button::tag(hi, lo); return *this; }
+    ButtonBas& tag(const char *s)                   { Button::tag(s);    return *this; }
+    ButtonBas& tag(byte *b)                         { Button::tag(b);    return *this; }
+    ButtonBas& tag(uint16_t code)                   { Button::tag(code); return *this; }
 
-    ButtonBas& data(const char *s)             { Button::data(s); return *this; }
-    ButtonBas& data(byte *b)                   { Button::data(b); return *this; }
-    ButtonBas& data(uint16_t hi, uint16_t lo)  { Button::data(hi, lo); return *this; }
+    // ButtonBas& data(const char *s)               { Button::data(s);    return *this; }
+    // ButtonBas& data(byte *b)                     { Button::data(b);    return *this; }
+    // ButtonBas& data(uint16_t code)               { Button::data(code); return *this; }
 
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
+    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h"
     ButtonBas& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
     ButtonBas& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
+
+    static 
+    ButtonBas& make(void)                           { ButtonBas* b = new ButtonBas(); return *b; }
+
+    #ifdef USE_BTN_MGR
+    // Add the button to the collection in the specified ButtonManager,
+    // to allow centralized polling. From there they can also be retrieved for custom operations.
+    ButtonBas& addTo(ButtonManager& mgr);
+
+    // Create a Button and add it to the collection in the specified ButtonManager.
+    static 
+    ButtonBas& make(ButtonManager& mgr);
+    #endif
 
     // ======================================
     // === Setup methods: specialized
@@ -120,7 +139,7 @@ public:
     {
         lowerAnaThrs=lthreshold;    // (uint8_t)((lthreshold+2)>>2);
         upperAnaThrs=uthreshold;    // (uint8_t)((uthreshold+2)>>2);
-        flagChg(flags, F_Analog, (lthreshold==uthreshold));
+        flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
         return *this;
     }
 
@@ -150,12 +169,12 @@ public:
     // - an analog value (0..255)
     // - for digital values, a bit pattern of type Button::ButtonStatus_t,
     //   with following meaning (see also base class):
-    //      S_curr    Current input status
-    //      S_dn      Input just became active
-    //      S_up      Input was just released
-    //      S_rpt     A repeat interval just expired
-    //      S_long    The long press interval just expired
-    //   All flags except S_curr are expected to be only set for the call right after the event occurs.
+    //      Button::curr    Current input status
+    //      Button::dn      Input just became active
+    //      Button::up      Input was just released
+    //      Button::rpt     A repeat interval just expired
+    //      Button::long    The long press interval just expired
+    //   All flags except Button::curr are expected to be only set for the call right after the event occurs.
     // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
     // WARNING (for HW reading only): digital inputs are considered ACTIVE (yielding HIGH) if closed to GND.
     void    check(ButtonStatus_t value) override;

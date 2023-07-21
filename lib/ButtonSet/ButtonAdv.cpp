@@ -8,9 +8,9 @@
 *
 * This library allows to conveniently define pushbutton actions with callbacks for several events.
 * It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
+* input _flags supplied by an underlaying I/O reader (digital buttons only).
 *
-* The ButtonAdv receives a set of I/O flags describing the status of its associated input or 'pin'
+* The ButtonAdv receives a set of I/O _flags describing the status of its associated input or '_pin'
 * (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
 *
 * This file defines the ButtonAdv class.
@@ -30,7 +30,7 @@ BAcallback      ButtonAdv::_OnRelease = nullptr;
 BAcallback      ButtonAdv::_OnLong = nullptr;
 
 ButtonAdv::ButtonAdv(
-    uint8_t    pin,
+    uint8_t    _pin,
     uint8_t     useHWinput,
     char        *name,
     uint16_t    rptDelay,
@@ -41,17 +41,16 @@ ButtonAdv::ButtonAdv(
     uint8_t     *mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(pin, useHWinput, name, mirrorvar, mirrorbit),
+: Button(_pin, useHWinput, name, mirrorvar, mirrorbit),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAdv(rptDelay, rptRate, longPress, lthreshold, uthreshold);
 }
 
 ButtonAdv::ButtonAdv(
-    uint8_t    pin,
+    uint8_t    _pin,
     uint8_t     useHWinput,
-    uint16_t    codeh,
-    uint16_t    codel,
+    uint16_t    code,
     uint16_t    rptDelay,
     uint16_t    rptRate,
     uint16_t    longPress,
@@ -60,7 +59,7 @@ ButtonAdv::ButtonAdv(
     uint8_t     *mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(pin, useHWinput, codeh, codel, mirrorvar, mirrorbit),
+: Button(_pin, useHWinput, code, mirrorvar, mirrorbit),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAdv(rptDelay, rptRate, longPress, lthreshold, uthreshold);
@@ -73,9 +72,9 @@ ButtonAdv::CButtonAdv( uint16_t rptDelay, uint16_t rptRate, uint16_t longPress, 
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     setLongPDelay(longPress);
-    flagChg(flags, F_Analog, (lthreshold==uthreshold));
+    flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
     TlastChange = millis();
-    flagChg(flags, F_lastState, 0);
+    flagChg(_flags, Button::lastState, 0);
 }
 
 // Set repeat time (in ms; rounded to next 10 ms; effective range 10ms..2.55s)
@@ -108,21 +107,21 @@ uint8_t
 ButtonAdv::_getInput(Button::ButtonStatus_t ival) //Button::ButtonStatus_t ival)
 {
     uint8_t newi;
-    uint8_t ana = (flags & F_Analog);
+    uint8_t ana = (_flags & Button::Analog);
 
-    if(flags & F_HWinput) {
-        newi = (ana
-              ? ((analogRead(pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
-              : !digitalRead(pin) );
+    if(_flags & Button::HWinput) {
+        newi = (ana ?
+                ((analogRead(_pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
+               : !digitalRead(_pin) );
     } else if(hasSrcVar()) {
         newi = getSrcVal();
     } else {
-        // Input digital values are considered ON if bit S_Curr (#0 - LSb) is == 1,
+        // Input digital values are considered ON if bit Button::Curr (#0 - LSb) is == 1,
         // NOT simply if (value != 0) !!
-        newi = (ana ? (uint8_t)ival : (ival & S_Curr));
+        newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
     }
-    if (flags & F_Analog) {
-        int8_t  h = ((flags & F_lastState) ? hysteresis : -hysteresis);
+    if (_flags & Button::Analog) {
+        int8_t  h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
         newi = ((newi >= lowerAnaThrs+h && newi < upperAnaThrs-h) ? HIGH : LOW);
     } else {
         newi = (newi ? HIGH : LOW);
@@ -140,8 +139,8 @@ ButtonAdv::check(Button::ButtonStatus_t ival)
 void
 ButtonAdv::check(uint8_t *bytevec)
 {
-    register uint8_t ival = bytevec[((pin-1)>>3)];
-    ival = ((ival&(1<<((pin-1)&0x07))) ? HIGH : LOW);
+    register uint8_t ival = bytevec[((_pin-1)>>3)];
+    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
     _check(ival);
 }
 
@@ -149,7 +148,7 @@ void
 ButtonAdv::_check(uint8_t newi)
 {
     unsigned long now;
-    uint8_t curi = ((flags & F_lastState) ? HIGH : LOW);
+    uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
 
     now = millis();
     if (newi != curi) {
@@ -158,7 +157,7 @@ ButtonAdv::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            if(newi == HIGH) { flags |= F_lastState; } else { flags &= ~F_lastState; }
+            if(newi == HIGH) { _flags |= Button::lastState; } else { _flags &= ~Button::lastState; }
             curi = newi;
         }
     }
@@ -167,14 +166,17 @@ ButtonAdv::_check(uint8_t newi)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
-            if (_OnPress != nullptr) {
+            if (_OnPress) {
                 _OnPress(this);
-                now = millis();     // callback may have taken some time
+                // callback may have taken some time: update <now> for <if>s below
+                now = millis();     
             }
         }
 
         // is repeating enabled?
-        if ((repeatRate > 0 ) && (_OnPress != nullptr)) {
+        // We check _OnPress here because 'repeat' does not set any flag, therefore
+        // if there's no callback there's no reason for processing.
+        if ((repeatRate > 0 ) && (_OnPress)) {
             // is the startdelay passed?
             // 'TlastPress != 0' (ie at least one repetition already happened)
             // is only used to spare computing time, skipping the check of the whole condition.
@@ -183,16 +185,16 @@ ButtonAdv::_check(uint8_t newi)
                 if ((now - TlastPress) >= (unsigned long)times10(repeatRate)) {
                     TlastPress = now;
                     _OnPress(this);
-                    //now = millis();     // callback may have taken some time
+                    // callback may have taken some time: update <now> for <if>s below
+                    now = millis();
                 }
             }
         }
         // is long press enabled?
-        if ((longPDelay > 0) && (_OnLong != nullptr)) {
+        if (longPDelay > 0) {
             if (longPFlag==0 && (now >= TstartPress + times100(longPDelay))) {
                 longPFlag = 1;      // lock further activations
-                _OnLong(this);
-                //now = millis();     // callback may have taken some time
+                if(_OnLong) _OnLong(this);
             }
         }
     } else {
@@ -202,9 +204,7 @@ ButtonAdv::_check(uint8_t newi)
             TstartPress = 0;
             TlastPress = 0;
             longPFlag = 0;      // release LP lock
-            if (_OnRelease != nullptr) {
-                _OnRelease(this);
-            }
+            if (_OnRelease) _OnRelease(this);
         }
     }
 }
@@ -218,8 +218,8 @@ ButtonAdv::initState(Button::ButtonStatus_t ival)
 void
 ButtonAdv::initState(uint8_t *bytevec)
 {
-    register uint8_t ival = bytevec[((pin-1)>>3)];
-    ival = ((ival&(1<<((pin-1)&0x07))) ? HIGH : LOW);
+    register uint8_t ival = bytevec[((_pin-1)>>3)];
+    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
     _initState(ival);
 }
 
@@ -228,15 +228,26 @@ ButtonAdv::_initState(uint8_t newi)
 {
     // Register new status
     if (newi == HIGH) {
-        flags |= F_lastState;
-        if (_OnPress != nullptr) {
-            _OnPress(this);
-        }
+        _flags |= Button::lastState;
+        if (_OnPress) _OnPress(this);
     } else {
-        flags &= ~F_lastState;
-        if (_OnRelease != nullptr) {
-            _OnRelease(this);
-        }
+        _flags &= ~Button::lastState;
+        if (_OnRelease) _OnRelease(this);
     }
 }
 
+#ifdef USE_BTN_MGR
+ButtonAdv& ButtonAdv::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); return *this;
+}
+
+ButtonAdv& ButtonAdv::make(ButtonManager& mgr)
+{
+    ButtonAdv* b = new ButtonAdv(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+// end ButtonAdv.cpp

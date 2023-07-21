@@ -33,9 +33,9 @@ GBcallback ButtonGrp::_OnLong = nullptr;
 
 ButtonGrp::ButtonGrp(
     uint8_t     npin,
-    char        *name,
+    char*       name,
     uint8_t     hasRepeat,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(npin, 0, name, mirrorvar, mirrorbit)
@@ -45,40 +45,39 @@ ButtonGrp::ButtonGrp(
 
 ButtonGrp::ButtonGrp(
     uint8_t     npin,
-    uint16_t    codeh,
-    uint16_t    codel,
+    uint16_t    code,
     uint8_t     hasRepeat,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(npin, 0, codeh, codel, mirrorvar, mirrorbit)
+: Button(npin, 0, code, mirrorvar, mirrorbit)
 {
     setRepeat(hasRepeat);
 }
 
 void ButtonGrp::check(Button::ButtonStatus_t ival)
 {
-    flagChg(flags, F_lastState, ((ival & S_Curr) != 0));
+    flagChg(_flags, Button::lastState, ((ival & Button::Curr) != 0));
 
-    if ((ival & S_Dn) /*&& (cur == HIGH)*/) {
+    if ((ival & Button::Dn) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
         setBit();
     }
-    if (ival & S_Up) {
+    if (ival & Button::Up) {
         if (_OnRelease) _OnRelease(this);
         clearBit();
     }
-    if ((ival & S_Rpt) && (flags & F_hasRepeat) /*&& (cur == HIGH)*/) {
+    if ((ival & Button::Rpt) && (_flags & Button::hasRepeat) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
     }
-    if ((ival & S_Long) /*&& (cur == HIGH)*/) {
+    if ((ival & Button::Long) /*&& (cur == HIGH)*/) {
         if (_OnLong)    _OnLong(this);
     }
 }
 
 void ButtonGrp::initState(Button::ButtonStatus_t ival)
 {
-    if ((ival & S_Curr) != 0) {
+    if ((ival & Button::Curr) != 0) {
         if (_OnPress)   _OnPress(this);
         setBit();
     } else {
@@ -86,3 +85,19 @@ void ButtonGrp::initState(Button::ButtonStatus_t ival)
         clearBit();
     }
 }
+
+#ifdef USE_BTN_MGR
+ButtonGrp& ButtonGrp::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); return *this;
+}
+
+ButtonGrp& ButtonGrp::make(ButtonManager& mgr)
+{
+    ButtonGrp* b = new ButtonGrp(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+// end ButtonGrp.cpp

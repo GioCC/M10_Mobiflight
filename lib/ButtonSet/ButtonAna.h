@@ -32,7 +32,9 @@
 
 #include <Arduino.h>
 #include "Button.h"
+#ifdef USE_BTN_MGR
 #include "ButtonManager.h"
+#endif
 
 class ButtonAna;
 
@@ -61,24 +63,23 @@ public:
     ButtonAna() {}     // for objects that will be completely filled in later
 
     ButtonAna(  uint8_t     pin,
-                char        *name,
+                char*       name,
                 uint8_t     lthreshold =128,
                 uint8_t     uthreshold =255,
                 uint16_t    repeatDelay=0,
-                uint16_t    repeatRate=0,
-                uint8_t     *mirrorvar=NULL,
-                uint8_t     mirrorbit=0
+                uint16_t    repeatRate =0,
+                uint8_t*    mirrorvar  =NULL,
+                uint8_t     mirrorbit  =0
             );
 
     ButtonAna(  uint8_t     pin,
-                uint16_t    codeh,
-                uint16_t    codel,
+                uint16_t    code,
                 uint8_t     lthreshold =128,
                 uint8_t     uthreshold =255,
                 uint16_t    repeatDelay=0,
-                uint16_t    repeatRate=0,
-                uint8_t     *mirrorvar=NULL,
-                uint8_t     mirrorbit=0
+                uint16_t    repeatRate =0,
+                uint8_t*    mirrorvar  =NULL,
+                uint8_t     mirrorbit  =0
             );
 
     void
@@ -105,23 +106,41 @@ public:
     // ======================================
     // === Setup methods: common
     // ======================================
-    // Must redefine methods with the derived type - in this case, static type matching is what is required.
-    // These are all and the same (normally they also do the exact same thing) as defined in the Button class,
-    // except for the return type.
+    // These methods, all returning the object itself, are meant to allow chained configuration calls like:
+    //   add().tag("MyName").data(0x6E)
+    // These methods can't be overrides of 'virtual' methods in the base class: in order to insure compatibility
+    // with out specialized setup methods (if any), derived objects have to redefine these methods 
+    // WITH THE SAME NAME AND SIGNATURE but RETURNING THEIR OWN TYPE. 
+    // The redefined methods must ONLY call the corresponding base class methods and return the reference to
+    // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    ButtonAna& info(uint8_t npin, uint8_t isHW) { Button::info(npin, isHW); return *this; }
+    ButtonAna& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; }
 
-    ButtonAna& tag(const char *s)                   { Button::tag(s); return *this; }
-    ButtonAna& tag(uint16_t hi, uint16_t lo)        { Button::tag(hi, lo); return *this; }
+    ButtonAna& tag(const char *s)                   { Button::tag(s);    return *this; }
+    ButtonAna& tag(byte *b)                         { Button::tag(b);    return *this; }
+    ButtonAna& tag(uint16_t code)                   { Button::tag(code); return *this; }
 
-    ButtonAna& data(const char *s)                  { Button::data(s); return *this; }
-    ButtonAna& data(byte *b)                        { Button::data(b); return *this; }
-    ButtonAna& data(uint16_t hi, uint16_t lo)       { Button::data(hi, lo); return *this; }
+    // ButtonAna& data(const char *s)               { Button::data(s);    return *this; }
+    // ButtonAna& data(byte *b)                     { Button::data(b);    return *this; }
+    // ButtonAna& data(uint16_t code)               { Button::data(code); return *this; }
 
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h" (compiling Button base class)
+    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h"
     ButtonAna& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
     ButtonAna& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
+
+    static 
+    ButtonAna& make(void)                           { ButtonAna* b = new ButtonAna(); return *b; }
+
+    #ifdef USE_BTN_MGR
+    // Add the button to the collection in the specified ButtonManager,
+    // to allow centralized polling. From there they can also be retrieved for custom operations.
+    ButtonAna& addTo(ButtonManager& mgr);
+
+    // Create a Button and add it to the collection in the specified ButtonManager.
+    static 
+    ButtonAna& make(ButtonManager& mgr);
+    #endif
 
     // ======================================
     // === Setup methods: specialized
@@ -147,7 +166,7 @@ public:
         lowerAnaThrs = lthreshold;
         upperAnaThrs = uthreshold;
         hysteresis   = hyst;
-        flagChg(flags, F_Analog, (lthreshold == uthreshold));
+        flagChg(_flags, Button::Analog, (lthreshold == uthreshold));
         return *this;
     }
 

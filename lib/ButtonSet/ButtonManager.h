@@ -17,16 +17,15 @@
 #define LAST  (ButtonMgr.getButton())
 
 // This include is just for usage with M10 boards (in order to tailor storage requirements); it is not for the general purpose library
-//#include "config_board.h"
+// #include "config_board.h"   // This may define MAXBUTTONS
 
 // define the max number of buttons
 // This must be consistent with the length of the passed vector (currently an uint32).
 // define MAXBUTTONS sizeof(Tvector)
 
-#include "config_board.h"   // This may define MAXBUTTONS
 // If other button types are used, or less buttons are needed, better specify the number explicitly
 #ifndef MAXBUTTONS
-#define MAXBUTTONS 32
+#define MAXBUTTONS 64
 #endif
 
 #define NBANKS  ((MAXBUTTONS+7)/8)
@@ -122,6 +121,6 @@ public:
 
 };
 
-extern  ButtonManager ButtonMgr;
+// extern  ButtonManager ButtonMgr;
 
 #endif

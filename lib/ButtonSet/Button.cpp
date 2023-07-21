@@ -33,41 +33,45 @@
 #endif // USE_BTN_MGR
 
 Button::Button(uint8_t npin, uint8_t useHWinput, const char *name, uint8_t *mirrorvar, uint8_t mirrorbit)
-: pin(npin)
+: _pin(npin)
 {
+    _tag.text = name;
     CButton(useHWinput, mirrorvar, mirrorbit);
-    tag(name);
 }
 
-Button::Button(uint8_t npin, uint8_t useHWinput, uint16_t codeh, uint16_t codel, uint8_t *mirrorvar, uint8_t mirrorbit)
-: pin(npin)
+Button::Button(uint8_t npin, uint8_t useHWinput, uint16_t tag, uint8_t *mirrorvar, uint8_t mirrorbit)
+: _pin(npin)
 {
+    _tag.code = tag;
     CButton(useHWinput, mirrorvar, mirrorbit);
-    tag(codeh, codel);
 }
 
 void
 Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
 {
-    flagChg(flags, F_lastState, 0);//lastState = LOW;
-    flagChg(flags, F_HWinput, useHWinput);
+    flagChg(_flags, Button::lastState, 0);//lastState = LOW;
+    flagChg(_flags, Button::HWinput, useHWinput);
     if (useHWinput) {
-        pinMode(pin,INPUT);
-        digitalWrite(pin, HIGH);
+        pinMode(_pin,INPUT);
+        digitalWrite(_pin, HIGH);
     }
     mirror(mirrorvar, mirrorbit);
-
-#ifdef USE_BTN_MGR
-    //ButtonGroupManager::instance()->addButton(this);
-    ButtonMgr.add(this);
-#endif // USE_BTN_MGR
 }
 
-Button& 
-Button::add(void)
-{
 #ifdef USE_BTN_MGR
-    ButtonMgr.add(this);
-#endif // USE_BTN_MGR
-    return this;
+Button& Button::addTo(ButtonManager& b)
+{ 
+    b.add(this); 
+    return *this; 
 }
+ 
+Button& Button::make(ButtonManager& mgr) 
+{ 
+    Button* b = new Button(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+
+// Button.cpp

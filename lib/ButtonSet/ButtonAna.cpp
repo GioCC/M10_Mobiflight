@@ -33,13 +33,13 @@ ABcallback   ButtonAna::_OnPress = nullptr;
 ABcallback   ButtonAna::_OnRelease = nullptr;
 
 ButtonAna::ButtonAna(
-    uint8_t    npin,
-    char        *name,
+    uint8_t     npin,
+    char*       name,
     uint8_t     lthreshold,
     uint8_t     uthreshold,
     uint16_t    rptDelay,
     uint16_t    rptRate,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(npin, 0, name, mirrorvar, mirrorbit),
@@ -49,17 +49,16 @@ lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 }
 
 ButtonAna::ButtonAna(
-    uint8_t    npin,
-    uint16_t    codeh,
-    uint16_t    codel,
+    uint8_t     npin,
+    uint16_t    code,
     uint8_t     lthreshold,
     uint8_t     uthreshold,
     uint16_t    rptDelay,
     uint16_t    rptRate,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(npin, 0, codeh, codel, mirrorvar, mirrorbit),
+: Button(npin, 0, code, mirrorvar, mirrorbit),
 lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonAna(repeatDelay, repeatRate);
@@ -73,13 +72,13 @@ ButtonAna::CButtonAna( uint16_t rptDelay, uint16_t rptRate)
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     TlastChange = millis();
-    flagChg(flags, F_lastState, 0);
+    flagChg(_flags, Button::lastState, 0);
     if(lowerAnaThrs==upperAnaThrs) {
         // Force thresholds: they can't be the same, otherwise it isn't an Analog button
         lowerAnaThrs = 128;
         upperAnaThrs = 255;
     }
-    flagChg(flags, F_Analog, 1);
+    flagChg(_flags, Button::Analog, 1);
 }
 
 // Set repeat time (in ms; rounded to next 10 ms; effective range 10ms..2.55s)
@@ -103,9 +102,9 @@ ButtonAna::setRepeatDelay(uint16_t delay)
 uint8_t
 ButtonAna::_getInput(uint8_t ival)
 {
-    uint8_t newi = ival;
-    if(flags & F_HWinput) {
-        newi = ((analogRead(pin)+2)>>2);    // Scale ADC value from 10 to 8 bits
+    uint8_t newi;
+    if(_flags & Button::HWinput) {
+        newi = ((analogRead(_pin)+2)>>2);    // Scale ADC value from 10 to 8 bits
     } else if(hasSrcVar()) {
         newi = getSrcVal();
     } else {
@@ -121,7 +120,7 @@ ButtonAna::check(ButtonStatus_t bval)
     uint8_t  ival = bval;   // UGLY CONVERSION!!!
     int8_t  h;
     uint8_t newi;
-    uint8_t curi = ((flags & F_lastState) ? HIGH : LOW);
+    uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
 
     h = (curi == HIGH ? hysteresis : -hysteresis);
 
@@ -138,7 +137,7 @@ ButtonAna::check(ButtonStatus_t bval)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            if(newi == HIGH) { flags |= F_lastState; } else { flags &= ~F_lastState; }
+            flagChg(_flags, Button::lastState, (newi == HIGH));
             curi = newi;
         }
     }
@@ -147,14 +146,17 @@ ButtonAna::check(ButtonStatus_t bval)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
-            if (_OnPress != nullptr) {
+            if (_OnPress) {
                 _OnPress(this);
-                now = millis();     // callback may have taken some time
+                // callback may have taken some time: update <now> for <if>s below
+                now = millis();
             }
             setBit();
         }
 
         // is repeating enabled?
+        // We check _OnPress here because 'repeat' does not set any flag, therefore
+        // if there's no callback there's no reason for processing.
         if ((repeatRate > 0 ) && (_OnPress != nullptr)) {
             // is the startdelay passed?
             // 'TlastPress != 0' (ie at least one repetition already happened)
@@ -164,7 +166,6 @@ ButtonAna::check(ButtonStatus_t bval)
                 if ((now - TlastPress) >= (unsigned long)times10(repeatRate)) {
                     TlastPress = now;
                     _OnPress(this);
-                    //now = millis();     // callback may have taken some time
                 }
             }
         }
@@ -174,9 +175,7 @@ ButtonAna::check(ButtonStatus_t bval)
             // Input LOW: reset all counters
             TstartPress = 0;
             TlastPress = 0;
-            if (_OnRelease != nullptr) {
-                _OnRelease(this);
-            }
+            if (_OnRelease) _OnRelease(this);
             clearBit();
         }
     }
@@ -189,21 +188,32 @@ ButtonAna::initState(ButtonStatus_t bval)
     uint8_t newi;
     int8_t  h;
 
-    h = ((flags & F_lastState) ? hysteresis : -hysteresis);
+    h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
     newi = ((ival >= lowerAnaThrs+h && ival < upperAnaThrs-h) ? HIGH : LOW);
 
     // Register new status
+    flagChg(_flags, Button::lastState, (newi == HIGH));
     if (newi == HIGH) {
-        flags |= F_lastState;
-        if (_OnPress != nullptr) {
-            _OnPress(this);
-        }
+        if (_OnPress) _OnPress(this);
         setBit();
     } else {
-        flags &= ~F_lastState;
-        if (_OnRelease != nullptr) {
-            _OnRelease(this);
-        }
+        if (_OnRelease) _OnRelease(this);
         clearBit();
     }
 }
+
+#ifdef USE_BTN_MGR
+ButtonAna& ButtonAna::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); return *this;
+}
+
+ButtonAna& ButtonAna::make(ButtonManager& mgr)
+{
+    ButtonAna* b = new ButtonAna(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+// end ButtonAna.cpp

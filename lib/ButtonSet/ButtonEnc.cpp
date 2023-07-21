@@ -23,9 +23,9 @@ EBcallback ButtonEnc::_OnRelease = nullptr;
 EBcallback ButtonEnc::_OnLong = nullptr;
 
 ButtonEnc::ButtonEnc(
-    uint8_t    index,
-    char        *name,
-    uint8_t     *mirrorvar,
+    uint8_t     index,
+    char*       name,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(index, 0, name, mirrorvar, mirrorbit)
@@ -33,40 +33,55 @@ ButtonEnc::ButtonEnc(
 
 
 ButtonEnc::ButtonEnc(
-    uint8_t    index,
-    uint16_t    codeh, uint16_t codel,
-    uint8_t     *mirrorvar,
+    uint8_t     index,
+    uint16_t    code,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(index, 0, codeh, codel, mirrorvar, mirrorbit)
+: Button(index, 0, code, mirrorvar, mirrorbit)
 {}
 
 void
 ButtonEnc::check(Button::ButtonStatus_t ival)
 {
-    flagChg(flags, F_lastState, ((ival & S_Curr) != 0));
+    flagChg(_flags, Button::lastState, ((ival & Button::Curr) != 0));
 
-    if ((ival & S_Dn) /*&& (cur == HIGH)*/) {
+    if ((ival & Button::Dn) /*&& (cur == HIGH)*/) {
         setBit();
-        if (_OnPress != nullptr)   _OnPress(this);
+        if (_OnPress) _OnPress(this);
     }
-    if (ival & S_Up) {
+    if (ival & Button::Up) {
         clearBit();
-        if (_OnRelease != nullptr) _OnRelease(this);
+        if (_OnRelease) _OnRelease(this);
     }
-    if ((ival & S_Long) /*&& (cur == HIGH)*/) {
-        if (_OnLong != nullptr)    _OnLong(this);
+    if ((ival & Button::Long) /*&& (cur == HIGH)*/) {
+        if (_OnLong) _OnLong(this);
     }
 }
 
 void ButtonEnc::initState(Button::ButtonStatus_t ival)
 {
-    if ((ival & S_Curr) != 0) {
+    if ((ival & Button::Curr) != 0) {
         setBit();
-        if (_OnPress != nullptr)   _OnPress(this);
+        if (_OnPress) _OnPress(this);
     } else {
         clearBit();
-        if (_OnRelease != nullptr) _OnRelease(this);
+        if (_OnRelease) _OnRelease(this);
     }
 }
 
+#ifdef USE_BTN_MGR
+ButtonEnc& ButtonEnc::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); return *this;
+}
+
+ButtonEnc& ButtonEnc::make(ButtonManager& mgr)
+{
+    ButtonEnc* b = new ButtonEnc(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+// end ButtonEnc.cpp

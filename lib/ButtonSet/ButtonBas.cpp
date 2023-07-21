@@ -30,32 +30,31 @@ BBcallback  ButtonBas::_OnPress = nullptr;
 
 
 ButtonBas::ButtonBas(
-    uint8_t    pin,
+    uint8_t     pin,
     uint8_t     useHWinput,
-    char        *name,
+    char*       name,
     uint8_t     lthreshold,
     uint8_t     uthreshold,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(pin, useHWinput, name, mirrorvar, mirrorbit),
-lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold), pressFlag(0)
+pressFlag(0), lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonBas(lthreshold, uthreshold);
 }
 
 ButtonBas::ButtonBas(
-    uint8_t    pin,
+    uint8_t     pin,
     uint8_t     useHWinput,
-    uint16_t    codeh,
-    uint16_t    codel,
+    uint16_t    code,
     uint8_t     lthreshold,
     uint8_t     uthreshold,
-    uint8_t     *mirrorvar,
+    uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
-: Button(pin, useHWinput, codeh, codel, mirrorvar, mirrorbit),
-lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold), pressFlag(0)
+: Button(pin, useHWinput, code, mirrorvar, mirrorbit),
+pressFlag(0), lowerAnaThrs(lthreshold), upperAnaThrs(uthreshold)
 {
     CButtonBas(lthreshold, uthreshold);
 }
@@ -64,25 +63,25 @@ void
 ButtonBas::CButtonBas(uint8_t lthreshold, uint8_t uthreshold)
 {
     debounceTime = 100;
-    flagChg(flags, F_Analog, (lthreshold==uthreshold));
+    flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
     TlastChange = millis();
-    flagChg(flags, F_lastState, 0);
+    flagChg(_flags, Button::lastState, 0);
 }
 
 uint8_t
 ButtonBas::_getInput(Button::ButtonStatus_t ival)
 {
     uint8_t newi;
-    uint8_t ana = (flags & F_Analog);
+    uint8_t ana = (_flags & Button::Analog);
 
-    if(flags & F_HWinput) {
-        newi = (ana
-              ? ((analogRead(pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
-              : !digitalRead(pin) );
+    if(_flags & Button::HWinput) {
+        newi = (ana ?
+                 ((analogRead(_pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
+               : !digitalRead(_pin) );
     } else if(hasSrcVar()) {
         newi = getSrcVal();
     } else {
-        newi = (ana ? (uint8_t)ival : (ival & S_Curr));
+        newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
     }
     if (ana) {
         newi = ((newi >= lowerAnaThrs && newi < upperAnaThrs) ? HIGH : LOW);
@@ -102,8 +101,8 @@ ButtonBas::check(Button::ButtonStatus_t ival)
 void
 ButtonBas::check(uint8_t *bytevec)
 {
-    register uint8_t ival = bytevec[((pin-1)>>3)];
-    ival = ((ival&(1<<((pin-1)&0x07))) ? HIGH : LOW);
+    register uint8_t ival = bytevec[((_pin-1)>>3)];
+    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
     _check(ival);
 }
 
@@ -111,7 +110,7 @@ void
 ButtonBas::_check(uint8_t newi)
 {
     unsigned long now;
-    uint8_t curi = ((flags & F_lastState) ? HIGH : LOW);
+    uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
 
     now = millis();
     if (newi != curi) {
@@ -120,7 +119,7 @@ ButtonBas::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            if (curi == HIGH) { flags |= F_lastState; } else { flags &= ~F_lastState; }
+            flagChg(_flags, Button::lastState, (curi == HIGH));
             curi = newi;
         }
     }
@@ -128,16 +127,15 @@ ButtonBas::_check(uint8_t newi)
     if (curi == HIGH) {
         if (!pressFlag) {
             pressFlag = 1;
-            if (_OnPress != NULL) {
+            if (_OnPress) {
                 _OnPress(this);
-                now = millis();     // callback may have taken some time, resync
+                // callback may have taken some time: update <now> for <if>s below
+                now = millis();
             }
         }
     } else {
         if (pressFlag) {
-            if (_OnRelease != NULL) {
-                _OnRelease(this);
-            }
+            if (_OnRelease) _OnRelease(this);
             pressFlag = 0;
         }
     }
@@ -152,8 +150,8 @@ ButtonBas::initState(Button::ButtonStatus_t ival)
 void
 ButtonBas::initState(uint8_t *bytevec)
 {
-    register uint8_t ival = bytevec[((pin-1)>>3)];
-    ival = ((ival&(1<<((pin-1)&0x07))) ? HIGH : LOW);
+    register uint8_t ival = bytevec[((_pin-1)>>3)];
+    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
     _initState(ival);
 }
 
@@ -161,13 +159,24 @@ void
 ButtonBas::_initState(uint8_t newi)
 {
     if (newi == HIGH) {
-        if (_OnPress != NULL) {
-            _OnPress(this);
-        }
+        if (_OnPress) _OnPress(this);
     } else {
-        if (_OnRelease != NULL) {
-            _OnRelease(this);
-        }
+        if (_OnRelease) _OnRelease(this);
     }
 }
 
+#ifdef USE_BTN_MGR
+ButtonBas& ButtonBas::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); return *this;
+}
+
+ButtonBas& ButtonBas::make(ButtonManager& mgr)
+{
+    ButtonBas* b = new ButtonBas(); 
+    b->addTo(mgr); 
+    return *b; 
+}
+#endif
+
+// end ButtonBas.cpp

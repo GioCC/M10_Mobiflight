@@ -8,86 +8,67 @@
 * Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
 *
 * This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
+* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input flags supplied by an underlaying I/O reader (digital buttons only).
 *
-* This is the base class for specific ButtonXXX classes.
+* This file declares the base class for all ButtonXXX classes.
 * ButtonXXX objects receive a set of I/O flags describing the status of its associated input or 'pin'
 * (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
 * Callbacks are all defined in the derived classes.
-*
-* This file declares the base class for all ButtonXXX classes.
 *
 * 'Tag' and 'Data' attibutes can be of several types (they are unions); currently there is no provision
 * to discriminate which of the possible types is used, the caller is responsible for their correct
 * interpretation!
 *
 * Usage:
-* - Include ButtonXXX.h (for all relevant XXX types) and ButtonManager.h in your sketch
-* - Add a call to ButtonManager.check(...) in your main loop
+* - Include ButtonXXX.h (for all relevant XXX types) and if required ButtonManager.h in your code
+* - Add a call to ButtonManager->check(...) in your main loop
 * - Declare each button and define the events using a ButtonXXX constructor
 * - Declare the required event functions ( void OnKeyYYY(ButtonXXX *but) )
 * - See the comments in the code for more help
 *
 */
 
-
 #ifndef BUTTON_H
 #define BUTTON_H
 
-/// If the ButtonManager class is used, a singleton object called "ButtonMgr" is automatically instantiated;
-/// activate following define so ALL ButtonXXX objects are automatically added to its list by their constructor.
-/// If (at least some) ButtonXXX objects are to be used stand-alone, do _not_ compile with this option on!
-/// If a button manager is desired anyway, ButtonXXX objects can still be added manually.
-//
-// A #define has been chosen over an additional constructor argument because, if the manager is not needed,
-// this way we are not required to compile and instantiate it.
-//
-// ALTERNATIVE OPTION:
-// If the implicit add is not desired (and an explicit add() operation is preferred):
-// - remove the 'ButtonMgr.add(this);' calls from the constructors;
-// - add a method for type redefinition in each derived class, like existing ones: "ButtonXXX *add(void) { Button::add(); return this; }",
-//   so the "add" method can be chained in the definition statement.
-// This option also allows managed and stand-alone objects to co-exist.
+//======================================
+//=== Compilation options
+//======================================
+
+/// #define USE_BTN_MGR to include methods to interface with a ButtonManager
 #define USE_BTN_MGR
 
-/// Define if Source Var and Mirror Var featurs should be compiled
+/// #define SOURCEVAR/MIRRORVAR if Source Var and Mirror Var features should be compiled
 //#define SOURCEVAR
 //#define MIRRORVAR
 
 #include <Arduino.h>
-#include "RawData.h"
 
 #define flagChg(value, bitmsk, cond) ((cond) ? (value |= bitmsk) : (value &= ~bitmsk) )
 #define times10(n)  ((n<<1)+(n<<3))
 #define times100(n) ((n<<2)+(n<<5)+(n<<6))
 #define UNUSED(x) ((void)(x))
 
-// Bitmasks for 'flags'
-// These flags define the specific features of the button
-// (some may be applicable to just specific button types)
-enum {
-    F_lastState   = 0x80,   // Last recorded input status
-    F_hasRepeat   = 0x40,   // Uses repeat
-    F_Analog      = 0x20,   // Uses an analog value as input
-    F_HWinput     = 0x10    // Reads HW inputs directly (as opposed to receiving data)
-    //F_hasString   = 0x01,   // Name must be interpreted as string ptr (rather than uint32_t code)
+class ButtonManager;
+
+// Aux class for tag/Data fields
+
+class TagData
+{
+public:
+    union {
+        const char      *text;
+        const byte      *bytes;
+        uint16_t        code;
     };
 
-// Bitmasks for bit nos. used for src and mirror vars
-enum {
-    M_srcbits     = 0xF0,   // bit# in the source variable
-    M_mirbits     = 0x0F    // bit# in the mirror variable
-    }; // t_bitno;
+    TagData(void) {};
+    explicit TagData(uint16_t ncode)    { code = ncode; }
+    explicit TagData(const char *s)     { text = s; }
+    explicit TagData(const byte b[])    { bytes = b; }
+};
 
-// Status values in the bit pattern passed as argument to check()
-enum {
-    S_Curr = 0x01,
-    S_Dn   = 0x02,
-    S_Up   = 0x04,
-    S_Rpt  = 0x08,
-    S_Long = 0x10,
-    }; // t_digstatus;
 
 class Button
 {
@@ -95,6 +76,50 @@ class Button
 public:
 
     typedef uint8_t ButtonStatus_t;
+
+    // Bitmasks for 'flags'
+    // These flags define the specific features of the button
+    // (some may be applicable to just specific button types)
+    enum {
+        lastState   = 0x80,   // Last recorded input status
+        hasRepeat   = 0x40,   // Uses repeat
+        Analog      = 0x20,   // Uses an analog value as input
+        HWinput     = 0x10    // Reads HW inputs directly (as opposed to receiving data)
+        //hasString   = 0x01,   // Name must be interpreted as string ptr (rather than uint_t code)
+    };
+
+    // Status values in the bit pattern passed as argument to check()
+    enum {
+        Curr = 0x01,
+        Dn   = 0x02,
+        Up   = 0x04,
+        Rpt  = 0x08,
+        Long = 0x10,
+    }; // t_digstatus;
+
+    // Bitmasks for bit nos. used for src and mirror vars
+    enum {
+        srcBits     = 0xF0,   // bit# in the source variable
+        mirBits     = 0x0F    // bit# in the mirror variable
+    }; // t_bitno;
+
+
+protected:
+
+    uint8_t         _pin;
+    uint8_t         _flags;
+    TagData         _tag;
+    // TagData         _data;
+
+#ifdef SOURCEVAR
+    uint8_t         *srcVar;
+#endif
+#ifdef MIRRORVAR
+    uint8_t         *mirrVar;
+#endif
+#if defined(SOURCEVAR)||defined(MIRRORVAR)
+    uint8_t         bitno;
+#endif
 
     // ======================================
     // === Constructors
@@ -104,17 +129,14 @@ public:
     /// This avoids the need for dynamic allocation support and, most importantly, allows to allocate all
     /// required objects (thereby knowing whether the required space fits memory size or not) already
     /// at compile time.
-    /// Objects allocated in this way - typically through an array - are NOT added to the manager collection, thus
-    /// they must be explicitly added later (when their values are filled).
     Button() {}
 
     /// These constructors allow each individual button to be defined in a concise way,
     /// if all required information is available at compile time.
-    /// Buttons are automatically added to the collection in the ButtonGroupManager named 'ButtonGrpMgr'
-    /// to allow centralized polling. From there they can also be retrieved for custom operations.
     /// The name is optional, as are the mirror variable and flag (bit# in var).
-    /// If the mirror var is not NULL, the button state is automatically mirrored into it.
-    /// pin = 1...n
+    /// If a mirror var is specified (not nullptr), the button state is automatically mirrored into it.
+    /// _pin = 1...n
+
 
     Button( uint8_t     pin,
             uint8_t     useHWinput,
@@ -125,8 +147,7 @@ public:
 
     Button( uint8_t     pin,
             uint8_t     useHWinput,
-            uint16_t    codeh,
-            uint16_t    codel,
+            uint16_t    tag,
             uint8_t     *mirrorvar=NULL,
             uint8_t     mirrorbit=0
             );
@@ -137,66 +158,77 @@ public:
             uint8_t     mirrorbit
             );
 
+public:
+
     // ======================================
     // === Setup methods
     // ======================================
     // These methods, all returning the object itself, are meant to allow chained configuration calls like:
     //   add().tag("MyName").data(0x6E)
-    // Derived objects can (and probably will) add further specialised methods; however, for type consistency,
-    // they will have to alias these functions by redefining them.
-    // However, these methods are NOT declared 'virtual': this allows to avoid the VTable overhead
-    // by forcing early binding. The lack of late binding (= polymorphism) is not an issue, 
-    // AS LONG AS THESE METHODS ARE ONLY USED DIRECTLY ON OBJECTS (as opposed to being usd through pointers).
-    // >>> This should be the normal case if they are only used during object creation. <<<
+    // These methods can't be declared 'virtual': in order to insure compatibility with their specialized
+    // setup methods, derived objects will have to redefine these methods WITH THE SAME NAME AND SIGNATURE
+    // but RETURNING THEIR OWN TYPE. The redefined methods must ONLY call the corresponding base class methods
+    // and return the reference to the object, and nothing more.
+    //
     // For further details and an example, see Bruce Eckel, "Thinking in C++ (Vol.1)",
     // from section "Upcasting" (p.662) forward.
 
-    // Register button in manager: use this ONLY for pre-allocated, still unregistered empty buttons.
-    // 
-    // The operation should conceptually belong to the manager class, however it is also defined here as a convenience wrapper.
-    // Beware: it always returns a valid pointer, even if registering fails!
-    #ifdef USE_BTN_MGR
-    Button& add(ButtonManager& b) { b.add(this); return *this;}
+    Button& pin(uint8_t npin, uint8_t isHW)
+                                    { _pin = npin; flagChg(_flags, Button::HWinput, isHW); return *this; }
+
+    Button& tag(const char *s)      { _tag.text = s;     return *this; }
+    Button& tag(byte *b)            { _tag.bytes = b;    return *this; }
+    Button& tag(uint16_t code)      { _tag.code = code;  return *this; }
+
+    // Button& data(const char *s)     { _data.text = s;    return *this; }
+    // Button& data(byte *b)           { _data.bytes = b;   return *this; }
+    // Button& data(uint16_t code)     { _data.code = code; return *this; }
+    
+    Button& source(uint8_t* sourcevar, uint8_t sourcebit)
+    #ifdef SOURCEVAR
+        { if(srcVar==nullptr) return; srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return *this; }
     #else
-    Button& add(void) { return *this;}
+        { UNUSED(sourcevar); UNUSED(sourcebit); return *this; }
     #endif
 
-    Button& info(uint8_t npin, uint8_t isHW)
-                                            { pin = npin; flagChg(flags, F_HWinput, isHW); return *this; }
+    Button& mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
+    #ifdef MIRRORVAR
+        { if(mirrVar==nullptr) return; mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return *this; }
+    #else
+        { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
+    #endif
 
-    Button& tag(const char *s)              { _tag.text = s; return *this; }
-    Button& tag(uint16_t hi, uint16_t lo)   { _tag.code.hi = hi; _tag.code.lo = lo; return *this; }
+    static Button& make(void)           { Button* b = new Button(); return *b; }
 
-    Button& data(const char *s)             { _data.text = s; return *this; }
-    Button& data(byte *b)                   { _data.bytes = b; return *this; }
-    Button& data(uint16_t hi, uint16_t lo)  { _data.code.hi = hi; _data.code.lo = lo; return *this; }
-    
-    // These will be conditionally defined later
-    // Button *source(uint8_t *sourcevar, uint8_t sourcebit);
-    // Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit);
+    #ifdef USE_BTN_MGR
+    // Add the button to the collection in the specified ButtonManager,
+    // to allow centralized polling. From there they can also be retrieved for custom operations.
+    Button& addTo(ButtonManager& b);
+
+    // Create a Button and add it to the collection in the specified ButtonManager.
+    static Button& make(ButtonManager& mgr);
+    #endif
 
     // ======================================
     // === Setters (single params)
     // ======================================
 
-    void    setPin(uint8_t p)       {pin = p;}
+    void    setPin(uint8_t p)       {_pin = p;}
 
     // ======================================
     // === Getters
     // ======================================
 
-    uint8_t getPin(void)            {return pin;}
-    uint8_t isHW(void)              {return ((flags & F_HWinput)!=0);}
-    uint8_t isAna(void)             {return ((flags & F_Analog)!=0);}
+    uint8_t getPin(void)            { return _pin; }
+    uint8_t isHW(void)              { return ((_flags & Button::HWinput)!=0); }
+    uint8_t isAna(void)             { return ((_flags & Button::Analog) !=0); }
 
     //This is kept for temporary compatibility during debug:
-    RawData *getTag(void)           {return &_tag;}
-    char*   getName(void)           {return (char*)_tag.text;}
-    void    getTag(uint16_t *lo,
-                    uint16_t *hi)   {*lo=_tag.code.lo; *hi=_tag.code.hi;}
-    RawData *getData(void)          {return &_data;}
-    void    getData(uint16_t *lo,
-                    uint16_t *hi)   {*lo=_data.code.lo; *hi=_data.code.hi;}
+    TagData *getTag(void)           { return &_tag; }
+    char*   getName(void)           { return (char*)_tag.text; }
+    void    getTag(uint16_t *tag)   { *tag =_tag.code; }
+    // TagData *getData(void)          { return &_data; }
+    // void    getData(uint16_t *data) { *data=_data.code; }
 
     // ======================================
     // === Operation methods
@@ -227,52 +259,29 @@ public:
     // ======================================
 
 #ifdef SOURCEVAR
-    Button *source(uint8_t *sourcevar, uint8_t sourcebit)
-                                    {srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return this;}
     uint8_t hasSrcVar(void)         {return (srcVar != NULL);}
     uint8_t *getSrcVar(void)        {return srcVar; }
-    uint8_t getSrcVal(void)         {return ((flags&F_Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? true : false)); }
+    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? true : false)); }
 #else
-    Button *source(uint8_t *sourcevar, uint8_t sourcebit)
-                                    {UNUSED(sourcevar); UNUSED(sourcebit); return this;}
     uint8_t hasSrcVar(void)         {return false;}
     uint8_t *getSrcVar(void)        {return NULL;}
     uint8_t getSrcVal(void)         {return 0;}
-#endif // SOURCEVAR
+#endif
 
 #ifdef MIRRORVAR
-    Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
-                                    {mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return this;}
     uint8_t *getMVar(void)          {return mirrVar; }
     void    setBit(void)            {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
     void    clearBit(void)          {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
 #else
-    Button *mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
-                                    {UNUSED(mirrorvar); UNUSED(mirrorbit); return this;}
     uint8_t *getMVar(void)          {return NULL;}
     void    setBit(void)            {}
     void    clearBit(void)          {}
-#endif // MIRRORVAR
-
-protected:
-    uint8_t         pin;
-    uint8_t         flags;
-    RawData         _tag;
-    RawData         _data;
-#if defined(SOURCEVAR)||defined(MIRRORVAR)
-    uint8_t         bitno;
 #endif
-#ifdef SOURCEVAR
-    uint8_t         *srcVar;
-#endif // SOURCEVAR
-#ifdef MIRRORVAR
-    uint8_t         *mirrVar;
-#endif // MIRRORVAR
 
 };
 
 // DEBUG
-constexpr uint8_t RDsize = sizeof(RawData);
+constexpr uint8_t RDsize = sizeof(TagData);
 constexpr uint8_t BBsize = sizeof(Button);
 
 #endif
