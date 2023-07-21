@@ -1,0 +1,9 @@
+Size of Button   : 6 bytes
+Size of ButtonAdv: 26 bytes
+Size of ButtonAna: 24 bytes
+Size of ButtonBas: 14 bytes
+Size of ButtonEnc: 6 bytes
+Size of ButtonGrp: 6 bytes
+Size of ButtonMgr (32 buttons): 109 bytes
+Size of ButtonMgr (64 buttons): 197 bytes
+
