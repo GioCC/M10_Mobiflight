@@ -50,6 +50,26 @@
 #define times100(n) ((n<<2)+(n<<5)+(n<<6))
 #define UNUSED(x) ((void)(x))
 
+// Following macro is used in the derived classes to automatically define aliases for all
+// basic setup methods.
+#define DEFINE_BASIC_METHODS(derived) \
+derived& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; } \
+derived& tag(const char *s)                   { Button::tag(s);    return *this; } \
+derived& tag(byte *b)                         { Button::tag(b);    return *this; } \
+derived& tag(uint16_t code)                   { Button::tag(code); return *this; } \
+derived& data(const char *s)                  { Button::data(s);    return *this; } \
+derived& data(byte *b)                        { Button::data(b);    return *this; } \
+derived& data(uint16_t code)                  { Button::data(code); return *this; } \
+derived& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; } \
+derived& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; } \
+static derived& make(void)                    { derived* b = new derived(); return *b; } \
+derived& addTo(ButtonManager& mgr); \
+static derived& make(ButtonManager& mgr);
+
+
+
+
+
 class ButtonManager;
 
 // Aux class for tag/Data fields
@@ -180,9 +200,9 @@ public:
     Button& tag(byte *b)            { _tag.bytes = b;    return *this; }
     Button& tag(uint16_t code)      { _tag.code = code;  return *this; }
 
-    // Button& data(const char *s)     { _data.text = s;    return *this; }
-    // Button& data(byte *b)           { _data.bytes = b;   return *this; }
-    // Button& data(uint16_t code)     { _data.code = code; return *this; }
+    Button& data(const char *s)     { /*_data.text = s;    */ return *this; }
+    Button& data(byte *b)           { /*_data.bytes = b;   */ return *this; }
+    Button& data(uint16_t code)     { /*_data.code = code; */ return *this; }
     
     Button& source(uint8_t* sourcevar, uint8_t sourcebit)
     #ifdef SOURCEVAR
@@ -207,6 +227,9 @@ public:
 
     // Create a Button and add it to the collection in the specified ButtonManager.
     static Button& make(ButtonManager& mgr);
+    #else
+    Button& addTo(ButtonManager& b) {};
+    static Button& make(ButtonManager& mgr) {};
     #endif
 
     // ======================================

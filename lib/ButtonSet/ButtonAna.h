@@ -115,32 +115,7 @@ public:
     // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    ButtonAna& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; }
-
-    ButtonAna& tag(const char *s)                   { Button::tag(s);    return *this; }
-    ButtonAna& tag(byte *b)                         { Button::tag(b);    return *this; }
-    ButtonAna& tag(uint16_t code)                   { Button::tag(code); return *this; }
-
-    // ButtonAna& data(const char *s)               { Button::data(s);    return *this; }
-    // ButtonAna& data(byte *b)                     { Button::data(b);    return *this; }
-    // ButtonAna& data(uint16_t code)               { Button::data(code); return *this; }
-
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h"
-    ButtonAna& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
-    ButtonAna& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
-
-    static 
-    ButtonAna& make(void)                           { ButtonAna* b = new ButtonAna(); return *b; }
-
-    #ifdef USE_BTN_MGR
-    // Add the button to the collection in the specified ButtonManager,
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
-    ButtonAna& addTo(ButtonManager& mgr);
-
-    // Create a Button and add it to the collection in the specified ButtonManager.
-    static 
-    ButtonAna& make(ButtonManager& mgr);
-    #endif
+    DEFINE_BASIC_METHODS(ButtonAna)
 
     // ======================================
     // === Setup methods: specialized

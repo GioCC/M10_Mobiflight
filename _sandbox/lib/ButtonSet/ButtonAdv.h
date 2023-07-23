@@ -122,32 +122,7 @@ public:
     // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    ButtonAdv& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; }
-
-    ButtonAdv& tag(const char *s)                   { Button::tag(s);    return *this; }
-    ButtonAdv& tag(byte *b)                         { Button::tag(b);    return *this; }
-    ButtonAdv& tag(uint16_t code)                   { Button::tag(code); return *this; }
-
-    // ButtonAdv& data(const char *s)               { Button::data(s);    return *this; }
-    // ButtonAdv& data(byte *b)                     { Button::data(b);    return *this; }
-    // ButtonAdv& data(uint16_t code)               { Button::data(code); return *this; }
-
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h"
-    ButtonAdv& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
-    ButtonAdv& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
-
-    static 
-    ButtonAdv& make(void)                           { ButtonAdv* b = new ButtonAdv(); return *b; }
-
-    #ifdef USE_BTN_MGR
-    // Add the button to the collection in the specified ButtonManager,
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
-    ButtonAdv& addTo(ButtonManager& mgr);
-
-    // Create a Button and add it to the collection in the specified ButtonManager.
-    static 
-    ButtonAdv& make(ButtonManager& mgr);
-    #endif
+    DEFINE_BASIC_METHODS(ButtonAdv);
 
     // ======================================
     // === Setup methods: specialized

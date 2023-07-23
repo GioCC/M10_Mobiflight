@@ -96,32 +96,7 @@ public:
     // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    ButtonBas& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; }
-
-    ButtonBas& tag(const char *s)                   { Button::tag(s);    return *this; }
-    ButtonBas& tag(byte *b)                         { Button::tag(b);    return *this; }
-    ButtonBas& tag(uint16_t code)                   { Button::tag(code); return *this; }
-
-    // ButtonBas& data(const char *s)               { Button::data(s);    return *this; }
-    // ButtonBas& data(byte *b)                     { Button::data(b);    return *this; }
-    // ButtonBas& data(uint16_t code)               { Button::data(code); return *this; }
-
-    // Following two are only effective if corresponding compilation switches have been enabled in "Button.h"
-    ButtonBas& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; }
-    ButtonBas& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; }
-
-    static 
-    ButtonBas& make(void)                           { ButtonBas* b = new ButtonBas(); return *b; }
-
-    #ifdef USE_BTN_MGR
-    // Add the button to the collection in the specified ButtonManager,
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
-    ButtonBas& addTo(ButtonManager& mgr);
-
-    // Create a Button and add it to the collection in the specified ButtonManager.
-    static 
-    ButtonBas& make(ButtonManager& mgr);
-    #endif
+    DEFINE_BASIC_METHODS(ButtonBas)
 
     // ======================================
     // === Setup methods: specialized
