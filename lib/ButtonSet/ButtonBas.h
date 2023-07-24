@@ -10,6 +10,11 @@
 * It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input values supplied by an underlying I/O reader.
 *
+* This file declares the ButtonBas class.
+* This class is a simplified version of ButtonAdv, stripped of repeat/longpress functions
+* to substantially reduce memory footprint.
+*
+*
 * The ButtonBas reads a value either:
 * - directly from a digital I/O pin
 * - directly from an analog I/O pin
@@ -22,13 +27,9 @@
 *
 * Timings (for debounce, repeat etc) are handled internally.
 *
-* This class is a simplified version of ButtonBas, stripped of repeat/longpress functions
-* to substantially reduce memory footprint.
-*
 * For uniformity, the polling method always takes a ButtonStatus_t argument, which however is ignored if hardware
 * inputs are used.
 *
-* This file declares the ButtonBas class.
 *
 * Usage:
 * - Include ButtonBas.h and ButtonGroupManager.h in your sketch
@@ -63,23 +64,25 @@ public:
 
     ButtonBas() {}     // for objects that will be completely filled in later
 
-    ButtonBas(  uint8_t     pin,
-                uint8_t     useHWinput,
-                char*       name,
-                uint8_t     lthreshold  =0,
-                uint8_t     uthreshold  =0,
-                uint8_t*    mirrorvar   =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonBas(  
+        uint8_t     pin,
+        uint8_t     useHWinput,
+        char*       name,
+        uint8_t     lthreshold  =0,
+        uint8_t     uthreshold  =0,
+        uint8_t*    mirrorvar   =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
-    ButtonBas(  uint8_t     pin,
-                uint8_t     useHWinput,
-                uint16_t    code,
-                uint8_t     lthreshold  =0,
-                uint8_t     uthreshold  =0,
-                uint8_t*    mirrorvar   =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonBas(  
+        uint8_t     pin,
+        uint8_t     useHWinput,
+        uint16_t    code,
+        uint8_t     lthreshold  =0,
+        uint8_t     uthreshold  =0,
+        uint8_t*    mirrorvar   =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
     void
     CButtonBas(uint8_t lthreshold, uint8_t uthreshold);

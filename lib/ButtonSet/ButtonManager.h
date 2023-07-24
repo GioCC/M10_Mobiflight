@@ -8,16 +8,8 @@
 
 #include <Arduino.h>
 #include "Button.h"
-#include "ButtonGrp.h"
-#include "ButtonEnc.h"
-#include "ButtonBas.h"
-#include "ButtonAdv.h"
-
 
 #define LAST  (ButtonMgr.getButton())
-
-// This include is just for usage with M10 boards (in order to tailor storage requirements); it is not for the general purpose library
-// #include "config_board.h"   // This may define MAXBUTTONS
 
 // define the max number of buttons
 // This must be consistent with the length of the passed vector (currently an uint32).

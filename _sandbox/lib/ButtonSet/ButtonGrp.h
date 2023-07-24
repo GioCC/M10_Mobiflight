@@ -68,19 +68,21 @@ public:
 
     ButtonGrp() {}     // for objects that will be completely filled in later
 
-    ButtonGrp(  uint8_t     pin,
-                char*       name,
-                uint8_t     hasRepeat   = 0,
-                uint8_t*    mirrorvar   = NULL,
-                uint8_t     mirrorbit   = 0
-            );
+    ButtonGrp(  
+        uint8_t     pin,
+        char*       name,
+        uint8_t     hasRepeat   = 0,
+        uint8_t*    mirrorvar   = NULL,
+        uint8_t     mirrorbit   = 0
+    );
 
-    ButtonGrp(  uint8_t     pin,
-                uint16_t    code,
-                uint8_t     hasRepeat   = 0,
-                uint8_t*    mirrorvar   = NULL,
-                uint8_t     mirrorbit   = 0
-            );
+    ButtonGrp(  
+        uint8_t     pin,
+        uint16_t    code,
+        uint8_t     hasRepeat   = 0,
+        uint8_t*    mirrorvar   = NULL,
+        uint8_t     mirrorbit   = 0
+    );
 
     // ======================================
     // === Setup methods: common

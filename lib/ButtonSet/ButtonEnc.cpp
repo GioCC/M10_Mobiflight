@@ -70,18 +70,18 @@ void ButtonEnc::initState(Button::ButtonStatus_t ival)
     }
 }
 
-#ifdef USE_BTN_MGR
-ButtonEnc& ButtonEnc::addTo(ButtonManager& mgr)
-{ 
-    mgr.add(this); return *this;
-}
+// #ifdef USE_BTN_MGR
+// ButtonEnc& ButtonEnc::addTo(ButtonManager& mgr)
+// { 
+//     mgr.add(this); return *this;
+// }
 
-ButtonEnc& ButtonEnc::make(ButtonManager& mgr)
-{
-    ButtonEnc* b = new ButtonEnc(); 
-    b->addTo(mgr); 
-    return *b; 
-}
-#endif
+// ButtonEnc& ButtonEnc::make(ButtonManager& mgr)
+// {
+//     ButtonEnc* b = new ButtonEnc(); 
+//     b->addTo(mgr); 
+//     return *b; 
+// }
+// #endif
 
 // end ButtonEnc.cpp

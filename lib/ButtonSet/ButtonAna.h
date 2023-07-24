@@ -11,13 +11,12 @@
 * It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
 * input flags supplied by an underlaying I/O reader (digital buttons only).
 *
+* This file declares the ButtonAna class.
 * The ButtonAna object receives an analog value (unsigned 8-bit integer) describing the status
 * of the associated input or 'pins'; if the value falls between the defined thresholds (with
 * hysteresis), then the "equivalent" digital input is considered active, and callback functions are invoked
 * accordingly.
 * For current status, up/dn transitions etc see docs.
-*
-* This file declares the ButtonAna class.
 *
 * Usage:
 * - Include ButtonAna.h and ButtonManager.h in your sketch
@@ -62,25 +61,27 @@ public:
 
     ButtonAna() {}     // for objects that will be completely filled in later
 
-    ButtonAna(  uint8_t     pin,
-                char*       name,
-                uint8_t     lthreshold =128,
-                uint8_t     uthreshold =255,
-                uint16_t    repeatDelay=0,
-                uint16_t    repeatRate =0,
-                uint8_t*    mirrorvar  =NULL,
-                uint8_t     mirrorbit  =0
-            );
+    ButtonAna(  
+        uint8_t     pin,
+        char*       name,
+        uint8_t     lthreshold =128,
+        uint8_t     uthreshold =255,
+        uint16_t    repeatDelay=0,
+        uint16_t    repeatRate =0,
+        uint8_t*    mirrorvar  =NULL,
+        uint8_t     mirrorbit  =0
+    );
 
-    ButtonAna(  uint8_t     pin,
-                uint16_t    code,
-                uint8_t     lthreshold =128,
-                uint8_t     uthreshold =255,
-                uint16_t    repeatDelay=0,
-                uint16_t    repeatRate =0,
-                uint8_t*    mirrorvar  =NULL,
-                uint8_t     mirrorbit  =0
-            );
+    ButtonAna(  
+        uint8_t     pin,
+        uint16_t    code,
+        uint8_t     lthreshold =128,
+        uint8_t     uthreshold =255,
+        uint16_t    repeatDelay=0,
+        uint16_t    repeatRate =0,
+        uint8_t*    mirrorvar  =NULL,
+        uint8_t     mirrorbit  =0
+    );
 
     void
     CButtonAna(uint16_t repeatDelay, uint16_t repeatRate);

@@ -202,18 +202,18 @@ ButtonAna::initState(ButtonStatus_t bval)
     }
 }
 
-#ifdef USE_BTN_MGR
-ButtonAna& ButtonAna::addTo(ButtonManager& mgr)
-{ 
-    mgr.add(this); return *this;
-}
+// #ifdef USE_BTN_MGR
+// ButtonAna& ButtonAna::addTo(ButtonManager& mgr)
+// { 
+//     mgr.add(this); return *this;
+// }
 
-ButtonAna& ButtonAna::make(ButtonManager& mgr)
-{
-    ButtonAna* b = new ButtonAna(); 
-    b->addTo(mgr); 
-    return *b; 
-}
-#endif
+// ButtonAna& ButtonAna::make(ButtonManager& mgr)
+// {
+//     ButtonAna* b = new ButtonAna(); 
+//     b->addTo(mgr); 
+//     return *b; 
+// }
+// #endif
 
 // end ButtonAna.cpp

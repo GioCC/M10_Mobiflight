@@ -43,34 +43,51 @@
 //#define SOURCEVAR
 //#define MIRRORVAR
 
+/// #define MAKE_NEW to use alternative methods of allocation (defaults to standard "new")
+#define MAKE_NEW(obj)   new obj()
+
 #include <Arduino.h>
+
+#ifdef USE_BTN_MGR
+class ButtonManager;
+// #else
+// // Define dummy class with stubs
+// class Button;
+// class ButtonManager {
+//     public:
+//     ButtonManager(void) {};
+//     Button* add(Button* b) { return b; };
+// };
+#endif
 
 #define flagChg(value, bitmsk, cond) ((cond) ? (value |= bitmsk) : (value &= ~bitmsk) )
 #define times10(n)  ((n<<1)+(n<<3))
 #define times100(n) ((n<<2)+(n<<5)+(n<<6))
 #define UNUSED(x) ((void)(x))
 
+
 // Following macro is used in the derived classes to automatically define aliases for all
 // basic setup methods.
-#define DEFINE_BASIC_METHODS(derived) \
+#define _DEFINE_BASIC_METHODS_NONMGR(derived) \
 derived& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; } \
-derived& tag(const char *s)                   { Button::tag(s);    return *this; } \
-derived& tag(byte *b)                         { Button::tag(b);    return *this; } \
-derived& tag(uint16_t code)                   { Button::tag(code); return *this; } \
+derived& tag(const char *s)                   { Button::tag(s);     return *this; } \
+derived& tag(byte *b)                         { Button::tag(b);     return *this; } \
+derived& tag(uint16_t code)                   { Button::tag(code);  return *this; } \
 derived& data(const char *s)                  { Button::data(s);    return *this; } \
 derived& data(byte *b)                        { Button::data(b);    return *this; } \
 derived& data(uint16_t code)                  { Button::data(code); return *this; } \
 derived& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; } \
 derived& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; } \
-static derived& make(void)                    { derived* b = new derived(); return *b; } \
-derived& addTo(ButtonManager& mgr); \
-static derived& make(ButtonManager& mgr);
+static derived& make(void)                    { derived* b = MAKE_NEW(derived); return *b; }
 
-
-
-
-
-class ButtonManager;
+#ifdef USE_BTN_MGR
+#define DEFINE_BASIC_METHODS(derived) \
+_DEFINE_BASIC_METHODS_NONMGR(derived) \
+derived& addTo(ButtonManager& mgr)            { mgr.add(this); return *this; } \
+static derived& make(ButtonManager& mgr)      { derived* b = MAKE_NEW(derived); mgr.add(b); return *b; } 
+#else
+#define DEFINE_BASIC_METHODS(derived)         _DEFINE_BASIC_METHODS_NONMGR(derived)
+#endif
 
 // Aux class for tag/Data fields
 
@@ -158,19 +175,21 @@ protected:
     /// _pin = 1...n
 
 
-    Button( uint8_t     pin,
-            uint8_t     useHWinput,
-            const char  *name,
-            uint8_t     *mirrorvar=NULL,
-            uint8_t     mirrorbit=0
-            );
+    Button( 
+        uint8_t     pin,
+        uint8_t     useHWinput,
+        const char  *name,
+        uint8_t     *mirrorvar=NULL,
+        uint8_t     mirrorbit=0
+        );
 
-    Button( uint8_t     pin,
-            uint8_t     useHWinput,
-            uint16_t    tag,
-            uint8_t     *mirrorvar=NULL,
-            uint8_t     mirrorbit=0
-            );
+    Button( 
+        uint8_t     pin,
+        uint8_t     useHWinput,
+        uint16_t    tag,
+        uint8_t     *mirrorvar=NULL,
+        uint8_t     mirrorbit=0
+        );
 
     void
     CButton(uint8_t     useHWinput,
@@ -218,18 +237,15 @@ public:
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
     #endif
 
-    static Button& make(void)           { Button* b = new Button(); return *b; }
+    static Button& make(void); //       { Button* b = MAKE_NEW(Button); return *b; };
 
     #ifdef USE_BTN_MGR
     // Add the button to the collection in the specified ButtonManager,
     // to allow centralized polling. From there they can also be retrieved for custom operations.
-    Button& addTo(ButtonManager& b);
+    Button& addTo(ButtonManager& mgr);
 
     // Create a Button and add it to the collection in the specified ButtonManager.
     static Button& make(ButtonManager& mgr);
-    #else
-    Button& addTo(ButtonManager& b) {};
-    static Button& make(ButtonManager& mgr) {};
     #endif
 
     // ======================================

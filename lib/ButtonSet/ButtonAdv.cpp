@@ -236,18 +236,18 @@ ButtonAdv::_initState(uint8_t newi)
     }
 }
 
-#ifdef USE_BTN_MGR
-ButtonAdv& ButtonAdv::addTo(ButtonManager& mgr)
-{ 
-    mgr.add(this); return *this;
-}
+// #ifdef USE_BTN_MGR
+// ButtonAdv& ButtonAdv::addTo(ButtonManager& mgr)
+// { 
+//     mgr.add(this); return *this;
+// }
 
-ButtonAdv& ButtonAdv::make(ButtonManager& mgr)
-{
-    ButtonAdv* b = new ButtonAdv(); 
-    b->addTo(mgr); 
-    return *b; 
-}
-#endif
+// ButtonAdv& ButtonAdv::make(ButtonManager& mgr)
+// {
+//     ButtonAdv* b = new ButtonAdv(); 
+//     b->addTo(mgr); 
+//     return *b; 
+// }
+// #endif
 
 // end ButtonAdv.cpp

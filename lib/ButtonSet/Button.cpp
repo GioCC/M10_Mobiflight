@@ -58,10 +58,16 @@ Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
     mirror(mirrorvar, mirrorbit);
 }
 
-#ifdef USE_BTN_MGR
-Button& Button::addTo(ButtonManager& b)
+Button& Button::make(void) 
 { 
-    b.add(this); 
+    Button* b = MAKE_NEW(Button); 
+    return *b; 
+}
+
+#ifdef USE_BTN_MGR
+Button& Button::addTo(ButtonManager& mgr)
+{ 
+    mgr.add(this); 
     return *this; 
 }
  

@@ -11,10 +11,9 @@
 * It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input flags supplied by an underlaying I/O reader (digital buttons only).
 *
+* This file defines the ButtonEnc class.
 * The ButtonEnc receives a set of I/O flags describing the status of its associated input or 'pin'
 * (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-*
-* This file defines the ButtonEnc class.
 *
 * Usage:
 * - Include ButtonEnc.h and ButtonManager.h in your sketch
@@ -65,17 +64,19 @@ public:
 
     ButtonEnc() {}     // for objects that will be completely filled in later
 
-    ButtonEnc(  uint8_t     index,
-                char*       name,
-                uint8_t*    mirrorvar   =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonEnc(  
+        uint8_t     index,
+        char*       name,
+        uint8_t*    mirrorvar   =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
-    ButtonEnc(  uint8_t     index,
-                uint16_t    code,
-                uint8_t*    mirrorvar   =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonEnc(  
+        uint8_t     index,
+        uint16_t    code,
+        uint8_t*    mirrorvar   =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
 
     // ======================================

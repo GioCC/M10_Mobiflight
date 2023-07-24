@@ -10,6 +10,8 @@
 * It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input values supplied by an underlying I/O reader.
 *
+* This file declares the ButtonAdv class.
+*
 * The ButtonAdv reads a value either:
 * - directly from a digital I/O pin
 * - directly from an analog I/O pin
@@ -32,8 +34,6 @@
 *
 * For uniformity, the polling method always takes a ButtonStatus_t argument, which however is ignored if hardware
 * inputs are used.
-*
-* This file declares the ButtonAdv class.
 *
 * Usage:
 * - Include ButtonAdv.h and ButtonGroupManager.h in your sketch
@@ -78,29 +78,31 @@ public:
 
     ButtonAdv() {}     // for objects that will be completely filled in later
 
-    ButtonAdv(  uint8_t     in,
-                uint8_t     hardware,
-                char*       name,
-                uint16_t    repeatDelay =0,
-                uint16_t    repeatRate  =0,
-                uint16_t    longPress   =0,
-                uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-                uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-                uint8_t*    mirrorvar   =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonAdv(  
+        uint8_t     in,
+        uint8_t     hardware,
+        char*       name,
+        uint16_t    repeatDelay =0,
+        uint16_t    repeatRate  =0,
+        uint16_t    longPress   =0,
+        uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t*    mirrorvar   =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
-    ButtonAdv(  uint8_t     in,
-                uint8_t     hardware,
-                uint16_t    code,
-                uint16_t    repeatDelay =0,
-                uint16_t    repeatRate  =0,
-                uint16_t    longPress   =0,
-                uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-                uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-                uint8_t*    mirrorvar  =NULL,
-                uint8_t     mirrorbit   =0
-            );
+    ButtonAdv(  
+        uint8_t     in,
+        uint8_t     hardware,
+        uint16_t    code,
+        uint16_t    repeatDelay =0,
+        uint16_t    repeatRate  =0,
+        uint16_t    longPress   =0,
+        uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t*    mirrorvar  =NULL,
+        uint8_t     mirrorbit   =0
+    );
 
     void
     CButtonAdv( uint16_t    repeatDelay,
@@ -122,7 +124,7 @@ public:
     // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    DEFINE_BASIC_METHODS(ButtonAdv)
+    DEFINE_BASIC_METHODS(ButtonAdv);
 
     // ======================================
     // === Setup methods: specialized
