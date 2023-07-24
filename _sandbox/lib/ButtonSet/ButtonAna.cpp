@@ -151,13 +151,13 @@ ButtonAna::check(ButtonStatus_t bval)
                 // callback may have taken some time: update <now> for <if>s below
                 now = millis();
             }
-            setBit();
+            setMirror();
         }
 
         // is repeating enabled?
-        // We check _OnPress here because 'repeat' does not set any flag, therefore
+        // We check _OnPress here because repeat does not set any flag, therefore
         // if there's no callback there's no reason for processing.
-        if ((repeatRate > 0 ) && (_OnPress != nullptr)) {
+        if ((repeatRate > 0) && (Button::_flags & rptEnabled) && (_OnPress != nullptr)) {
             // is the startdelay passed?
             // 'TlastPress != 0' (ie at least one repetition already happened)
             // is only used to spare computing time, skipping the check of the whole condition.
@@ -176,7 +176,7 @@ ButtonAna::check(ButtonStatus_t bval)
             TstartPress = 0;
             TlastPress = 0;
             if (_OnRelease) _OnRelease(this);
-            clearBit();
+            clrMirror();
         }
     }
 }
@@ -195,25 +195,11 @@ ButtonAna::initState(ButtonStatus_t bval)
     flagChg(_flags, Button::lastState, (newi == HIGH));
     if (newi == HIGH) {
         if (_OnPress) _OnPress(this);
-        setBit();
+        setMirror();
     } else {
         if (_OnRelease) _OnRelease(this);
-        clearBit();
+        clrMirror();
     }
 }
-
-// #ifdef USE_BTN_MGR
-// ButtonAna& ButtonAna::addTo(ButtonManager& mgr)
-// { 
-//     mgr.add(this); return *this;
-// }
-
-// ButtonAna& ButtonAna::make(ButtonManager& mgr)
-// {
-//     ButtonAna* b = new ButtonAna(); 
-//     b->addTo(mgr); 
-//     return *b; 
-// }
-// #endif
 
 // end ButtonAna.cpp

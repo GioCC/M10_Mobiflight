@@ -54,7 +54,7 @@ public:
     // Buttons are automatically added to the collection in the ButtonManager named 'ButtonMgr'
     // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
-    // In ordinary usage, the definition for each subrange will either supply 'OnKeyPress' and 'hasRepeat'
+    // In ordinary usage, the definition for each subrange will either supply 'OnKeyPress' and 'rptEnabled'
     // (if required), or 'OnKeyDown' and 'OnKeyRelease' (if required).
     // The name is optional, as are the mirror variable and flag (bit# in var).
     // If the mirror var is not NULL, the button state is automatically mirrored into it.
@@ -89,8 +89,8 @@ public:
     // ======================================
     // === Operation methods
     // ======================================
-    //TODO These (for Analog button) are NOT overrides of Button::check()/initState():
-    // these require an analog value. The argument coincidentally has the same data type 
+    //TODO These (for Analog button) are NOT really overrides of Button::check()/initState(),
+    // because these require an analog value. The argument coincidentally has the same data type 
     // as ButtonStatus_t, but they're not the same functions!
     // Maybe add a second arg?
 
@@ -160,6 +160,8 @@ public:
     void    setRepeatRate(uint16_t repeat);
 
     void    setHysteresis(uint8_t hys)      {hysteresis = hys;}
+
+    void    enableRepeat(uint8_t r)         { flagChg(_flags, Button::rptEnabled, r); }
 
     void    setOnPress(ABcallback f)        {_OnPress   = f;}
     void    setOnRelease(ABcallback f)      {_OnRelease = f;}

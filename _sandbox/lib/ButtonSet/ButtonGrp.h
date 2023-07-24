@@ -8,7 +8,7 @@
 * Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
 *
 * This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
+* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
 * input flags supplied by an underlaying I/O reader (digital buttons only).
 *
 * This file defines the ButtonGrp class.
@@ -39,8 +39,6 @@
 #include "ButtonManager.h"
 #endif
 
-#define UNUSED(x) ((void)(x))
-
 class ButtonGrp;
 
 using GBcallback = void (*)(ButtonGrp*);
@@ -60,7 +58,7 @@ public:
     // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage:
-    // - pushbuttons will only supply 'OnKeyPress' (and possibly 'OnKeyLong' and/or 'hasRepeat', if required);
+    // - pushbuttons will only supply 'OnKeyPress' (and possibly 'OnKeyLong' and/or 'rptEnabled', if required);
     // - stable position switches will only supply 'OnKeyPress' and 'OnKeyRelease'.
     // Of course this is not mandatory, and other settings, if sensible, can be chosen.
     // The name is optional, as are the mirror variable and flag (bit# in var).
@@ -71,7 +69,7 @@ public:
     ButtonGrp(  
         uint8_t     pin,
         char*       name,
-        uint8_t     hasRepeat   = 0,
+        uint8_t     rptEnabled   = 0,
         uint8_t*    mirrorvar   = NULL,
         uint8_t     mirrorbit   = 0
     );
@@ -79,7 +77,7 @@ public:
     ButtonGrp(  
         uint8_t     pin,
         uint16_t    code,
-        uint8_t     hasRepeat   = 0,
+        uint8_t     rptEnabled   = 0,
         uint8_t*    mirrorvar   = NULL,
         uint8_t     mirrorbit   = 0
     );
@@ -110,13 +108,13 @@ public:
         return *this; 
     }
 
-    ButtonGrp& params(uint8_t hasRepeat)            { setRepeat(hasRepeat); return *this; }
+    ButtonGrp& params(uint8_t rptEnabled)            { enableRepeat(rptEnabled); return *this; }
 
     // ======================================
     // === Setters (single params)
     // ======================================
 
-    void    setRepeat(uint8_t r)         {if(r) {_flags |= Button::hasRepeat;} else {_flags &= ~Button::hasRepeat;} }
+    void    enableRepeat(uint8_t r)      { flagChg(_flags, Button::rptEnabled, r); }
 
     void    setOnPress(GBcallback f)     {_OnPress   = f;}
     void    setOnRelease(GBcallback f)   {_OnRelease = f;}
@@ -142,6 +140,7 @@ public:
     //   Button::long    The long press interval just expired
     // All flags except Button::curr are expected to be set for one call only,
     // right after the event occurs.
+    // IMPORTANT: Input status is expected to be already debounced.
     void    check(ButtonStatus_t value) override;
 
     // initState is used to assign the initial value.

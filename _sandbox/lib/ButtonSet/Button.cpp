@@ -50,6 +50,7 @@ void
 Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
 {
     flagChg(_flags, Button::lastState, 0);//lastState = LOW;
+    flagChg(_flags, Button::rptEnabled, 1);  // Repeat enabled by default if present
     flagChg(_flags, Button::HWinput, useHWinput);
     if (useHWinput) {
         pinMode(_pin,INPUT);

@@ -127,6 +127,7 @@ ButtonBas::_check(uint8_t newi)
     if (curi == HIGH) {
         if (!pressFlag) {
             pressFlag = 1;
+            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -135,6 +136,7 @@ ButtonBas::_check(uint8_t newi)
         }
     } else {
         if (pressFlag) {
+            clrMirror();
             if (_OnRelease) _OnRelease(this);
             pressFlag = 0;
         }
@@ -159,24 +161,12 @@ void
 ButtonBas::_initState(uint8_t newi)
 {
     if (newi == HIGH) {
+        setMirror();
         if (_OnPress) _OnPress(this);
     } else {
+        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }
-
-// #ifdef USE_BTN_MGR
-// ButtonBas& ButtonBas::addTo(ButtonManager& mgr)
-// { 
-//     mgr.add(this); return *this;
-// }
-
-// ButtonBas& ButtonBas::make(ButtonManager& mgr)
-// {
-//     ButtonBas* b = new ButtonBas(); 
-//     b->addTo(mgr); 
-//     return *b; 
-// }
-// #endif
 
 // end ButtonBas.cpp

@@ -289,7 +289,7 @@ uint8_t         hysteresis;     // 0..255
 ButtonGrp(  
     uint8_t     pin,
     char*       name,
-    uint8_t     hasRepeat   = 0,
+    uint8_t     rptEnabled   = 0,
     uint8_t*    mirrorvar   = NULL,
     uint8_t     mirrorbit   = 0
 );
@@ -297,7 +297,7 @@ ButtonGrp(
 ButtonGrp(  
     uint8_t     pin,
     uint16_t    code,
-    uint8_t     hasRepeat   = 0,
+    uint8_t     rptEnabled   = 0,
     uint8_t*    mirrorvar   = NULL,
     uint8_t     mirrorbit   = 0
 );

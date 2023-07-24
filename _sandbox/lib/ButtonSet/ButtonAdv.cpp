@@ -72,7 +72,7 @@ ButtonAdv::CButtonAdv( uint16_t rptDelay, uint16_t rptRate, uint16_t longPress, 
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     setLongPDelay(longPress);
-    flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
+    flagChg(_flags, Button::Analog, (lthreshold != uthreshold));
     TlastChange = millis();
     flagChg(_flags, Button::lastState, 0);
 }
@@ -120,7 +120,8 @@ ButtonAdv::_getInput(Button::ButtonStatus_t ival) //Button::ButtonStatus_t ival)
         // NOT simply if (value != 0) !!
         newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
     }
-    if (_flags & Button::Analog) {
+
+    if (ana) {
         int8_t  h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
         newi = ((newi >= lowerAnaThrs+h && newi < upperAnaThrs-h) ? HIGH : LOW);
     } else {
@@ -157,7 +158,7 @@ ButtonAdv::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            if(newi == HIGH) { _flags |= Button::lastState; } else { _flags &= ~Button::lastState; }
+            flagChg(_flags, Button::lastState, (newi == HIGH));
             curi = newi;
         }
     }
@@ -166,6 +167,7 @@ ButtonAdv::_check(uint8_t newi)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
+            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -204,6 +206,7 @@ ButtonAdv::_check(uint8_t newi)
             TstartPress = 0;
             TlastPress = 0;
             longPFlag = 0;      // release LP lock
+            clrMirror();
             if (_OnRelease) _OnRelease(this);
         }
     }
@@ -227,27 +230,14 @@ void
 ButtonAdv::_initState(uint8_t newi)
 {
     // Register new status
+    flagChg(_flags, Button::lastState, (newi == HIGH));
     if (newi == HIGH) {
-        _flags |= Button::lastState;
+        setMirror();
         if (_OnPress) _OnPress(this);
     } else {
-        _flags &= ~Button::lastState;
+        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }
-
-// #ifdef USE_BTN_MGR
-// ButtonAdv& ButtonAdv::addTo(ButtonManager& mgr)
-// { 
-//     mgr.add(this); return *this;
-// }
-
-// ButtonAdv& ButtonAdv::make(ButtonManager& mgr)
-// {
-//     ButtonAdv* b = new ButtonAdv(); 
-//     b->addTo(mgr); 
-//     return *b; 
-// }
-// #endif
 
 // end ButtonAdv.cpp
