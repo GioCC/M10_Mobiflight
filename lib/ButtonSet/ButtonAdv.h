@@ -82,26 +82,26 @@ public:
         uint8_t     in,
         uint8_t     hardware,
         char*       name,
-        uint16_t    repeatDelay =0,
-        uint16_t    repeatRate  =0,
-        uint16_t    longPress   =0,
-        uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-        uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-        uint8_t*    mirrorvar   =NULL,
-        uint8_t     mirrorbit   =0
+        uint16_t    repeatDelay = 0,
+        uint16_t    repeatRate  = 0,
+        uint16_t    longPress   = 0,
+        uint8_t     lthreshold  = 0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t     uthreshold  = 0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t*    mirrorvar   = NULL,
+        uint8_t     mirrorbit   = 0
     );
 
     ButtonAdv(  
         uint8_t     in,
         uint8_t     hardware,
         uint16_t    code,
-        uint16_t    repeatDelay =0,
-        uint16_t    repeatRate  =0,
-        uint16_t    longPress   =0,
-        uint8_t     lthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-        uint8_t     uthreshold  =0,  // Threshold values specified in 1/256th (0..255)
-        uint8_t*    mirrorvar  =NULL,
-        uint8_t     mirrorbit   =0
+        uint16_t    repeatDelay = 0,
+        uint16_t    repeatRate  = 0,
+        uint16_t    longPress   = 0,
+        uint8_t     lthreshold  = 0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t     uthreshold  = 0,  // Threshold values specified in 1/256th (0..255)
+        uint8_t*    mirrorvar   = NULL,
+        uint8_t     mirrorbit   = 0
     );
 
     void

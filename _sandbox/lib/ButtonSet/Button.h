@@ -40,8 +40,8 @@
 #define USE_BTN_MGR
 
 /// #define SOURCEVAR/MIRRORVAR if Source Var and Mirror Var features should be compiled
-//#define SOURCEVAR
-//#define MIRRORVAR
+#define SOURCEVAR
+#define MIRRORVAR
 
 /// #define MAKE_NEW to use alternative methods of allocation (defaults to standard "new")
 #define MAKE_NEW(obj)   new obj()
@@ -114,7 +114,7 @@ public:
         Analog      = 0x20,   // Uses an analog value as input
         HWinput     = 0x10    // Reads HW inputs directly (as opposed to receiving data)
         //hasString   = 0x01,   // Name must be interpreted as string ptr (rather than uint_t code)
-    };
+    } t_flags;
 
     // Status values in the bit pattern passed as argument to check()
     enum {
@@ -123,13 +123,13 @@ public:
         Up   = 0x04,
         Rpt  = 0x08,
         Long = 0x10,
-    }; // t_digstatus;
+    } t_digstatus;
 
     // Bitmasks for bit nos. used for src and mirror vars
     enum {
         srcBits     = 0xF0,   // bit# in the source variable
         mirBits     = 0x0F    // bit# in the mirror variable
-    }; // t_bitno;
+    } t_bitno;
 
 
 protected:
@@ -141,12 +141,11 @@ protected:
 
 #ifdef SOURCEVAR
     uint8_t         *srcVar;
+    uint8_t         srcBit;
 #endif
 #ifdef MIRRORVAR
     uint8_t         *mirrVar;
-#endif
-#if defined(SOURCEVAR)||defined(MIRRORVAR)
-    uint8_t         bitno;
+    uint8_t         mirrBit;
 #endif
 
     void modeAnalog(uint8_t v) {
@@ -228,14 +227,14 @@ public:
     
     Button& source(uint8_t* sourcevar, uint8_t sourcebit)
     #ifdef SOURCEVAR
-        { if(sourcevar==nullptr) return; srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return *this; }
+        { if(sourcevar!=nullptr) { srcVar = sourcevar; srcBit = sourcebit; } return *this; }
     #else
         { UNUSED(sourcevar); UNUSED(sourcebit); return *this; }
     #endif
 
     Button& mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
     #ifdef MIRRORVAR
-        { if(mirrorVar==nullptr) return; mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return *this; }
+        { if(mirrVar==nullptr) { mirrVar = mirrorvar; mirrBit = mirrorbit; } return *this; }
     #else
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
     #endif
@@ -279,7 +278,7 @@ public:
     // It differs from check() because it only triggers _OnPress/_OnRelease events.
     // These are usually associated to stable switches (rather than temporary pushbuttons),
     // which require to have their position recorded at startutp
-    virtual void initState(ButtonStatus_t value) { UNUSED(value); }
+    virtual void initState(ButtonStatus_t value = 0) { UNUSED(value); }
 
     // Checks the state of the button and triggers events accordingly;
     // This method must be (re)defined in the specific button type classes.
@@ -293,7 +292,7 @@ public:
     //   Slong    The long press interval just expired
     // All flags except Scurr are expected to be set for one call only,
     // right after the event occurs.
-    virtual void check(ButtonStatus_t value) { UNUSED(value); } // = 0;
+    virtual void check(ButtonStatus_t value = 0) { UNUSED(value); } // = 0;
 
     // ======================================
     // === Conditional definitions
@@ -302,7 +301,7 @@ public:
 #ifdef SOURCEVAR
     uint8_t hasSrcVar(void)         {return (srcVar != NULL);}
     uint8_t *getSrcVar(void)        {return srcVar; }
-    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? HIGH : LOW)); }
+    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*(srcVar + (srcBit>>3))&(1<<(srcBit&0x07))) ? HIGH : LOW))); }
 #else
     uint8_t hasSrcVar(void)         {return false;}
     uint8_t *getSrcVar(void)        {return NULL;}
@@ -311,8 +310,8 @@ public:
 
 #ifdef MIRRORVAR
     uint8_t *getMVar(void)          {return mirrVar; }
-    void    setMirror(void)         {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
-    void    clrMirror(void)         {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
+    void    setMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) |=  (1 << (mirrBit&0x07));}}
+    void    clrMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) &= ~(1 << (mirrBit&0x07));}}
     void    mirrorBit(uint8_t st)   {st ? setMirror() : clrMirror();}
 #else
     uint8_t *getMVar(void)          {return NULL;}
