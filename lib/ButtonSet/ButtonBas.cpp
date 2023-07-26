@@ -170,18 +170,4 @@ ButtonBas::_initState(uint8_t newi)
     }
 }
 
-// #ifdef USE_BTN_MGR
-// ButtonBas& ButtonBas::addTo(ButtonManager& mgr)
-// { 
-//     mgr.add(this); return *this;
-// }
-
-// ButtonBas& ButtonBas::make(ButtonManager& mgr)
-// {
-//     ButtonBas* b = new ButtonBas(); 
-//     b->addTo(mgr); 
-//     return *b; 
-// }
-// #endif
-
 // end ButtonBas.cpp

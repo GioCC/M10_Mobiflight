@@ -86,18 +86,4 @@ void ButtonGrp::initState(Button::ButtonStatus_t ival)
     }
 }
 
-// #ifdef USE_BTN_MGR
-// ButtonGrp& ButtonGrp::addTo(ButtonManager& mgr)
-// { 
-//     mgr.add(this); return *this;
-// }
-
-// ButtonGrp& ButtonGrp::make(ButtonManager& mgr)
-// {
-//     ButtonGrp* b = new ButtonGrp(); 
-//     b->addTo(mgr); 
-//     return *b; 
-// }
-// #endif
-
 // end ButtonGrp.cpp
