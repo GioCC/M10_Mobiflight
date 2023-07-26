@@ -34,25 +34,25 @@ GBcallback ButtonGrp::_OnLong = nullptr;
 ButtonGrp::ButtonGrp(
     uint8_t     npin,
     char*       name,
-    uint8_t     hasRepeat,
+    uint8_t     rptEnabled,
     uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(npin, 0, name, mirrorvar, mirrorbit)
 {
-    setRepeat(hasRepeat);
+    enableRepeat(rptEnabled);
 }
 
 ButtonGrp::ButtonGrp(
     uint8_t     npin,
     uint16_t    code,
-    uint8_t     hasRepeat,
+    uint8_t     rptEnabled,
     uint8_t*    mirrorvar,
     uint8_t     mirrorbit
 )
 : Button(npin, 0, code, mirrorvar, mirrorbit)
 {
-    setRepeat(hasRepeat);
+    enableRepeat(rptEnabled);
 }
 
 void ButtonGrp::check(Button::ButtonStatus_t ival)
@@ -61,13 +61,13 @@ void ButtonGrp::check(Button::ButtonStatus_t ival)
 
     if ((ival & Button::Dn) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
-        setBit();
+        setMirror();
     }
     if (ival & Button::Up) {
         if (_OnRelease) _OnRelease(this);
-        clearBit();
+        clrMirror();
     }
-    if ((ival & Button::Rpt) && (_flags & Button::hasRepeat) /*&& (cur == HIGH)*/) {
+    if ((ival & Button::Rpt) && (_flags & Button::rptEnabled) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
     }
     if ((ival & Button::Long) /*&& (cur == HIGH)*/) {
@@ -79,10 +79,10 @@ void ButtonGrp::initState(Button::ButtonStatus_t ival)
 {
     if ((ival & Button::Curr) != 0) {
         if (_OnPress)   _OnPress(this);
-        setBit();
+        setMirror();
     } else {
         if (_OnRelease) _OnRelease(this);
-        clearBit();
+        clrMirror();
     }
 }
 

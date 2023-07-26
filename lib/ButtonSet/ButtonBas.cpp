@@ -130,6 +130,7 @@ ButtonBas::_check(uint8_t newi)
     if (curi == HIGH) {
         if (!pressFlag) {
             pressFlag = 1;
+            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -138,6 +139,7 @@ ButtonBas::_check(uint8_t newi)
         }
     } else {
         if (pressFlag) {
+            clrMirror();
             if (_OnRelease) _OnRelease(this);
             pressFlag = 0;
         }
@@ -163,9 +165,11 @@ ButtonBas::_initState(uint8_t newi)
 {
     if (newi == HIGH) {
         _flags |= Button::lastState;
+        setMirror();
         if (_OnPress) _OnPress(this);
     } else {
         _flags &= ~Button::lastState;
+        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }

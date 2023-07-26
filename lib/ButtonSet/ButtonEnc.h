@@ -5,7 +5,7 @@
 * Released : 12/03/2017
 * Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
 *
-* Inspired by the AdvButton+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
+* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
 *
 * This library allows to conveniently define pushbutton actions with callbacks for several events.
 * It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
@@ -23,14 +23,12 @@
 * - See the comments in the code for more help
 */
 
-/*
-NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
-this may or may not be as intended.
-A possible improvement: if a "LongPress" callback is used, the "Press" event is handled differently
-so as to match a "ShortPress" (which is actually activated on release before the LongPress time).
-Better: a mode flag tells whether to use two available callbacks either as "Press/Release" or "Short/Long press"
-(Repeat would be feasible in both modes).
-*/
+// NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
+// this may or may not be as intended.
+// A possible improvement: if a "LongPress" callback is used, the "Press" event is handled differently
+// so as to match a "ShortPress" (which is actually activated on release before the LongPress time).
+// Better: a mode flag tells whether to use two available callbacks either as "Press/Release" or "Short/Long press"
+// (Repeat would be feasible in both modes).
 
 #ifndef BUTTONENC_H
 #define BUTTONENC_H
@@ -97,7 +95,7 @@ public:
     // === Setup methods: specialized
     // ======================================
 
-    ButtonEnc &callbacks(EBcallback OnPress, EBcallback OnRelease = NULL, EBcallback OnLong = NULL)
+    ButtonEnc& callbacks(EBcallback OnPress, EBcallback OnRelease = nullptr, EBcallback OnLong = nullptr)
     {
         setOnPress(OnPress);
         setOnRelease(OnRelease);

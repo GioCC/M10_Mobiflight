@@ -169,6 +169,7 @@ ButtonAdv::_check(uint8_t newi)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
+            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -207,6 +208,7 @@ ButtonAdv::_check(uint8_t newi)
             TstartPress = 0;
             TlastPress = 0;
             longPFlag = 0;      // release LP lock
+            clrMirror();
             if (_OnRelease) _OnRelease(this);
         }
     }

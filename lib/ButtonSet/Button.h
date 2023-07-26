@@ -49,15 +49,7 @@
 #include <Arduino.h>
 
 #ifdef USE_BTN_MGR
-class ButtonManager;
-// #else
-// // Define dummy class with stubs
-// class Button;
-// class ButtonManager {
-//     public:
-//     ButtonManager(void) {};
-//     Button* add(Button* b) { return b; };
-// };
+class ButtonManager;    // Fwd declaration
 #endif
 
 #define flagChg(value, bitmsk, cond) ((cond) ? (value |= bitmsk) : (value &= ~bitmsk) )
@@ -119,7 +111,7 @@ public:
     // (some may be applicable to just specific button types)
     enum {
         lastState   = 0x80,   // Last recorded input status
-        hasRepeat   = 0x40,   // Uses repeat
+        rptEnabled  = 0x40,   // Repeat is enabled (if supported)
         Analog      = 0x20,   // Uses an analog value as input
         HWinput     = 0x10    // Reads HW inputs directly (as opposed to receiving data)
         //hasString   = 0x01,   // Name must be interpreted as string ptr (rather than uint_t code)
@@ -158,6 +150,10 @@ protected:
     uint8_t         bitno;
 #endif
 
+// public:     // Forward decl
+//         void setMirror(void);
+//     public void clrMirror(void);
+
     // ======================================
     // === Constructors
     // ======================================
@@ -171,7 +167,8 @@ protected:
     /// These constructors allow each individual button to be defined in a concise way,
     /// if all required information is available at compile time.
     /// The name is optional, as are the mirror variable and flag (bit# in var).
-    /// If a mirror var is specified (not nullptr), the button state is automatically mirrored into it.
+    /// If a mirror var is specified (not nullptr), the button state is automatically
+    /// mirrored into it.
     /// _pin = 1...n
 
 
@@ -225,14 +222,14 @@ public:
     
     Button& source(uint8_t* sourcevar, uint8_t sourcebit)
     #ifdef SOURCEVAR
-        { if(srcVar==nullptr) return; srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return *this; }
+        { if(sourcevar==nullptr) return; srcVar = sourcevar; bitno = (bitno&0x0F)|((sourcebit&0x07)<<4); return *this; }
     #else
         { UNUSED(sourcevar); UNUSED(sourcebit); return *this; }
     #endif
 
     Button& mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
     #ifdef MIRRORVAR
-        { if(mirrVar==nullptr) return; mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return *this; }
+        { if(mirrorVar==nullptr) return; mirrVar = mirrorvar; bitno = (bitno&0xF0)|(sourcebit&0x07); return *this; }
     #else
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
     #endif
@@ -309,12 +306,14 @@ public:
 
 #ifdef MIRRORVAR
     uint8_t *getMVar(void)          {return mirrVar; }
-    void    setBit(void)            {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
-    void    clearBit(void)          {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
+    void    setMirror(void)         {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
+    void    clrMirror(void)         {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
+    void    mirrorBit(uint8_t st)   {st ? setMirror() : clrMirror();}
 #else
     uint8_t *getMVar(void)          {return NULL;}
-    void    setBit(void)            {}
-    void    clearBit(void)          {}
+    void    setMirror(void)         {}
+    void    clrMirror(void)         {}
+    void    mirrorBit(uint8_t st)   {UNUSED(st);}
 #endif
 
 };
