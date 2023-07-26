@@ -146,11 +146,12 @@ public:
         return *this;
     }
 
-    ButtonAdv& parana(uint8_t lthreshold = 0, uint8_t uthreshold = 0)
+    ButtonAdv& anaParm(uint8_t lthreshold, uint8_t uthreshold, uint8_t hyst = 2)
     {
-        lowerAnaThrs=lthreshold;
-        upperAnaThrs=uthreshold;
-        flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
+        lowerAnaThrs = lthreshold;
+        upperAnaThrs = uthreshold;
+        hysteresis   = hyst;
+        modeAnalog(lthreshold != uthreshold);
         return *this;
     }
 

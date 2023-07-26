@@ -72,9 +72,9 @@ ButtonAdv::CButtonAdv( uint16_t rptDelay, uint16_t rptRate, uint16_t longPress, 
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     setLongPDelay(longPress);
-    flagChg(_flags, Button::Analog, (lthreshold != uthreshold));
+    modeAnalog(lthreshold != uthreshold);
     TlastChange = millis();
-    flagChg(_flags, Button::lastState, 0);
+    valBit(0);
 }
 
 // Set repeat time (in ms; rounded to next 10 ms; effective range 10ms..2.55s)
@@ -123,10 +123,12 @@ ButtonAdv::_getInput(Button::ButtonStatus_t ival) //Button::ButtonStatus_t ival)
 
     if (ana) {
         int8_t  h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
-        newi = ((newi >= lowerAnaThrs+h && newi < upperAnaThrs-h) ? HIGH : LOW);
-    } else {
-        newi = (newi ? HIGH : LOW);
+        bool lowt  = (ival >= lowerAnaThrs-h);
+        bool hight = (ival <  upperAnaThrs+h);
+        newi = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
     }
+
+    newi = (newi ? HIGH : LOW);
     return newi;
 }
 
@@ -158,7 +160,8 @@ ButtonAdv::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            flagChg(_flags, Button::lastState, (newi == HIGH));
+            valBit(newi == HIGH);
+
             curi = newi;
         }
     }
@@ -167,7 +170,6 @@ ButtonAdv::_check(uint8_t newi)
         if (TstartPress == 0) {
             // transition L->H: mark the start time and notify others
             TstartPress = TlastChange; //now;
-            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -206,7 +208,6 @@ ButtonAdv::_check(uint8_t newi)
             TstartPress = 0;
             TlastPress = 0;
             longPFlag = 0;      // release LP lock
-            clrMirror();
             if (_OnRelease) _OnRelease(this);
         }
     }
@@ -229,13 +230,10 @@ ButtonAdv::initState(uint8_t *bytevec)
 void
 ButtonAdv::_initState(uint8_t newi)
 {
-    // Register new status
-    flagChg(_flags, Button::lastState, (newi == HIGH));
+    valBit(newi == HIGH);
     if (newi == HIGH) {
-        setMirror();
         if (_OnPress) _OnPress(this);
     } else {
-        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }

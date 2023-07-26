@@ -44,14 +44,11 @@ ButtonEnc::ButtonEnc(
 void
 ButtonEnc::check(Button::ButtonStatus_t ival)
 {
-    flagChg(_flags, Button::lastState, ((ival & Button::Curr) != 0));
-
+    valBit(((ival & Button::Curr) != 0));
     if ((ival & Button::Dn) /*&& (cur == HIGH)*/) {
-        setMirror();
         if (_OnPress) _OnPress(this);
     }
     if (ival & Button::Up) {
-        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
     if ((ival & Button::Long) /*&& (cur == HIGH)*/) {
@@ -61,11 +58,11 @@ ButtonEnc::check(Button::ButtonStatus_t ival)
 
 void ButtonEnc::initState(Button::ButtonStatus_t ival)
 {
-    if ((ival & Button::Curr) != 0) {
-        setMirror();
+    bool newi = ((ival & Button::Curr) != 0);
+    valBit(newi);
+    if (newi) {
         if (_OnPress) _OnPress(this);
     } else {
-        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }

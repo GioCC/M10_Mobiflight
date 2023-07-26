@@ -112,12 +112,11 @@ public:
         return *this; 
     }
 
-    //ButtonBas& parana(uint16_t lthreshold, uint16_t uthreshold)
-    ButtonBas& parana(uint8_t lthreshold = 0, uint8_t uthreshold=0)
+    ButtonBas& anaParm(uint8_t lthreshold, uint8_t uthreshold)
     {
         lowerAnaThrs=lthreshold;    // (uint8_t)((lthreshold+2)>>2);
         upperAnaThrs=uthreshold;    // (uint8_t)((uthreshold+2)>>2);
-        flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
+        modeAnalog(lthreshold != uthreshold);
         return *this;
     }
 

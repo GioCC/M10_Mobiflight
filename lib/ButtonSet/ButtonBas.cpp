@@ -63,9 +63,9 @@ void
 ButtonBas::CButtonBas(uint8_t lthreshold, uint8_t uthreshold)
 {
     debounceTime = 100;
-    flagChg(_flags, Button::Analog, (lthreshold!=uthreshold));
+    modeAnalog(lthreshold != uthreshold);
     TlastChange = millis();
-    flagChg(_flags, Button::lastState, 0);
+    valBit(0);
 }
 
 uint8_t
@@ -122,7 +122,7 @@ ButtonBas::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            flagChg(_flags, Button::lastState, (newi == HIGH));
+            valBit(newi == HIGH);
             curi = newi;
         }
     }
@@ -130,7 +130,6 @@ ButtonBas::_check(uint8_t newi)
     if (curi == HIGH) {
         if (!pressFlag) {
             pressFlag = 1;
-            setMirror();
             if (_OnPress) {
                 _OnPress(this);
                 // callback may have taken some time: update <now> for <if>s below
@@ -139,7 +138,6 @@ ButtonBas::_check(uint8_t newi)
         }
     } else {
         if (pressFlag) {
-            clrMirror();
             if (_OnRelease) _OnRelease(this);
             pressFlag = 0;
         }
@@ -163,13 +161,10 @@ ButtonBas::initState(uint8_t *bytevec)
 void
 ButtonBas::_initState(uint8_t newi)
 {
+    valBit(newi == HIGH);
     if (newi == HIGH) {
-        _flags |= Button::lastState;
-        setMirror();
         if (_OnPress) _OnPress(this);
     } else {
-        _flags &= ~Button::lastState;
-        clrMirror();
         if (_OnRelease) _OnRelease(this);
     }
 }

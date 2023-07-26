@@ -57,15 +57,12 @@ ButtonGrp::ButtonGrp(
 
 void ButtonGrp::check(Button::ButtonStatus_t ival)
 {
-    flagChg(_flags, Button::lastState, ((ival & Button::Curr) != 0));
-
+    valBit(((ival & Button::Curr) != 0));
     if ((ival & Button::Dn) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
-        setMirror();
     }
     if (ival & Button::Up) {
         if (_OnRelease) _OnRelease(this);
-        clrMirror();
     }
     if ((ival & Button::Rpt) && (_flags & Button::rptEnabled) /*&& (cur == HIGH)*/) {
         if (_OnPress)   _OnPress(this);
@@ -77,12 +74,12 @@ void ButtonGrp::check(Button::ButtonStatus_t ival)
 
 void ButtonGrp::initState(Button::ButtonStatus_t ival)
 {
-    if ((ival & Button::Curr) != 0) {
+    bool newi = ((ival & Button::Curr) != 0);
+    valBit(newi);
+    if (newi) {
         if (_OnPress)   _OnPress(this);
-        setMirror();
     } else {
         if (_OnRelease) _OnRelease(this);
-        clrMirror();
     }
 }
 

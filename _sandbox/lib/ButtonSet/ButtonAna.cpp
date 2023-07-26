@@ -72,13 +72,13 @@ ButtonAna::CButtonAna( uint16_t rptDelay, uint16_t rptRate)
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     TlastChange = millis();
-    flagChg(_flags, Button::lastState, 0);
+    valBit(0);
     if(lowerAnaThrs==upperAnaThrs) {
         // Force thresholds: they can't be the same, otherwise it isn't an Analog button
         lowerAnaThrs = 128;
         upperAnaThrs = 255;
     }
-    flagChg(_flags, Button::Analog, 1);
+    modeAnalog(1);
 }
 
 // Set repeat time (in ms; rounded to next 10 ms; effective range 10ms..2.55s)
@@ -122,13 +122,16 @@ ButtonAna::check(ButtonStatus_t bval)
     uint8_t newi;
     uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
 
-    h = (curi == HIGH ? hysteresis : -hysteresis);
-
     if(hasSrcVar()) {
         ival = getSrcVal();
     }
+  
+    h = (curi == HIGH ? hysteresis : -hysteresis);
 
-    newi = ((ival >= lowerAnaThrs+h && ival < upperAnaThrs-h) ? HIGH : LOW);
+    bool lowt  = (ival >= lowerAnaThrs-h);
+    bool hight = (ival <  upperAnaThrs+h);
+    lowt = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);   // recycle var
+    newi = (lowt ? HIGH : LOW);
 
     now = millis();
     if (newi != curi) {
@@ -137,7 +140,7 @@ ButtonAna::check(ButtonStatus_t bval)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            flagChg(_flags, Button::lastState, (newi == HIGH));
+            valBit(newi == HIGH);
             curi = newi;
         }
     }
@@ -151,7 +154,6 @@ ButtonAna::check(ButtonStatus_t bval)
                 // callback may have taken some time: update <now> for <if>s below
                 now = millis();
             }
-            setMirror();
         }
 
         // is repeating enabled?
@@ -176,7 +178,6 @@ ButtonAna::check(ButtonStatus_t bval)
             TstartPress = 0;
             TlastPress = 0;
             if (_OnRelease) _OnRelease(this);
-            clrMirror();
         }
     }
 }
@@ -192,13 +193,11 @@ ButtonAna::initState(ButtonStatus_t bval)
     newi = ((ival >= lowerAnaThrs+h && ival < upperAnaThrs-h) ? HIGH : LOW);
 
     // Register new status
-    flagChg(_flags, Button::lastState, (newi == HIGH));
+    valBit(newi == HIGH);
     if (newi == HIGH) {
         if (_OnPress) _OnPress(this);
-        setMirror();
     } else {
         if (_OnRelease) _OnRelease(this);
-        clrMirror();
     }
 }
 

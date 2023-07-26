@@ -49,7 +49,7 @@ Button::Button(uint8_t npin, uint8_t useHWinput, uint16_t tag, uint8_t *mirrorva
 void
 Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
 {
-    flagChg(_flags, Button::lastState, 0);//lastState = LOW;
+    valBit(0);  //lastState = LOW;
     flagChg(_flags, Button::rptEnabled, 1);  // Repeat enabled by default if present
     flagChg(_flags, Button::HWinput, useHWinput);
     if (useHWinput) {
@@ -59,20 +59,24 @@ Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
     mirror(mirrorvar, mirrorbit);
 }
 
-Button& Button::make(void) 
+
+Button& 
+Button::make(void) 
 { 
     Button* b = MAKE_NEW(Button); 
     return *b; 
 }
 
 #ifdef USE_BTN_MGR
-Button& Button::addTo(ButtonManager& mgr)
+Button& 
+Button::addTo(ButtonManager& mgr)
 { 
     mgr.add(this); 
     return *this; 
 }
  
-Button& Button::make(ButtonManager& mgr) 
+Button& 
+Button::make(ButtonManager& mgr) 
 { 
     Button* b = new Button(); 
     b->addTo(mgr); 

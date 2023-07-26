@@ -98,7 +98,6 @@ public:
     explicit TagData(const byte b[])    { bytes = b; }
 };
 
-
 class Button
 {
 
@@ -149,6 +148,17 @@ protected:
 #if defined(SOURCEVAR)||defined(MIRRORVAR)
     uint8_t         bitno;
 #endif
+
+    void modeAnalog(uint8_t v) {
+        flagChg(_flags, Button::Analog, v);
+    }
+
+    void valBit(uint8_t v) {
+        flagChg(_flags, Button::lastState, v);
+        #ifdef MIRRORVAR
+        mirrorBit(v);
+        #endif
+    }
 
     // ======================================
     // === Constructors
@@ -251,14 +261,13 @@ public:
     // === Getters
     // ======================================
 
-    uint8_t getPin(void)            { return _pin; }
-    uint8_t isHW(void)              { return ((_flags & Button::HWinput)!=0); }
-    uint8_t isAna(void)             { return ((_flags & Button::Analog) !=0); }
+    uint8_t     getPin(void)            { return _pin; }
+    uint8_t     isHW(void)              { return ((_flags & Button::HWinput)!=0); }
+    uint8_t     isAna(void)             { return ((_flags & Button::Analog) !=0); }
 
-    //This is kept for temporary compatibility during debug:
-    TagData *getTag(void)           { return &_tag; }
-    char*   getName(void)           { return (char*)_tag.text; }
-    void    getTag(uint16_t *tag)   { *tag =_tag.code; }
+    TagData*    getTag(void)            { return &_tag; }
+    char*       getName(void)           { return (char*)_tag.text; }
+    void        getTag(uint16_t *tag)   { *tag =_tag.code; }
     // TagData *getData(void)          { return &_data; }
     // void    getData(uint16_t *data) { *data=_data.code; }
 
@@ -293,7 +302,7 @@ public:
 #ifdef SOURCEVAR
     uint8_t hasSrcVar(void)         {return (srcVar != NULL);}
     uint8_t *getSrcVar(void)        {return srcVar; }
-    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? true : false)); }
+    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*mirrVar)&(1<<((bitno>>4)&0x0F))) ? HIGH : LOW)); }
 #else
     uint8_t hasSrcVar(void)         {return false;}
     uint8_t *getSrcVar(void)        {return NULL;}
@@ -302,13 +311,13 @@ public:
 
 #ifdef MIRRORVAR
     uint8_t *getMVar(void)          {return mirrVar; }
-    void    setMirror(void)            {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
-    void    clrMirror(void)          {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
+    void    setMirror(void)         {if(mirrVar) {*mirrVar |= (1 << (bitno&0x0F));}}
+    void    clrMirror(void)         {if(mirrVar) {*mirrVar &= ~(1 << (bitno&0x0F));}}
     void    mirrorBit(uint8_t st)   {st ? setMirror() : clrMirror();}
 #else
     uint8_t *getMVar(void)          {return NULL;}
-    void    setMirror(void)            {}
-    void    clrMirror(void)          {}
+    void    setMirror(void)         {}
+    void    clrMirror(void)         {}
     void    mirrorBit(uint8_t st)   {UNUSED(st);}
 #endif
 
