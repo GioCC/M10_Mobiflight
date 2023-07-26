@@ -63,7 +63,7 @@ void
 ButtonBas::CButtonBas(uint8_t lthreshold, uint8_t uthreshold)
 {
     debounceTime = 100;
-    flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
+    flagChg(_flags, Button::Analog, (lthreshold!=uthreshold));
     TlastChange = millis();
     flagChg(_flags, Button::lastState, 0);
 }
@@ -83,11 +83,14 @@ ButtonBas::_getInput(Button::ButtonStatus_t ival)
     } else {
         newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
     }
+    
     if (ana) {
-        newi = ((newi >= lowerAnaThrs && newi < upperAnaThrs) ? HIGH : LOW);
-    } else {
-        newi = (newi ? HIGH : LOW);
+        bool lowt  = (ival >= lowerAnaThrs);
+        bool hight = (ival <  upperAnaThrs);
+        newi = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
     }
+
+    newi = (newi ? HIGH : LOW);
     return newi;
 }
 
@@ -119,7 +122,7 @@ ButtonBas::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            flagChg(_flags, Button::lastState, (curi == HIGH));
+            flagChg(_flags, Button::lastState, (newi == HIGH));
             curi = newi;
         }
     }
@@ -159,8 +162,10 @@ void
 ButtonBas::_initState(uint8_t newi)
 {
     if (newi == HIGH) {
+        _flags |= Button::lastState;
         if (_OnPress) _OnPress(this);
     } else {
+        _flags &= ~Button::lastState;
         if (_OnRelease) _OnRelease(this);
     }
 }

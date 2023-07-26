@@ -122,13 +122,16 @@ ButtonAna::check(ButtonStatus_t bval)
     uint8_t newi;
     uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
 
-    h = (curi == HIGH ? hysteresis : -hysteresis);
-
     if(hasSrcVar()) {
         ival = getSrcVal();
     }
+  
+    h = (curi == HIGH ? hysteresis : -hysteresis);
 
-    newi = ((ival >= lowerAnaThrs+h && ival < upperAnaThrs-h) ? HIGH : LOW);
+    bool lowt  = (ival >= lowerAnaThrs-h);
+    bool hight = (ival <  upperAnaThrs+h);
+    lowt = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);   // recycle var
+    newi = (lowt ? HIGH : LOW);
 
     now = millis();
     if (newi != curi) {

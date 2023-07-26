@@ -160,7 +160,7 @@ ButtonAdv::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            flagChg(_flags, Button::lastState, (curi == HIGH));
+            flagChg(_flags, Button::lastState, (newi == HIGH));
             curi = newi;
         }
     }
