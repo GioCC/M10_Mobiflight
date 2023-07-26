@@ -72,7 +72,7 @@ ButtonAdv::CButtonAdv( uint16_t rptDelay, uint16_t rptRate, uint16_t longPress, 
     setRepeatDelay(rptDelay);
     setRepeatRate(rptRate);
     setLongPDelay(longPress);
-    flagChg(_flags, Button::Analog, (lthreshold==uthreshold));
+    flagChg(_flags, Button::Analog, (lthreshold != uthreshold));
     TlastChange = millis();
     flagChg(_flags, Button::lastState, 0);
 }
@@ -120,12 +120,15 @@ ButtonAdv::_getInput(Button::ButtonStatus_t ival) //Button::ButtonStatus_t ival)
         // NOT simply if (value != 0) !!
         newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
     }
-    if (_flags & Button::Analog) {
+
+    if (ana) {
         int8_t  h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
-        newi = ((newi >= lowerAnaThrs+h && newi < upperAnaThrs-h) ? HIGH : LOW);
-    } else {
-        newi = (newi ? HIGH : LOW);
+        bool lowt  = (ival >= lowerAnaThrs-h);
+        bool hight = (ival <  upperAnaThrs+h);
+        newi = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
     }
+
+    newi = (newi ? HIGH : LOW);
     return newi;
 }
 
@@ -157,7 +160,7 @@ ButtonAdv::_check(uint8_t newi)
         if (now - TlastChange >= debounceTime) {
             TlastChange = 0;    // this condition means "stable"
             // Register new status
-            if(newi == HIGH) { _flags |= Button::lastState; } else { _flags &= ~Button::lastState; }
+            flagChg(_flags, Button::lastState, (curi == HIGH));
             curi = newi;
         }
     }
