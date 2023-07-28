@@ -18,14 +18,7 @@ MCPS            _MCPIO2(0,15);  // PCB v1.0
 
 M10board::M10board(void)
 {
-    //vars.set(100, 0xff);
     nAINS = 0;
-
-    // Provisionally map first 2 phys encoders to first 2 virtual encoders
-    // -> Mapping will be changed at runtime anytime
-    // -> if virtual encoders are used, no more than 2 phys encoders are realistically necessary
-    EncMap[0] = 1;
-    EncMap[1] = 2;
 }
 
 void
@@ -195,46 +188,48 @@ M10board::digitalRead(uint8_t pin)
 }
 
 void
-M10board::mirrorEncoder(byte fromPos, byte toPos, byte clean, byte toHighInputs)
+M10board::mirrorEncoder(byte fromPos, byte toPos, bool move)
 {
-    // FromPos = 1..6 (in base vector);
-    // ToPos = 1..10 (in virtual vector);
-    if(fromPos>6 || toPos > 10) return;
-    // Convert index pos to bit pos
-    toPos   = toPos+toPos+toPos-3;          // 3*(toPos-1)
-    fromPos = fromPos+fromPos+fromPos-3;    // 3*(fromPos-1)
-    // Encs #1,#2,#3 are at the start of the lower word (bits 0...8)
-    // Encs #4,#5,#6 are at the start of the upper word
-    if(fromPos > 6) fromPos+=7;
+    uint32_t msk;
+    // FromPos = 1..3
+    // ToPos = 1..10
+    if(fromPos>3 || toPos > 10 || fromPos==toPos) return;
+    // Convert index pos to bit pos: 3*(n-1)
+    fromPos--; toPos--; 
+    fromPos = fromPos+fromPos+fromPos;
+    toPos   = toPos  +toPos  +toPos;
 
-    // Only affect bits from current encoder - others should remain "frozen"
-    virtEncInputs &= (clean ? 0UL : ~(7UL<<toPos));
-    virtEncInputs |= ((toPos>fromPos) ?
-                    ((realEncInputs & (7UL<<fromPos))<<(toPos-fromPos)) :
-                    ((realEncInputs & (7UL<<fromPos))>>(fromPos-toPos)) );
+    // Only affect bits from current encoder - others should remain unchanged
+    msk = (7UL<<toPos);
+    realEncInputs &= ~msk;     
+    msk = (7UL<<fromPos);
+    realEncInputs |= ((toPos>fromPos) ?
+                    ((realEncInputs & msk)<<(toPos-fromPos)) :
+                    ((realEncInputs & msk)>>(fromPos-toPos)) );
+    if(move) realEncInputs &= ~msk;
 
-    // if requested, also copy virtual vector back to actual input vector
+    // if requested, also copy virtual vector back to source input vector
     // (from input 33 up)
-    if(toHighInputs) {
-        byte *p = (byte *)&virtEncInputs;
-        for(byte i=0; i<4; i++) {
-            Din.writeB(4+i, p[i]);
-        }
-    }
-
+    // if(toSrcInputs) {
+    //     byte *p = (byte *)&virtEncInputs;
+    //     for(byte i=0; i<4; i++) {
+    //         Din.writeB(4+i, p[i]);
+    //     }
+    // }
 }
 
 void
 M10board::remapEncoder(byte fromPos, byte toPos)
 {
-    if(((fromPos-1) < 2)&&(toPos <= 8)) EncMap[fromPos-1] = toPos;
+    if(((fromPos-1) > 2)||((toPos-1) > 9)) return;
+    EncMap[fromPos-1] = toPos;
 }
 
 void
 M10board::ScanInOut(byte mode)
 {
     uint16_t    iovec;
-    uint32_t    encvec;
+    // uint32_t    encvec;
 
     // ==============================
     //  Write Digital Outputs
@@ -262,17 +257,19 @@ M10board::ScanInOut(byte mode)
         //  Handle encoder input mirroring
         // ===================================
         if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
-            // collect enc inputs
-            encvec = (Din.valW(2) & 0x01FF);
-            encvec <<= 9;
-            encvec |= (Din.valW(0) & 0x01FF);
-
-            realEncInputs = encvec;
+            // collect physical enc inputs
+            if(cfg->nEncoders > 3) {
+                // assert(cfg->nVirtEncoders == 0); // Virtual encoders only available if no 2nd bank is used!
+                realEncInputs = (Din.valW(2) & 0x01FF);    // Encoders 4..6 (2nd bank)
+                realEncInputs <<= 9;
+            }
+            realEncInputs |= (Din.valW(0) & 0x01FF);   // Encoders 1..3 (1st bank)
 
             if(cfg->nVirtEncoders!=0) {
-                // remap encoders if required (writes to virtEncInputs and back to inputs)
-                if(EncMap[0]) { mirrorEncoder(1, EncMap[0]); }
-                if(EncMap[1]) { mirrorEncoder(2, EncMap[1]); }
+                // remap encoders if required (ineffective otherwise)
+                mirrorEncoder(1);
+                mirrorEncoder(2);
+                mirrorEncoder(3);
             }
         }
 
@@ -284,7 +281,7 @@ M10board::ScanInOut(byte mode)
         // ===================================
         if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
             
-            // Use EITHER physical OR virtual encoders, not both
+            // Use EITHER physical OR virtual encoders, not both!
             if(cfg->nVirtEncoders==0) {
                 Encs.update(realEncInputs);     // Feed inputs to encoder processors
             } else {

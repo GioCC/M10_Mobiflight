@@ -52,10 +52,9 @@ class M10board
         EncoderSet       Encs;
         int              EncCount[ENCSLOTS];
         uint8_t          EncModes[ENCSLOTS];
-        byte             EncMap[3];         // Actual encoder mappings; handles only up to 3 source encoders to spare memory
+        byte             EncMap[3] = {0xFF, 0xFF, 0xFF};  // Encoder mappings; handles only up to 3 source encoders to spare memory
 
         uint32_t         realEncInputs;     // Input vector directly read for encoders
-        uint32_t         virtEncInputs;     // Input vector formed for virtual encoders
         //uint16_t       encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
 
         uint8_t          _DISP[DispSize];
@@ -73,8 +72,8 @@ class M10board
         uint16_t        IOcfg[2];           // In (1) or Out (0)
         uint16_t        IOpullup[2];        // On (1) or Off (0)
 
-        uint8_t         *AINS;              // Array of used analog inputs
-        uint8_t         nAINS;              // Number of used analog inputs
+        uint8_t*        AINS = nullptr;     // Array of used analog inputs
+        uint8_t         nAINS = 0;          // Number of used analog inputs
 
     public:
 
@@ -132,40 +131,58 @@ class M10board
 
         /// "Virtual' (mirrored) encoders
         ///
-        /// One or more input sets corresponding to physical encoders can be mirrored to an I/O vector
-        /// (integrated in the standard I/O space) associated to several "virtual" encoders.
-        /// This mirroring happens at the level right after reading inputs, therefore it effectively mimics
-        /// the presence of the virtual encoders.
-        /// Since switching happens at input level, Virtual encoders are managed by the same classes as physical
-        /// encoders, thus they have all of their features.
+        /// One or more input sets corresponding to physical encoders (EncA, EncB, Sw lines), stored in the lower
+        /// places of an I/O vector, can be "mirrored" to higher "slots" in the same vector, which are associated
+        /// to "virtual" encoders.
+        /// (By default, the inputs are actually moved, not copied; "mirrored" is a bit misleading.)
+        /// 
+        /// This mirroring happens at the level right after reading inputs; therefore, virtual encoders
+        /// are effectively identical to physical ones, and are managed by the same classes with all the same features.
+        /// A physical encoder can be associated to a single virtual encoder at any given time.
         /// The matching between physical and virtual encoders can be changed on the fly at any moment.
+        ///
         /// The typical use case is a single encoder with a shared function (according to a physical selector
         /// or a software setting): e.g. an encoder can be assigned to the frequency change of different radios
         /// (and/or to int/frac portion of these frequencies) according to the position of a rotary selector.
-        /// The same phys encoder can also be mirrored to more than one virtual encoder, if required (and if it makes sense).
+        /// 
+        /// In order to efficiently use the memory space:
+        /// - the first 3 "slots" (bits from 0 to 8) correspond to physical encoders;
+        /// - upper "slots" (bits from 9 upwards) correspond to virtual encoders.
+        /// If there are fewer than 3 physical encoders, the slots corresponding to the missing ones can be used as
+        /// virtual; the remap is not constrained to upper position, therefore it is up to the user to care for the 
+        /// correct mapping.
+        /// 
+        /// Using options, the same physical encoder can also be mirrored to more than one virtual encoder,
+        /// if required (and if it makes sense).
         ///
         /// How to use:
         ///
-        /// - read the I/O vectors (physical I/O lines) of the physical encoders
-        /// - call the 'mirrorEncoder(...)', with the proper matching parameters active at the time
-        /// - just go on transparently with normal encoder processing. The virtual encoder lines are found
-        ///   either in vector 'virtEncInputs', or as normal read from inputs 33..56 (where 'virtEncInputs' is
-        ///   automatically mirrored to by mirrorEncoder if 'toHighInputs' == true) just as they were normal physical inputs.
-        /// If required, the original encoders' physical inputs are still accessible as they were before, without any alteration.
+        /// - Read the I/O vectors (physical I/O lines) of the physical encoders
+        /// - For each encoder to be mirrored, call 'mirrorEncoder(...)', with the proper matching parameters active at the time
+        /// - just go on transparently with normal encoder processing.
         /// Warning: mirrorEncoder(..) can handle 10 units, however, class M10Encoder (which is used to manage it) might 
         /// handle less (default is usually 8)!
         // 
-        // Use encoder mirror to "split" a single encoder to different virtual encoders mapped to virtual inputs 33..62(+)
-        // FromPos = 1..6 (in base vector)
-        // ToPos = 1..10 (in virtual vector)
-        // clean = if TRUE, all inputs of encoders different from the one written are set to 0
-        // (makes sense only for encoders that have A=B=0 at detents).
+        // fromPos = 1..3
+        // toPos   = 1..10
+        // move    = if TRUE (default), all inputs of encoders different from the one written are set to 0
+        // (requires that encoders have A=B=0 at detents).
+        
+        // TODO: do not use implicit I/O vector variable?
 
-        void        mirrorEncoder(byte fromPos, byte toPos, byte clean = 1, byte toHighInputs = 1);
+        void    mirrorEncoder(byte fromPos, byte toPos, bool move = true);
 
-        // Convenience utility function - define actual encoder mappings
-        void        remapEncoder(byte fromPos, byte toPos);
+        // Version using the supplied remap table
+        // TODO change overlapping signature
+        void    mirrorEncoder(byte fromPos, bool move = true) { mirrorEncoder(fromPos, EncMap[fromPos-1], move); }
 
+        // Define encoder mappings
+        // fromPos = 1..3
+        // toPos   = 1..10
+        void    remapEncoder(byte fromPos, byte toPos);
+
+        
+        
         // For custom processing, an encoder object made available (based on the digital input vector),
         EncoderSet  *Encoders(void)       { return &Encs; }
 

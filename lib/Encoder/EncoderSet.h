@@ -10,7 +10,7 @@
 *
 ********************************************************************/
 
-/// This class manages physically connectd encoders basing on a "raw" digital 
+/// This class manages physically connected encoders basing on a "raw" digital 
 /// I/O vector (possibly coming from a direct port read); it does NOT read hardware
 /// inputs directly, therefore input data can also be pre-processed or simulated
 /// or whatever required.
@@ -176,9 +176,9 @@ public:
     // Following functions are meant for use in more correct OOP, if key and enc vars were made private
     // Currently, for the sake of efficiency, key and enc vars are kept public despite it being bad
     // from a programming point of view.
-    t_btnstat   *getBtns(void)      __attribute__((always_inline)) { return &btns; }
-    t_enctstat  *getEncStatus(void) __attribute__((always_inline)) { return &trans; }
-    t_enccstat  *getEncCnt(void)    __attribute__((always_inline)) { return &encs; }
+    t_btnstat   *getBtns(void)          { return &btns; }
+    t_enctstat  *getEncStatus(void)     { return &trans; }
+    t_enccstat  *getEncCnt(void)        { return &encs; }
 
     ///
     /// TRANSITIONS
@@ -186,12 +186,12 @@ public:
     /// Return mask of encoders which had a transition (of the corresponding type) since last read
     /// If an enc no. != 0 is specified, the returned value is relative to that encoder only (!=0 on change)
     /// Because of inlining, no range check is performed on the encoder index
-    EVEC getEncChange(byte nenc=0)      __attribute__((always_inline))  { return trans.changed  & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getEncChangeUp(byte nenc=0)    __attribute__((always_inline))  { return trans.enUp     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getEncChangeDn(byte nenc=0)    __attribute__((always_inline))  { return trans.enDn     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getEncChangeQUp(byte nenc=0)   __attribute__((always_inline))  { return trans.enQUp    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getEncChangeQDn(byte nenc=0)   __attribute__((always_inline))  { return trans.enQDn    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    void clearTrans(void)               __attribute__((always_inline))  { memset(&trans, 0, sizeof(t_enctstat)); }
+    EVEC getEncChange(byte nenc=0)      { return trans.changed  & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeUp(byte nenc=0)    { return trans.enUp     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeDn(byte nenc=0)    { return trans.enDn     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeQUp(byte nenc=0)   { return trans.enQUp    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getEncChangeQDn(byte nenc=0)   { return trans.enQDn    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    void clearTrans(void)               { memset(&trans, 0, sizeof(t_enctstat)); }
 
     ///
     /// BUTTONS
@@ -199,14 +199,14 @@ public:
     /// Return mask of encoders BUTTONS which had a transition (of the corresponding type) since last read
     /// If an enc no. != 0 is specified, the returned value is relative to that encoder only (!=0 on change)
     /// Because of inlining, no range check is performed on the encoder index
-    EVEC getBtnChange(byte nenc=0)      __attribute__((always_inline))  { return btns.changed       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnPress(byte nenc=0)       __attribute__((always_inline))  { return btns.activated     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnRelease(byte nenc=0)     __attribute__((always_inline))  { return btns.deactivated   & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnLongP(byte nenc=0)       __attribute__((always_inline))  { return btns.longpress     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnShortP(byte nenc=0)      __attribute__((always_inline))  { return btns.shortpress    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnToggle(byte nenc=0)      __attribute__((always_inline))  { return btns.toggled       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    EVEC getBtnCurrent(byte nenc=0)     __attribute__((always_inline))  { return btns.current       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
-    void clearBtns(void)                __attribute__((always_inline))  { memset(&btns, 0, sizeof(t_btnstat)); }
+    EVEC getBtnChange(byte nenc=0)      { return btns.changed       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnPress(byte nenc=0)       { return btns.activated     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnRelease(byte nenc=0)     { return btns.deactivated   & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnLongP(byte nenc=0)       { return btns.longpress     & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnShortP(byte nenc=0)      { return btns.shortpress    & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnToggle(byte nenc=0)      { return btns.toggled       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    EVEC getBtnCurrent(byte nenc=0)     { return btns.current       & (nenc==0 ? ALL_MASK:(EVEC)wmasks[nenc-1]); }
+    void clearBtns(void)                { memset(&btns, 0, sizeof(t_btnstat)); }
 
 
     ///

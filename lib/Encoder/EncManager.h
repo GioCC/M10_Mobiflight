@@ -22,21 +22,28 @@
 /// - to scan the collected ManagedEncs (supplying them with processed encoder data, ie. transitions, counts etc.)
 ///   so they can work their stuff and call user callbacks on events.
 ///
+/// General use:
+/// The user code first feeds inputs to the processor class, and then calls the ManagedEnc objects 
+/// (either directly or through the EncoderManager) in order to act on the processed results.
+///
 /// This class relies on the presence of a processor class that reads the status of input lines
 /// (HW or SW) and handles transition detection and counters; data from this class (usually regarding
 /// a whole encoder bank) is passed along to the single ManagedEncs one by one.
 /// As a matter of fact, this could be sensibly defined as a derived class of the processor class used as base;
 /// however, for this application, they have been kept separate.
+/// 
+/// The result of the pre-processing is a set of status flags for each encoders:
+/// Up, Down, FastUp, FastDown, Mode. These can be grouped either by encoder or by flag type (depending on
+/// the USE_CALLBACKS option, see below). 
 ///
-/// Data fetching from the data provider class can be done in two ways (depending on how the class is compiled):
-/// - without callbacks: the input flags are passed to the polling function at each invocation;
-///   the constructor requires no arguments.
-/// - with callbacks: the callback functions to be used to request the input flags are passed to the constructor
-///   (or set later on); the polling function requires no arguments;
+/// Data from the data provider class can be transmitted in two ways (depending on how the class is compiled):
+/// - WITHOUT CALLBACKS: The encoder flags are passed to the polling function at each invocation
+///   as a set of bit vectors, one for each flag type - Up, Dn, Fast Up, etc.
+///   The constructor requires no arguments.
+/// - WITH CALLBACKS: the polling functions invokes callbacks to retrieve the flags for each encoder.
+///   The callback functions are passed to the constructor (or set later on);
+///   the polling function requires no arguments.
 /// The class is compiled in the first variant unless USE_CALLBACKS is defined.
-///
-/// The user code first feeds inputs to the processor class, and then calls the ManagedEnc objects 
-/// (either directly or through the EncoderManager) in order to act on the processed results.
 ///
 /// Please note that callbacks in this class are used to FETCH ENCODER DATA, not to be confused with
 /// callbacks in the ManagedEnc's which PERFORM THE ACTIONS corresponding to encoder movements.
