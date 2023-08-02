@@ -35,45 +35,55 @@ constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
 constexpr uint8_t LCsize  = sizeof(LedControl);
 constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
 
-#define UNUSED(x) ((void)(x))
+#define UNUSED(x)       ((void)(x))
+#define BYTESIZE(x)     ((x+7)>>3)
+
+constexpr uint8_t DIN_COUNT  = 64;
+constexpr uint8_t DOUT_COUNT = 32;
 
 class M10board
 {
     private:
 
+        // ******* Configuration
+
         M10board_cfg*    cfg;
 
-        MCP*             MCPIO1;
-        MCP*             MCPIO2;
+        // ******* Internal data storage:
 
-        // The actual number of physical encoders is defined in config_board.h.
-        // Reserved space is #defined in EncoderSet.h and in #define ENCSLOTS above.
+        Bank<DIN_COUNT>     Din;            // Buffer for I/O vector - Inputs
+        Bank<DOUT_COUNT>    Dout;           // Buffer for I/O vector - Outputs
+
+        uint16_t        IOcfg[BYTESIZE(DIN_COUNT)];     // In (1) or Out (0)
+        uint16_t        IOpullup[BYTESIZE(DIN_COUNT)];  // On (1) or Off (0)
+
+        uint8_t*        AINS = nullptr;     // Array of used analog inputs
+        uint8_t         nAINS = 0;          // Number of used analog inputs
+
+        // ******* Encoders
+    
         //TODO: if the AP module can be split, the max number of encoder reserved (common to all boards) can be decreased from 5 to 3
         EncoderSet       Encs;
         int              EncCount[ENCSLOTS];
         uint8_t          EncModes[ENCSLOTS];
         byte             EncMap[3] = {0xFF, 0xFF, 0xFF};  // Encoder mappings; handles only up to 3 source encoders to spare memory
-
-        uint32_t         realEncInputs;     // Input vector directly read for encoders
+        uint32_t         encInputs;     // Input vector directly read for encoders
         //uint16_t       encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
 
-        uint8_t          _DISP[DispSize];
+        // ******* I/O expanders
 
+        MCP*             MCPIO1;
+        MCP*             MCPIO2;
+        
+        // ******* LED/LCD Display drivers
         union {
             LedControl*      LEDCTRL;
             LiquidCrystal*   LCDCTRL;
         };
 
-        // Internal data storage:
+        // ******* LED Display driver handles
 
-        // These are public:
-        //Bank<48>      Din;       (defined below) Buffer for I/O vector - Inputs
-        //Bank<32>      Dout;      (defined below) Buffer for I/O vector - Outputs
-        uint16_t        IOcfg[2];           // In (1) or Out (0)
-        uint16_t        IOpullup[2];        // On (1) or Off (0)
-
-        uint8_t*        AINS = nullptr;     // Array of used analog inputs
-        uint8_t         nAINS = 0;          // Number of used analog inputs
+        uint8_t          _DISP[DispSize];
 
     public:
 
@@ -91,11 +101,6 @@ class M10board
         void    setIOMode(uint8_t bank, uint16_t IOmode);   // Mode 0 = Out, 1 = In
         void    setPUMode(uint8_t bank, uint16_t PUmode);   // PullUp: 1 = On
 
-        /// ====================================================
-        /// Main polling entry points
-        /// ====================================================
-
-        void    ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
         /// ====================================================
         /// Digital I/O management
@@ -104,9 +109,7 @@ class M10board
         // R/W functions operate on buffers 'Din'/'Dout', therefore require the invocation of ScanInOut(),
         // either before (for inputs) or after (for outputs).
 
-        //TODO These should be private:
-        Bank<64>    Din;              // Buffer for I/O vector - Inputs
-        Bank<32>    Dout;             // Buffer for I/O vector - Outputs
+        void    ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
         // Below, pin=1..32
         void        setPinMode(uint8_t pin, uint8_t mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
@@ -180,8 +183,6 @@ class M10board
         // fromPos = 1..3
         // toPos   = 1..10
         void    remapEncoder(byte fromPos, byte toPos);
-
-        
         
         // For custom processing, an encoder object made available (based on the digital input vector),
         EncoderSet  *Encoders(void)       { return &Encs; }

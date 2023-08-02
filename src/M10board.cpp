@@ -201,12 +201,12 @@ M10board::mirrorEncoder(byte fromPos, byte toPos, bool move)
 
     // Only affect bits from current encoder - others should remain unchanged
     msk = (7UL<<toPos);
-    realEncInputs &= ~msk;     
+    encInputs &= ~msk;     
     msk = (7UL<<fromPos);
-    realEncInputs |= ((toPos>fromPos) ?
-                    ((realEncInputs & msk)<<(toPos-fromPos)) :
-                    ((realEncInputs & msk)>>(fromPos-toPos)) );
-    if(move) realEncInputs &= ~msk;
+    encInputs |= ((toPos>fromPos) ?
+                    ((encInputs & msk)<<(toPos-fromPos)) :
+                    ((encInputs & msk)>>(fromPos-toPos)) );
+    if(move) encInputs &= ~msk;
 
     // if requested, also copy virtual vector back to source input vector
     // (from input 33 up)
@@ -260,10 +260,10 @@ M10board::ScanInOut(byte mode)
             // collect physical enc inputs
             if(cfg->nEncoders > 3) {
                 // assert(cfg->nVirtEncoders == 0); // Virtual encoders only available if no 2nd bank is used!
-                realEncInputs = (Din.valW(2) & 0x01FF);    // Encoders 4..6 (2nd bank)
-                realEncInputs <<= 9;
+                encInputs = (Din.valW(2) & 0x01FF);    // Encoders 4..6 (2nd bank)
+                encInputs <<= 9;
             }
-            realEncInputs |= (Din.valW(0) & 0x01FF);   // Encoders 1..3 (1st bank)
+            encInputs |= (Din.valW(0) & 0x01FF);   // Encoders 1..3 (1st bank)
 
             if(cfg->nVirtEncoders!=0) {
                 // remap encoders if required (ineffective otherwise)
@@ -283,7 +283,7 @@ M10board::ScanInOut(byte mode)
             
             // Use EITHER physical OR virtual encoders, not both!
             if(cfg->nVirtEncoders==0) {
-                Encs.update(realEncInputs);     // Feed inputs to encoder processors
+                Encs.update(encInputs);     // Feed inputs to encoder processors
             } else {
                 Encs.update(virtEncInputs);  // Feed inputs to (virtual)encoder processors
             }
