@@ -3,10 +3,20 @@
 //
 //  Board peripheral set compile-time configuration
 //
-// This file defines the peripheral set of the board, i.e. for which actual model of board
-// we are building the firmware.
+// This file defines the peripheral set for a specific board type.
+// It is divided in two parts (selectively activated through the 
+// BUILDING_CONFIG_DATA and BUILDING_CONFIG_RUNTIME symbols):
+// the first is used to declare the vector of configuration records 
+// BoardCfgs[] (in config_board.cpp),
+// whereas the second is used in the initialization phase.
 
 #include <binary.h>
+
+#ifdef BUILDING_CONFIG_DATA
+
+//===================================================================================
+// CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
+//===================================================================================
 
 // Clean-slate the #define namespace
 #include "config_board-undef.inc"
@@ -42,9 +52,13 @@
 }
 #define N_LCD           0
 
-// ==================================================
-//  Constants specific to the board
-// ==================================================
+#endif  // BUILDING_CONFIG_DATA
+
+#ifdef BUILDING_CONFIG_RUNTIME
+
+//===================================================================================
+// RUNTIME OBJECT CONSTRUCTION FOR BOARD CONTROLS/DEVICES
+//===================================================================================
 
 // TODO Add board-specific prefix to avoid name clashes!
 #define ENC_XDPR        1
@@ -70,4 +84,5 @@
 #define LD_OBS_VOR2     SEG_G8
 #define LD_OBS_ADF      SEG_D8
 
+#endif  // BUILDING_CONFIG_RUNTIME
 // end

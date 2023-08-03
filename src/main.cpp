@@ -52,6 +52,12 @@ char *counter2buf(byte cntno) {
 //#include "board_code.h"
 //================================
 
+void boardSetup(void) {
+#define BUILDING_CONFIG_RUNTIME
+    // TODO......
+    // Move function body elsewhere
+#undef BUILDING_CONFIG_RUNTIME
+}
 
 //----------------------
 void setup() {

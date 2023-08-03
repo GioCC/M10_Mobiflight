@@ -3,10 +3,20 @@
 //
 //  Board peripheral set compile-time configuration
 //
-// This file defines the peripheral set of the board, i.e. for which actual model of board
-// we are building the firmware.
+// This file defines the peripheral set for a specific board type.
+// It is divided in two parts (selectively activated through the 
+// BUILDING_CONFIG_DATA and BUILDING_CONFIG_RUNTIME symbols):
+// the first is used to declare the vector of configuration records 
+// BoardCfgs[] (in config_board.cpp),
+// whereas the second is used in the initialization phase.
 
 #include <binary.h>
+
+#ifdef BUILDING_CONFIG_DATA
+
+//===================================================================================
+// CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
+//===================================================================================
 
 // Clean-slate the #define namespace
 #include "config_board-undef.inc"
@@ -35,9 +45,13 @@
 // #define VIEWPORT3       {2,3, 5} //6}
 // #define VIEWPORT4       {2,11,5} //6}
 
-// ==================================================
-//  Constants specific to the board
-// ==================================================
+#endif  // BUILDING_CONFIG_DATA
+
+#ifdef BUILDING_CONFIG_RUNTIME
+
+//===================================================================================
+// RUNTIME OBJECT CONSTRUCTION FOR BOARD CONTROLS/DEVICES
+//===================================================================================
 
 // TODO Add board-specific prefix to avoid name clashes!
 #define ENC_SIDE_A      1
@@ -52,4 +66,12 @@
 #define PB_SWAP_A       15
 #define PB_SWAP_B       16
 
+{
+    // Define INPUTS (buttons)
+    // Define ENCODERS
+    // Define OUTPUTS
+    // Define DISPLAYS (MAX)
+    //......
+}
+#endif  // BUILDING_CONFIG_RUNTIME
 // end

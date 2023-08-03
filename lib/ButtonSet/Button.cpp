@@ -78,7 +78,7 @@ Button::addTo(ButtonManager& mgr)
 Button& 
 Button::make(ButtonManager& mgr) 
 { 
-    Button* b = new Button(); 
+    Button* b = MAKE_NEW(Button); 
     b->addTo(mgr); 
     return *b; 
 }

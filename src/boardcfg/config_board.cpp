@@ -32,6 +32,8 @@ constexpr uint8_t MaxBoards = 12;
 #define HAS_LCD (N_LCD!=0)
 #define HAS_BANK2 (defined(BANK2))
 
+#define BUILDING_CONFIG_DATA
+
 const
 M10board_cfg BoardCfgs[MaxBoards] PROGMEM = {
 
@@ -83,6 +85,7 @@ M10board_cfg BoardCfgs[MaxBoards] PROGMEM = {
 #include "config_board-08_Kbd.h"    // Aux
 #include "config_board-board.inc"
 
+#undef BUILDING_CONFIG_DATA
 };
 
 // end
