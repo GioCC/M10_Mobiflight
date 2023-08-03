@@ -21,9 +21,9 @@ class MCP0 :
 public MCP
 {
   public:
-    explicit    MCP0(uint8_t hwaddress);      // Beware: HWaddress is 7-bit (will be <<1 by the class)
-    virtual     void init(void);
-    virtual     void begin();                            // Get hold of the I2C Bus
+    explicit    MCP0(uint8_t hwaddress);    // Beware: HWaddress is 7-bit (will be <<1 by the class)
+    void        init(void)  override;
+    void        begin()     override;       // Get hold of the I2C Bus
 
   private:
 
@@ -31,12 +31,10 @@ public MCP
     uint8_t         _hwaddress;
     char            _ibuf[6];
 
-    // These members are no longer virtual (they were pure virtual in the base class), 
-    // but add virtual specifier to avoid "xxxx inherits implicit virtual" warning.
-    virtual char            _read(char regaddr);
-    virtual unsigned int    _readW(char regaddr);
-    virtual void            _write(char regaddr, char data);
-    virtual void            _writeW(char regaddr, unsigned int data);
+    char            _read(char regaddr) override;
+    unsigned int    _readW(char regaddr) override;
+    void            _write(char regaddr, char data) override;
+    void            _writeW(char regaddr, unsigned int data) override;
 };
 
 #endif //MCP23017

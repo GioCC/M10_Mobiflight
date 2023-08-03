@@ -131,13 +131,13 @@ MCP::inputInvert(unsigned int mode) {
 
 // WRITE FUNCTIONS - BY WORD AND BY PIN
 void
-MCP::digitalWrite(unsigned int value) {
+MCP::IOWrite(unsigned int value) {
   _writeW(MCP_GPIOA, value);
   _outputCache = value;
 }
 
 void
-MCP::digitalWrite(uint8_t pin, uint8_t value) {
+MCP::IOWrite(uint8_t pin, uint8_t value) {
   if ((pin < 1) || (pin > 16)) return;
   if (value) {
     _outputCache |= 1 << (pin - 1);
@@ -155,12 +155,12 @@ MCP::byteRead(uint8_t reg) {        // This function will read a single register
 }
 
 unsigned int
-MCP::digitalRead(void) {       // This function will read all 16 bits of I/O, and return them as a word in the format 0x(portB)(portA)
+MCP::IORead(void) {       // This function will read all 16 bits of I/O, and return them as a word in the format 0x(portB)(portA)
   return _readW(MCP_GPIOA);          // Return the constructed word, the format is 0x(portB)(portA)
 }
 
 uint8_t
-MCP::digitalRead(uint8_t pin) {                    // Return a single bit value, supply the necessary bit (1-16)
+MCP::IORead(uint8_t pin) {                    // Return a single bit value, supply the necessary bit (1-16)
     if ((pin < 1) || (pin > 16)) return 0x0;                    // If the pin value is not valid (1-16) return, do nothing and return
     return (digitalRead() & (1 << (pin - 1))) ? HIGH : LOW;  // Call the word reading function, extract HIGH/LOW information from the requested pin
 }

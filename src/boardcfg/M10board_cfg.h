@@ -4,7 +4,7 @@
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-07-19 10:52
+// @modifiedby  GiorgioCC - 2023-08-03 11:42
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -12,10 +12,17 @@
 #ifndef __M10BOARD_CFG__H__
 #define __M10BOARD_CFG__H__
 
-// using  M10board_cfg = struct {
-typedef struct { //M10board_cfg
+using LEDonMAX = struct {
+    byte unit     : 2;
+    byte digit    : 3;
+    byte segment  : 3;
+};
+
+// typedef struct { //M10board_cfg
+using M10board_cfg = struct {
     
-    //TODO (M10) Add control pins
+    //! TODO (M10) Add control pins on the Mega for the specific board:
+    //! PX_SSn, (PX_IRQn), LD_CSAn/LD_CSBn, (LCD_ENn)
     
     // pins not defined as either input or output are configured as inputs anyway, however it is apparent from the definition that they are unused
     uint16_t    digInputs;      // Map of digital inputs (1=input) for MCP on main board
@@ -26,7 +33,7 @@ typedef struct { //M10board_cfg
     uint16_t    digInputs2;     // Map of digital inputs (1=input) for MCP on second board
     uint16_t    digOutputs2;    // Map of digital outputs (1=output) for MCP on second board
 
-    uint16_t    anaInputs;      // Map of analog inputs used; remember that A0,A3,A4,A5 are preallocated (IORQ, DRDY, SDA, SCL). See comments.
+    uint16_t    anaInputs;      // Map of analog inputs used
 
     // Number of encoders (actually connected; max 6)
     // Encoders #1,#2,#3 are allocated on DIO pins 1..3, 4..6 and 7...9; pins used are defined as inputs overriding the definition as GPIO.
@@ -36,6 +43,9 @@ typedef struct { //M10board_cfg
     uint8_t     nVirtEncoders;
     bool        hasDisplays;
     bool        hasLCD;
+
+    uint8_t     nLEDsOnMAX = 0;
+    LEDonMAX    *LEDsOnMAX = nullptr;
 
     union {
         struct {
@@ -49,8 +59,8 @@ typedef struct { //M10board_cfg
             uint8_t     LCDLines;
         }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
     };
-} M10board_cfg;
-// };
+// } M10board_cfg;
+};
 
 
-#endif  //!__M10BOARD_CFG__H__
+#endif  //M10BOARD_CFG__H

@@ -33,7 +33,6 @@
 
 #define N_DISPLAYS1     0
 #define N_DISPLAYS2     0
-
 #define N_LCD           0
 
 // ==================================================

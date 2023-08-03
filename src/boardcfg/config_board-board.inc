@@ -18,6 +18,13 @@
     N_VIRT_ENCODERS,    // (virtual Encoders provided by M10Board.cpp)
     HAS_DISPLAYS,
     HAS_LCD,
+#ifdef N_LEDS_ON_MAX
+    N_LEDS_ON_MAX,
+    LEDS_ON_MAX,
+#else
+    0,
+    nullptr,
+#endif
     // union of anon structs (led or lcd):
 #if(HAS_DISPLAYS)
     { N_DISPLAYS1, N_DISPLAYS2 }

@@ -14,7 +14,7 @@
 /// virtual functions seems to take up 4+(2*n) bytes for the virtual table),
 /// this non-inheriting version has been made, where Bank and BankC are independent classes
 /// (though they retain the same name).
-/// Of course, in this case polymorphysm can no longer be exploited.
+/// Of course, in this case polymorphism can no longer be exploited.
 
 #define NBYTES  ((NBITS+7)/8)
 #define PREDEF  uint8_t b=((pin-1)>>3); uint8_t p=((pin-1)&0x07); if(b>=NBYTES) return 0;

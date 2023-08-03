@@ -39,7 +39,9 @@ constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
 #define BYTESIZE(x)     ((x+7)>>3)
 
 constexpr uint8_t DIN_COUNT  = 64;
-constexpr uint8_t DOUT_COUNT = 32;
+// DOUT_COUNT should be 49, counting the highest numbers of LEDs on a MAX; however,
+// we have no interest in caching them, so we cam spare some memory
+constexpr uint8_t DOUT_COUNT = 32;  
 
 class M10board
 {
@@ -111,14 +113,29 @@ class M10board
 
         void    ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
-        // Below, pin=1..32
-        void        setPinMode(uint8_t pin, uint8_t mode);  // Mode: INPUT, INPUT_PULLUP, OUTPUT
-        void        digitalWrite(uint8_t pin, uint8_t val);
-        int         digitalRead(uint8_t pin);
+        // In the functions below, pin = 1..32
+        
+        // Pin = 1..32
+        // Mode = INPUT, INPUT_PULLUP, OUTPUT
+        void        setIOPinMode(uint8_t pin, uint8_t mode);  
+        // Bank = 1, 2
+        // dir (bits):     0 = Out, 1 = In
+        // pullups (bits): 1 = on
+        void        setIOMode(uint8_t bank, uint16_t dir, uint16_t pullups);
+        
+        // Wrappers for cache IO bit access
+        // Pin = 1..32
+        void        cacheWrite(uint8_t pin, uint8_t val);
+        int         cacheRead(uint8_t pin);
+
+        // Effective immediate bit write.
+        // Discerns between I/O expander or upper pins (used for LEDs on MAX segments).
+        // (Obviously also updates cache)
+        void        outWrite(uint8_t pin, uint8_t val);
 
         // FOR DEBUG ONLY (no boundary checks)
-        uint16_t    getIns(byte bank=0) {return (bank==0 ? MCPIO1->digitalRead() : MCPIO2->digitalRead()); }
-        void        setOuts(uint16_t ov, byte bank=0) { (bank==0 ? MCPIO1->digitalWrite(ov) : MCPIO2->digitalWrite(ov)); }
+        uint16_t    getIns(byte bank = 0)               { return (bank==0 ? MCPIO1->IORead() : MCPIO2->IORead()); }
+        void        setOuts(uint16_t ov, byte bank = 0) { (bank==0 ? MCPIO1->IOWrite(ov) : MCPIO2->IOWrite(ov)); }
 
         /// ====================================================
         /// Analog I/O management

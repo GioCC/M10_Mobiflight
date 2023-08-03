@@ -25,10 +25,21 @@
 #define ANA_INPUTS      pat(B00000000,B00000000)
 #define N_ENCODERS      3
 #define N_VIRT_ENCODERS 0
-
 #define N_DISPLAYS1     2
 #define N_DISPLAYS2     0
-
+#define N_LEDS_ON_MAX   10
+#define LEDS_ON_MAX     { \
+    {0, 3, 7}, \    
+    {0, 2, 7}, \
+    {0, 1, 7}, \
+    {0, 0, 7}, \
+    {0, 7, 0}, \
+    {0, 7, 6}, \
+    {0, 7, 3}, \
+    {0, 7, 7}, \
+    {1, 1, 7}, \
+    {1, 3, 7}, \
+}
 #define N_LCD           0
 
 // ==================================================
@@ -56,7 +67,7 @@
 #define LD_XPDR_D4      DP4
 #define LD_OBS_RVS      DP8
 #define LD_OBS_VOR1     SEG_A8
-#define LD_OBS_VOR2     SEG_D8
-#define LD_OBS_ADF      SEG_F8
+#define LD_OBS_VOR2     SEG_G8
+#define LD_OBS_ADF      SEG_D8
 
 // end

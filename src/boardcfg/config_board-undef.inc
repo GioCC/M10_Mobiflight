@@ -56,6 +56,7 @@
 
 // Other peripherals:
 
+#undef LEDS_ON_MAX
 #undef ANA_INPUTS
 #undef N_ENCODERS
 #undef N_VIRT_ENCODERS

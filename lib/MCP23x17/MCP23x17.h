@@ -73,32 +73,32 @@ class MCP {
 
     // Customizable functions for derived classes
     virtual void init(void);
-    virtual void begin(void) {};             // Start the Bus if required. Blank unless redefined by derived classes
+    virtual void begin(void) {};            // Start the Bus if required. Blank unless redefined by derived classes
 
-    void wordWrite(uint8_t, unsigned int);   // Allows the user to write any register pair if needed, so it's a public wrapper
-    void byteWrite(uint8_t, uint8_t);        // Allows the user to write any register if needed, so it's a public wrapper
+    uint8_t byteRead(uint8_t);              // Reads an individual register and returns the byte. Argument is the register address
+    void wordWrite(uint8_t, unsigned int);  // Allows the user to write any register pair if needed, so it's a public wrapper
+    void byteWrite(uint8_t, uint8_t);       // Allows the user to write any register if needed, so it's a public wrapper
 
-    void pinMode(uint8_t, uint8_t);          // Sets the mode (input or output) of a single I/O pin
-    void pinMode(unsigned int);              // Sets the mode (input or output) of all I/O pins at once
+    void pinMode(uint8_t, uint8_t);         // Sets the mode (input or output) of a single I/O pin
+    void pinMode(unsigned int);             // Sets the mode (input or output) of all I/O pins at once
 
-    void pullupMode(uint8_t, uint8_t);       // Selects internal 100k input pull-up of a single I/O pin
-    void pullupMode(unsigned int);           // Selects internal 100k input pull-up of all I/O pins at once
+    void pullupMode(uint8_t, uint8_t);      // Selects internal 100k input pull-up of a single I/O pin
+    void pullupMode(unsigned int);          // Selects internal 100k input pull-up of all I/O pins at once
 
-    void inputInvert(uint8_t, uint8_t);      // Selects input state inversion of a single I/O pin (writing 1 turns on inversion)
-    void inputInvert(unsigned int);          // Selects input state inversion of all I/O pins at once (writing a 1 turns on inversion)
+    void inputInvert(uint8_t, uint8_t);     // Selects input state inversion of a single I/O pin (writing 1 turns on inversion)
+    void inputInvert(unsigned int);         // Selects input state inversion of all I/O pins at once (writing a 1 turns on inversion)
 
-    void digitalWrite(uint8_t, uint8_t);     // Sets an individual output pin HIGH or LOW
-    void digitalWrite(unsigned int);         // Sets all output pins at once. If some pins are configured as input, those bits will be ignored on write
+    uint8_t      IORead(uint8_t);           // Reads an individual input pin
+    unsigned int IORead(void);              // Reads all input pins at once. Be sure it ignore the value of pins configured as output!
 
-    uint8_t digitalRead(uint8_t);            // Reads an individual input pin
-    uint8_t byteRead(uint8_t);               // Reads an individual register and returns the byte. Argument is the register address
-    unsigned int digitalRead(void);          // Reads all input pins at once. Be sure it ignore the value of pins configured as output!
+    void IOWrite(uint8_t, uint8_t);         // Sets an individual output pin HIGH or LOW
+    void IOWrite(unsigned int);             // Sets all output pins at once. If some pins are configured as input, those bits will be ignored on write
 
   protected:
-    unsigned int _modeCache;                 // Caches the mode (input/output) configuration of I/O pins
-    unsigned int _pullupCache;               // Caches the internal pull-up configuration of input pins (values persist across mode changes)
-    unsigned int _invertCache;               // Caches the input pin inversion selection (values persist across mode changes)
-    unsigned int _outputCache;               // Caches the output pin state of pins
+    unsigned int _modeCache;                // Caches the mode (input/output) configuration of I/O pins
+    unsigned int _pullupCache;              // Caches the internal pull-up configuration of input pins (values persist across mode changes)
+    unsigned int _invertCache;              // Caches the input pin inversion selection (values persist across mode changes)
+    unsigned int _outputCache;              // Caches the output pin state of pins
 
     // Pure virtual functions to be defined by the actual (derived) classes
     virtual char            _read(char regaddr)=0;

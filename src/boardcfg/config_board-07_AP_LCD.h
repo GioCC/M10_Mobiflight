@@ -31,7 +31,6 @@
 
 #define N_DISPLAYS1     0
 #define N_DISPLAYS2     0
-
 #define N_LCD           1
 #define LCD_COLS        20  
 #define LCD_LINES       4

@@ -22,8 +22,8 @@ public MCP
     explicit MCPS(uint8_t hwaddress);
              MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin=0);
              void config(uint8_t nCs_pin, uint8_t nReset_pin);
-    virtual  void init(void);
-    virtual  void begin(void);
+    void     init(void)  override;
+    void     begin(void) override;
 
   private:
 
@@ -37,12 +37,10 @@ public MCP
     uint8_t      _readopcode;
     void         _make_opcode(uint8_t _hwaddress);
 
-    // These members are no longer virtual (they were pure virtual in the base class),
-    // but add virtual specifier to avoid "xxxx inherits implicit virtual" warning.
-    virtual char         _read(char regaddr);
-    virtual unsigned int _readW(char regaddr);
-    virtual void         _write(char regaddr, char data);
-    virtual void         _writeW(char regaddr, unsigned int data);
+    char         _read(char regaddr) override;
+    unsigned int _readW(char regaddr) override;
+    void         _write(char regaddr, char data) override;
+    void         _writeW(char regaddr, unsigned int data) override;
 };
 
 #endif //MCP23S17

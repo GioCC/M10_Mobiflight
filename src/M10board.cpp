@@ -136,7 +136,7 @@ void M10board::setPUMode(uint8_t bank, uint16_t PUmode)
 }
 
 void
-M10board::setPinMode(uint8_t pin, uint8_t mode)
+M10board::setIOPinMode(uint8_t pin, uint8_t mode)
 {
     // if(pin<=16) { ModeL(pin, mode); }
     // else        { ModeH(pin-16, mode); }
@@ -161,12 +161,44 @@ M10board::setPinMode(uint8_t pin, uint8_t mode)
     MCPIO->pullupMode(IOpullup[bank]);
 }
 
+void
+M10board::setIOMode(uint8_t bank, uint16_t dir, uint16_t pullups)
+{
+    bank--;
+    if(bank > 1) return;
+    if(bank == 1 && !cfg->hasBank2) return;
+    MCP *MCPIO = (bank == 0) ? MCPIO1 : MCPIO2;
+    IOcfg[bank] = dir;
+    IOpullup[bank] = pullups;
+    MCPIO->pinMode(IOcfg[bank]);
+    MCPIO->pullupMode(IOpullup[bank]);
+}
 
 void
-M10board::digitalWrite(uint8_t pin, uint8_t val)
+M10board::outWrite(uint8_t pin, uint8_t val)
+{
+    pin--;
+    uint8_t bank = (pin<16) ? 0 : ((pin<32) ? 1 : 2);
+
+    if(bank < 2) {
+        if(bank == 1 && !cfg->hasBank2) return;
+        cacheWrite(pin+1, val);
+        MCP *MCPIO = (pin<16) ? MCPIO1 : MCPIO2;
+        MCPIO->IOWrite((pin & 0x0F), val);
+    } else {
+        // These are not cached
+        pin &= 0x1F; // pin -= 32;
+        if((pin >= cfg->nLEDsOnMAX) || cfg->LEDsOnMAX == nullptr) return;
+        LEDonMAX led = cfg->LEDsOnMAX[pin];
+        // TODO ......
+        // MAX.setSegment(led.unit, led.digit, led.segment, val);
+    }
+}
+
+void
+M10board::cacheWrite(uint8_t pin, uint8_t val)
 {
     Dout.write(pin, val);
-
 //     if(pin<=16) { Dout.writeL(pin, val); }
 // #ifdef BANK2
 //     else        { Dout.writeH(pin-16, val); }
@@ -174,7 +206,7 @@ M10board::digitalWrite(uint8_t pin, uint8_t val)
 }
 
 int
-M10board::digitalRead(uint8_t pin)
+M10board::cacheRead(uint8_t pin)
 {
     return Din.val(pin);
 
@@ -236,21 +268,21 @@ M10board::ScanInOut(byte mode)
     // ==============================
     if(mode != 1) {
         iovec = Dout.valW(0);  //Dout.val()[0] + (Dout.val()[1] << 8);
-        MCPIO1->digitalWrite(iovec);   // Pins configured as input are ignored on write
+        MCPIO1->IOWrite(iovec);   // Pins configured as input are ignored on write
         if(cfg->hasBank2) {
             iovec = Dout.valW(2);  //Dout.val()[2] + (Dout.val()[3] << 8);
-            MCPIO2->digitalWrite(iovec);   // Pins configured as input are ignored on write
+            MCPIO2->IOWrite(iovec);   // Pins configured as input are ignored on write
         }
     }
     // ==============================
     //  Read Digital Inputs
     // ==============================
     if(mode != 2) {
-        iovec = MCPIO1->digitalRead() & IOcfg[0];
+        iovec = MCPIO1->IORead() & IOcfg[0];
         Din.writeW(0, iovec);
 
         if(cfg->hasBank2) {
-            iovec = MCPIO2->digitalRead() & IOcfg[1];
+            iovec = MCPIO2->IORead() & IOcfg[1];
             Din.writeW(2, iovec);
         }
 
