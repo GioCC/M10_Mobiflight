@@ -68,105 +68,80 @@ ButtonBas::CButtonBas(uint8_t lthreshold, uint8_t uthreshold)
     valBit(0);
 }
 
+uint8_t ButtonBas::_ana2dig(uint8_t val)
+{
+    bool lowt  = (val >= lowerAnaThrs);
+    bool hight = (val <  upperAnaThrs);
+    return (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
+}
+
 uint8_t
-ButtonBas::_getInput(Button::ButtonStatus_t ival)
+ButtonBas::_getInput(void)
 {
-    uint8_t newi;
-    uint8_t ana = (_flags & Button::Analog);
+    uint8_t res;
+    uint8_t ana = isAna();
+    uint8_t hw  = isHW();
 
-    if(_flags & Button::HWinput) {
-        newi = (ana ?
-                 ((analogRead(_pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
-               : !digitalRead(_pin) );
+    if(ana && hw) {
+        res = ((analogRead(_pin)+2)>>2);    // Scale ADC value from 10 to 8 bits
+    } else if(hw) {
+        res = !digitalRead(_pin);
     } else if(hasSrcVar()) {
-        newi = getSrcVal();
-    } else {
-        newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
+        res = getSrcVal();
     }
-    
-    if (ana) {
-        bool lowt  = (ival >= lowerAnaThrs);
-        bool hight = (ival <  upperAnaThrs);
-        newi = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
-    }
-
-    newi = (newi ? HIGH : LOW);
-    return newi;
+    if (ana) res = _ana2dig(res);
+    return (res ? HIGH : LOW);
 }
 
-
-void
-ButtonBas::check(Button::ButtonStatus_t ival)
-{
-    _check(_getInput(ival));
-}
-
-void
-ButtonBas::check(uint8_t *bytevec)
-{
-    register uint8_t ival = bytevec[((_pin-1)>>3)];
-    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
-    _check(ival);
-}
-
-void
-ButtonBas::_check(uint8_t newi)
+void 
+ButtonBas::_check(uint8_t newi, uint8_t force)
 {
     unsigned long now;
     uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
+    newi = (newi ? HIGH : LOW);
 
-    now = millis();
-    if (newi != curi) {
+    if (force || newi != curi) {
         // button state changed
-        if(TlastChange == 0) TlastChange = now;
-        if (now - TlastChange >= debounceTime) {
-            TlastChange = 0;    // this condition means "stable"
-            // Register new status
-            valBit(newi == HIGH);
+        now = millis();
+        if (force || (now - TlastChange) >= debounceTime) {
+            TlastChange = now;
+            valBit(newi == HIGH);   // Register new status
             curi = newi;
-        }
-    }
-
-    if (curi == HIGH) {
-        if (!pressFlag) {
-            pressFlag = 1;
-            if (_OnPress) {
-                _OnPress(this);
-                // callback may have taken some time: update <now> for <if>s below
-                now = millis();
+            if (curi == HIGH) {
+                if (_OnPress) _OnPress(this);
+            } else {
+                if (_OnRelease) _OnRelease(this);
             }
         }
-    } else {
-        if (pressFlag) {
-            if (_OnRelease) _OnRelease(this);
-            pressFlag = 0;
-        }
     }
+
 }
 
 void
-ButtonBas::initState(Button::ButtonStatus_t ival)
+ButtonBas::check(uint8_t force)
 {
-    _initState(_getInput(ival));
+    _check(_getInput(), force);
 }
 
 void
-ButtonBas::initState(uint8_t *bytevec)
+ButtonBas::checkVal(Button::ButtonStatus_t val, uint8_t force)
 {
-    register uint8_t ival = bytevec[((_pin-1)>>3)];
-    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
-    _initState(ival);
-}
-
-void
-ButtonBas::_initState(uint8_t newi)
-{
-    valBit(newi == HIGH);
-    if (newi == HIGH) {
-        if (_OnPress) _OnPress(this);
+    uint8_t newi;
+    if (_flags & Button::Analog) {
+        newi = _ana2dig(val.aVal);
     } else {
-        if (_OnRelease) _OnRelease(this);
+        newi = ((val.dVal & Button::lastState) ? HIGH : LOW);
     }
+    _check(newi, force);
+}
+
+void
+ButtonBas::check(uint8_t *bytevec, uint8_t force)
+{
+    if(isHW() || isAna() || hasSrcVar()) return;
+    uint8_t res = bytevec[((_pin-1)>>3)];
+    res = ((res & (1<<((_pin-1)&0x07))) ? HIGH : LOW);
+    _check(res, force);
 }
 
 // end ButtonBas.cpp

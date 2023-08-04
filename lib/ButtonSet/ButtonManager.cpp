@@ -22,6 +22,7 @@ ButtonManager::ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRa
 
     FORALL_b {
         vv.LastIO = 0;
+        vv.Change = 0;
         vv.Down   = 0;
         vv.Up     = 0;
         vv.Repeat = 0;
@@ -118,15 +119,18 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
     FORALL_b {
         vv.Down     = 0;
         vv.Up       = 0;
+        vv.Change   = 0;
         vv.Repeat   = 0;
         vv.LongP    = 0;
     }
-    // button state changed
+    
+    // Check if anything changed (shortcut for speed in most passes)
     FORALL_b {
         if (vecIO[b] != vv.LastIO) {
             chg = 1; break;
         }
     }
+
     if (chg) {
         if(lastChange == 0) lastChange = now;
         if (now - lastChange >= debounceTime) {
@@ -136,8 +140,9 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
             lastChange = 0;
             FORALL_b {
                 uint8_t vIO = vecIO[b];
-                vv.Up       = (vIO^vv.LastIO)&(vIO);
-                vv.Down     = (vIO^vv.LastIO)&(~vIO);
+                vv.Change   = (vIO^vv.LastIO);
+                vv.Up       = vv.Change&(vIO);
+                vv.Down     = vv.Change&(~vIO);
                 vv.LastIO   = vIO;
                 vv.LPflag  &= (~vIO);    // Reset LP flag for inputs gone low
             }
@@ -146,6 +151,7 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
         lastChange = 0;
     }
 
+#ifdef BM_STRAIGHT
     // is the startdelay passed?
     if ((repeatInterval) && (now >= lastPress + times100(repeatDelay))) {
         if ((now - lastRepeat) >= (unsigned long)times10(repeatInterval)) {
@@ -168,7 +174,7 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
             vv.LPflag |= vecIO[b];                 // Mask them out from next LP activations
         }
     }
-
+#endif
     {
         byte sts;
         byte pin;

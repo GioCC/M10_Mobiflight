@@ -10,7 +10,10 @@
 // (aggiunta opzioni "-lc -lm -lc")
 
 #include <Arduino.h>
+#include "memPool.h"
 #include "M10board.h"
+
+#define  MEM_POOL_SIZE  (50*sizeof(ButtonBas)) // TODO
 
 #define DW(a)   Serial.write(a)
 #define DSPC    Serial.write(' ')
@@ -18,6 +21,7 @@
 #define DPN(a)  Serial.println(a)
 
 M10board board;
+memPool<MEM_POOL_SIZE>     pool;
 
 // Fn prototypes
 void lights_on(ButtonGrp *but);
@@ -53,10 +57,17 @@ char *counter2buf(byte cntno) {
 //================================
 
 void boardSetup(void) {
+// TODO: Move function body elsewhere
 #define BUILDING_CONFIG_RUNTIME
     // TODO......
-    // Move function body elsewhere
 #undef BUILDING_CONFIG_RUNTIME
+}
+
+void SANDBOX(void) {
+
+    void* bp;
+    bp = pool.reserve(sizeof(ButtonBas));
+    ButtonBas::make(bp).pin(1).addTo(mgr);
 }
 
 //----------------------
@@ -70,23 +81,23 @@ void setup() {
     board.setPUMode(1,0xFFFF);            // Pull-ups on all inputs
 
     // Board base configuration
-    board.setBoardCfg((M10board_cfg *)&BOARD_CFG);
+    // board.setBoardCfg((M10board_cfg *)&BOARD_CFG);
     // Custom app config
     //board.init();
     // Board configuration adjustments after custom cfg
     board.setBoardPostCfg();
 
     for(byte i=1; i<5; i++) {
-        board.dispClear(i);
-        board.dispWidth(i, 6);
-        board.dispIntensity(i, 15);
-        board.dispShutdown(i, false);
+        // board.dispClear(i);
+        // board.dispWidth(i, 6);
+        // board.dispIntensity(i, 15);
+        // board.dispShutdown(i, false);
     }
-    board.dispWrite(1, (byte *)"012345", 0x08);
-    board.dispWrite(2, (byte *)"ABCDE ", 0x08);
-    board.dispWrite(3, (byte *)"67890 ", 0x08);
-    board.dispWrite(4, (byte *)"F0123 ", 0x08);
-    board.dispTransmit(0);
+    // board.dispWrite(1, (byte *)"012345", 0x08);
+    // board.dispWrite(2, (byte *)"ABCDE ", 0x08);
+    // board.dispWrite(3, (byte *)"67890 ", 0x08);
+    // board.dispWrite(4, (byte *)"F0123 ", 0x08);
+    // board.dispTransmit(0);
 // END FOR
 
     counter[0] = 0x00000000;
@@ -109,14 +120,12 @@ void loop() {
     if(millis()>=ticker) {
         ticker = millis()+200;
 
-        counter[1] = board.Din.val()[0]; //.valL() & 0xFFFF;
+        counter[1] = board.getIns(0);
         counter2buf(0);
-        board.dispWrite(1, (byte *)dispbuf, 0x04);
+        // board.dispWrite(1, (byte *)dispbuf, 0x04);
         counter2buf(1);
-        board.dispWrite(2, (byte *)dispbuf, 0x04);
-
-        board.dispTransmit(0);
-
+        // board.dispWrite(2, (byte *)dispbuf, 0x04);
+        // board.dispTransmit(0);
     }
     if(millis()>=ticker2) {
         ticker2 = millis()+1;

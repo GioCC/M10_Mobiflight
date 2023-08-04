@@ -43,8 +43,8 @@
 #define SOURCEVAR
 #define MIRRORVAR
 
-/// #define MAKE_NEW to use alternative methods of allocation (defaults to standard "new")
-#define MAKE_NEW(obj)   new obj()
+// #define MAKE_NEW to use alternative methods of allocation (defaults to standard "new")
+//#define MAKE_NEW(obj)   new obj()
 
 #include <Arduino.h>
 
@@ -70,13 +70,15 @@ derived& data(byte *b)                        { Button::data(b);    return *this
 derived& data(uint16_t code)                  { Button::data(code); return *this; } \
 derived& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; } \
 derived& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; } \
-static derived& make(void)                    { derived* b = MAKE_NEW(derived); return *b; }
+static derived& make(void)                    { derived* pb = new derived;    return *pb; } \
+static derived& make(void* p)                 { derived* pb = new(p) derived; return *pb; }
 
 #ifdef USE_BTN_MGR
 #define DEFINE_BASIC_METHODS(derived) \
 _DEFINE_BASIC_METHODS_NONMGR(derived) \
-derived& addTo(ButtonManager& mgr)            { mgr.add(this); return *this; } \
-static derived& make(ButtonManager& mgr)      { derived* b = MAKE_NEW(derived); mgr.add(b); return *b; } 
+derived& addTo(ButtonManager& mgr)                      { mgr.add(this); return *this; } \
+static derived& make(ButtonManager& mgr)                { derived* pb = new derived;    mgr.add(pb); return *pb; } \
+static derived& make(derived* p,  ButtonManager& mgr)   { derived* pb = new(p) derived; mgr.add(pb); return *pb; } 
 #else
 #define DEFINE_BASIC_METHODS(derived)         _DEFINE_BASIC_METHODS_NONMGR(derived)
 #endif
@@ -103,7 +105,11 @@ class Button
 
 public:
 
-    typedef uint8_t ButtonStatus_t;
+    // typedef uint8_t ButtonStatus_t;
+    using ButtonStatus_t = union {
+        uint8_t aVal;
+        uint8_t dVal;
+    };
 
     // Bitmasks for 'flags'
     // These flags define the specific features of the button
@@ -199,6 +205,11 @@ protected:
             uint8_t     mirrorbit
             );
 
+    void setHW(void) {
+        pinMode(_pin, INPUT_PULLUP);
+        digitalWrite(_pin, HIGH);
+    };
+
 public:
 
     // ======================================
@@ -215,7 +226,7 @@ public:
     // from section "Upcasting" (p.662) forward.
 
     Button& pin(uint8_t npin, uint8_t isHW)
-                                    { _pin = npin; flagChg(_flags, Button::HWinput, isHW); return *this; }
+        { _pin = npin; flagChg(_flags, Button::HWinput, isHW); if(isHW) setHW(); return *this; }
 
     Button& tag(const char *s)      { _tag.text = s;     return *this; }
     Button& tag(byte *b)            { _tag.bytes = b;    return *this; }
@@ -239,7 +250,8 @@ public:
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
     #endif
 
-    static Button& make(void); //       { Button* b = MAKE_NEW(Button); return *b; };
+    static Button& make(void)       { Button* pb = new Button;    return *pb; };
+    static Button& make(void *p)    { Button* pb = new(p) Button; return *pb; };
 
     #ifdef USE_BTN_MGR
     // Add the button to the collection in the specified ButtonManager,
@@ -248,13 +260,9 @@ public:
 
     // Create a Button and add it to the collection in the specified ButtonManager.
     static Button& make(ButtonManager& mgr);
+    // Same, but in pre-allocated space
+    static Button& make(void* p, ButtonManager& mgr);
     #endif
-
-    // ======================================
-    // === Setters (single params)
-    // ======================================
-
-    void    setPin(uint8_t p)       {_pin = p;}
 
     // ======================================
     // === Getters
@@ -274,15 +282,11 @@ public:
     // === Operation methods
     // ======================================
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers _OnPress/_OnRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startutp
-    virtual void initState(ButtonStatus_t value = 0) { UNUSED(value); }
-
-    // Checks the state of the button and triggers events accordingly;
+    // Checks the state of the button: Polls status value and triggers events accordingly.
     // This method must be (re)defined in the specific button type classes.
-    // Will be called from the ButtonGroupManager.
+    virtual void check(uint8_t force = 0) { UNUSED(force); } // = 0;
+
+    // Version where the value is supplied from an external button manager.
     // 'value' is either a byte value (for analog inputs)
     // or a bit pattern with following meaning (where applicable):
     //   Scurr    Current input status
@@ -292,8 +296,28 @@ public:
     //   Slong    The long press interval just expired
     // All flags except Scurr are expected to be set for one call only,
     // right after the event occurs.
-    virtual void check(ButtonStatus_t value = 0) { UNUSED(value); } // = 0;
+    virtual void checkVal(ButtonStatus_t value, uint8_t force = 0) { UNUSED(value); UNUSED(force); }
 
+    // A variant of 'check()' for digital input vectors (specific to derived class)
+    // Gets its input source from the passed byte array according to pin#:
+    // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
+    // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
+    //
+    // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
+    virtual void check(uint8_t *bytevec, uint8_t force = 0) { UNUSED(bytevec); UNUSED(force); };
+
+    // initState is used to assign the initial value.
+    // It differs from check() because it only triggers _OnPress/_OnRelease events.
+    // These are usually associated to stable switches (rather than temporary pushbuttons),
+    // which require to have their position recorded at startutp
+    void initState(void) { check(1); }
+    
+    // Version where the value is supplied from an external button manager
+    void initStateVal(ButtonStatus_t value) { checkVal(value, 1); }
+
+    // Version where the value is supplied from an external button manager as digital vector
+    void initState(uint8_t *bytevec) { check(bytevec, 1); };
+    
     // ======================================
     // === Conditional definitions
     // ======================================

@@ -18,11 +18,12 @@
 #include "config_board.h"
 
 #include "bitmasks.h"
+#include "conversions.h"
 #include "bank.h"
 #include "FastArduino.h"
 #include "MCP23S17.h"
+#include "Button_all.h"
 #include "EncoderSet.h"
-#include "conversions.h"
 #include "ButtonManager.h"
 #include "EncManager.h"
 

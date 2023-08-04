@@ -9,18 +9,29 @@
 #include <Arduino.h>
 #include "Button.h"
 
-#define LAST  (ButtonMgr.getButton())
+// If the following "BM_STRAIGHT" token is defined, the manager only reports the current "static",
+// i.e. not timing-related values (current value, change flags) to buttons.
+// Button objects will then manage every timing-related aspect such as debounce, long press, repeat etc.
+// Otherwise, the manager processes these events on an input vector level and presents 
+// a complete set of flags to the button object.
+// This latter solution allows much simpler button objects (basically just callback invokers),
+// but has a less accurate implementation: timings of all buttons interfere, therefore it is
+// reasonably suitable only if a single button is "active" (i.e. changes state, waits for debounce, is on repeat...)
+// at any given time.
+
+#define BM_STRAIGHT
 
 // define the max number of buttons
 // This must be consistent with the length of the passed vector (currently an uint32).
 // define MAXBUTTONS sizeof(Tvector)
-
 // If other button types are used, or less buttons are needed, better specify the number explicitly
 #ifndef MAXBUTTONS
 #define MAXBUTTONS 64
 #endif
 
 #define NBANKS  ((MAXBUTTONS+7)/8)
+
+#define LAST  (ButtonMgr.getButton())
 
 //typedef uint8_t* TPvector;
 
@@ -43,6 +54,7 @@ class ButtonManager
     // for all 8 bits of the (element=)bank.
     struct {
         uint8_t    LastIO;
+        uint8_t    Change;
         uint8_t    Down;
         uint8_t    Up;
         uint8_t    Repeat;

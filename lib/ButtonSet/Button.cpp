@@ -52,19 +52,8 @@ Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
     valBit(0);  //lastState = LOW;
     flagChg(_flags, Button::rptEnabled, 1);  // Repeat enabled by default if present
     flagChg(_flags, Button::HWinput, useHWinput);
-    if (useHWinput) {
-        pinMode(_pin,INPUT);
-        digitalWrite(_pin, HIGH);
-    }
+    setHW();
     mirror(mirrorvar, mirrorbit);
-}
-
-
-Button& 
-Button::make(void) 
-{ 
-    Button* b = MAKE_NEW(Button); 
-    return *b; 
 }
 
 #ifdef USE_BTN_MGR
@@ -78,9 +67,17 @@ Button::addTo(ButtonManager& mgr)
 Button& 
 Button::make(ButtonManager& mgr) 
 { 
-    Button* b = MAKE_NEW(Button); 
-    b->addTo(mgr); 
-    return *b; 
+    Button* pb = new Button; 
+    pb->addTo(mgr); 
+    return *pb; 
+}
+
+Button& 
+Button::make(void* p, ButtonManager& mgr) 
+{ 
+    Button* pb = new(p) Button; 
+    pb->addTo(mgr); 
+    return *pb; 
 }
 #endif
 

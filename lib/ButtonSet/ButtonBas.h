@@ -141,6 +141,8 @@ public:
     // ======================================
 
     // Checks the state of the button and triggers events accordingly;
+    void    check(uint8_t force = 0) override;
+    
     // Will be called from the ButtonGroupManager
     // 'value' is either:
     // - an analog value (0..255)
@@ -154,41 +156,30 @@ public:
     //   All flags except Button::curr are expected to be only set for the call right after the event occurs.
     // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
     // WARNING (for HW reading only): digital inputs are considered ACTIVE (yielding HIGH) if closed to GND.
-    void    check(ButtonStatus_t value) override;
+    void    checkVal(ButtonStatus_t value, uint8_t force = 0) override;
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnPress/OnRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startup.
-    // Argument: same as check(..).
-    void    initState(ButtonStatus_t value) override;
-
-    // A variant of 'check()' for digital inputs only (specific to derived class)
+    // A variant of 'check()' for digital input vectors (specific to derived class)
     // Gets its input source from the passed byte array according to pin#:
     // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
     // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
     //
     // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
-    void    check(uint8_t *bytevec);
-
-    // Variant of initState
-    void    initState(uint8_t *bytevec);
+    void    check(uint8_t *bytevec, uint8_t force = 0);
 
 private:
 
     static BBcallback  _OnPress;
     static BBcallback  _OnRelease;
 
-    uint8_t         debounceTime;       // internally in ms
+    uint8_t         debounceTime;   // internally in ms
     unsigned long   TlastChange;
-    uint8_t         pressFlag;
 
     uint8_t         lowerAnaThrs;   // internally in 1/256th
     uint8_t         upperAnaThrs;   // internally in 1/256th
 
-    void            _check(uint8_t value);      // Helper for check() methods
-    void            _initState(uint8_t value);  // Helper for initState() methods
-    uint8_t         _getInput(Button::ButtonStatus_t ival);
+    uint8_t         _getInput(void);
+    uint8_t         _ana2dig(uint8_t val);
+    void            _check(uint8_t newi, uint8_t force = 0);
 };
 
 #endif
