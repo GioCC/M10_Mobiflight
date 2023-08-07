@@ -1,30 +1,14 @@
-/*
-* File     : Button.cpp
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* This is the base class for specific ButtonXXX classes.
-* ButtonXXX objects receive a set of I/O flags describing the status of its associated input or 'pin'
-* (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-* Callbacks are all defined in the derived classes.
-*
-* This file defines the base class for all ButtonXXX classes.
-*
-* Usage:
-* - Include ButtonXXX.h (for all relevant XXX types) and ButtonManager.h in your sketch
-* - Add a call to ButtonManager.check(...) in your main loop
-* - Declare each button and define the events using a ButtonXXX constructor
-* - Declare the required event functions ( void OnKeyYYY(ButtonXXX *but) )
-* - See the comments in the code for more help
-*
-*/
+// =======================================================================
+// @file        Button.cpp
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-07 17:20
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 #include "Button.h"
 
@@ -71,7 +55,7 @@ Button::make(ButtonManager& mgr)
     pb->addTo(mgr); 
     return *pb; 
 }
-
+#include "new.h"
 Button& 
 Button::make(void* p, ButtonManager& mgr) 
 { 

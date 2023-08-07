@@ -1,27 +1,14 @@
-/*
-* File     : ButtonAdv.cpp
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
-* input _flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* The ButtonAdv receives a set of I/O _flags describing the status of its associated input or '_pin'
-* (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-*
-* This file defines the ButtonAdv class.
-*
-* Usage:
-* - Include ButtonAdv.h and ButtonGroupManager.h in your sketch
-* - Add a call to ButtonGrpManager.checkButtons() in your main loop
-* - Declare each button and define the events using a ButtonAdv constructor
-* - Declare the required event functions ( void OnKeyXXX(ButtonAdv* but) )
-* - See the comments in the code for more help
-*/
+// =======================================================================
+// @file        ButtonAdv.cpp
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-08 15:41
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 #include "ButtonAdv.h"
 
@@ -104,138 +91,129 @@ ButtonAdv::setLongPDelay(uint16_t delay)
 }
 
 uint8_t
-ButtonAdv::_getInput(Button::ButtonStatus_t ival) //Button::ButtonStatus_t ival)
+ButtonAdv::_getInput()
 {
-    uint8_t newi;
-    uint8_t ana = (_flags & Button::Analog);
+    uint8_t res;
 
-    if(_flags & Button::HWinput) {
-        newi = (ana ?
-                ((analogRead(_pin)+2)>>2)    // Scale ADC value from 10 to 8 bits
-               : !digitalRead(_pin) );
+    if(isHW()) {
+        if(isAna()) {
+            res = ana2dig((analogRead(_pin)+2)>>2); // Scale ADC value from 10 to 8 bits
+        } else {
+            res = !digitalRead(_pin);
+        }
     } else if(hasSrcVar()) {
-        newi = getSrcVal();
+        res = getSrcVal();
     } else {
-        // Input digital values are considered ON if bit Button::Curr (#0 - LSb) is == 1,
-        // NOT simply if (value != 0) !!
-        newi = (ana ? (uint8_t)ival : (ival & Button::Curr));
+        res = false;
     }
-
-    if (ana) {
-        int8_t  h = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
-        bool lowt  = (ival >= lowerAnaThrs-h);
-        bool hight = (ival <  upperAnaThrs+h);
-        newi = (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
-    }
-
-    newi = (newi ? HIGH : LOW);
-    return newi;
+    return (res ? HIGH : LOW);
 }
 
-
-void
-ButtonAdv::check(Button::ButtonStatus_t ival)
+bool
+ButtonAdv::ana2dig(uint8_t val)
 {
-    _check(_getInput(ival));
+    int8_t  hyst = ((_flags & Button::lastState) ? hysteresis : -hysteresis);
+    bool lowt  = (val >= lowerAnaThrs - hyst);
+    bool hight = (val <  upperAnaThrs + hyst);
+    return (lowerAnaThrs < upperAnaThrs) ? (lowt && hight) : (lowt || hight);
 }
 
-void
-ButtonAdv::check(uint8_t *bytevec)
+void    
+ButtonAdv::process(uint8_t sts)
 {
-    register uint8_t ival = bytevec[((_pin-1)>>3)];
-    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
-    _check(ival);
+    valBit((sts & Button::Curr) != 0);
+    if((sts & ~Button::Curr) == 0) return; 
+    
+    if ((sts & Button::Dn) && _OnPress)   _OnPress(this);
+    if ((sts & Button::Up) && _OnRelease) _OnRelease(this);
+    if ((sts & Button::Long) && _OnLong)  _OnLong(this);
 }
 
 void
-ButtonAdv::_check(uint8_t newi)
+ButtonAdv::check(bool force)
+{
+    checkVal(_getInput(), force);
+}
+
+void
+ButtonAdv::checkVec(uint8_t *bytevec, bool force)
+{
+    if(isHW() || isAna() || hasSrcVar()) return;
+    register uint8_t res = bytevec[((_pin-1)>>3)];
+    res = ((res&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
+    checkVal(res, force);
+}
+
+void
+ButtonAdv::checkVal(uint8_t newi, bool force)
 {
     unsigned long now;
+    uint8_t res = Button::None;
+
     uint8_t curi = ((_flags & Button::lastState) ? HIGH : LOW);
+    newi = (newi ? HIGH : LOW);
 
+    // Debounce strategy: Blanking time
+    // First edge immediately triggers status change; after this, the input
+    // is ignored for a blanking time interval (to skip detection of possible
+    // bounces).
+    // Quick reaction but sensitive to glitches/spikes (if sampling is very frequent)
+    
     now = millis();
-    if (newi != curi) {
-        // button state changed
-        if(TlastChange == 0) TlastChange = now;
-        if (now - TlastChange >= debounceTime) {
-            TlastChange = 0;    // this condition means "stable"
-            // Register new status
-            valBit(newi == HIGH);
+    if (now - TlastChange >= debounceTime) {
+        TlastChange = 0; // We're past blanking time: rearm detection
+    }
 
-            curi = newi;
-        }
+    if (newi != curi && (TlastChange == 0)) {
+        // Transition (first edge)
+            TlastChange = now;      
+            if (newi == HIGH) {
+                // Press:
+                TstartPress = now;
+            res |= Button::Dn;
+            } else {
+                // Release:
+                TstartPress = 0;
+                TlastPress = 0;
+                longPFlag = 0;      // release LP lock
+            res |= Button::Up;
+            }
+        curi = newi;
     }
 
     if (curi == HIGH) {
+        res |= Button::High;
         if (TstartPress == 0) {
-            // transition L->H: mark the start time and notify others
-            TstartPress = TlastChange; //now;
-            if (_OnPress) {
-                _OnPress(this);
-                // callback may have taken some time: update <now> for <if>s below
-                now = millis();     
-            }
-        }
-
-        // is repeating enabled?
-        // We check _OnPress here because 'repeat' does not set any flag, therefore
-        // if there's no callback there's no reason for processing.
-        if ((repeatRate > 0 ) && (_OnPress)) {
-            // is the startdelay passed?
-            // 'TlastPress != 0' (ie at least one repetition already happened)
-            // is only used to spare computing time, skipping the check of the whole condition.
-            if ((TlastPress != 0) || now >= TstartPress + times100(repeatDelay)) {
-                // is it time for a repeat keypress call?
-                if ((now - TlastPress) >= (unsigned long)times10(repeatRate)) {
-                    TlastPress = now;
-                    _OnPress(this);
-                    // callback may have taken some time: update <now> for <if>s below
-                    now = millis();
+            // After a valid edge trigger.
+            
+            // Is repeating enabled? We check _OnPress here because 'repeat' does not set
+            // any flag, therefore if there's no callback there's no reason for processing.
+            if ((repeatRate > 0) && (_OnPress)) {
+                // is the startdelay passed?
+                // 'TlastPress != 0' (ie at least one repetition already happened)
+                // is only used to spare computing time, skipping the check of the whole condition.
+                if ((TlastPress != 0) || now >= TstartPress + times100(repeatDelay)) {
+                    // is it time for a repeat keypress call?
+                    if ((now - TlastPress) >= (unsigned long)times10(repeatRate)) {
+                        TlastPress = now;
+                        res |= Button::Dn;
+                    }
                 }
             }
-        }
-        // is long press enabled?
-        if (longPDelay > 0) {
-            if (longPFlag==0 && (now >= TstartPress + times100(longPDelay))) {
-                longPFlag = 1;      // lock further activations
-                if(_OnLong) _OnLong(this);
+            // Is long press enabled (and LP not yet triggered)?
+            if (longPFlag == 0 && longPDelay > 0) {
+                if (now >= TstartPress + times100(longPDelay)) {
+                    res |= Button::Long;
+                    longPFlag = 1;      // lock further activations
+                }
             }
+        
         }
     } else {
-        // the button is released, but was it previously pressed
-        if (TstartPress != 0) {
-            // Input LOW: reset all counters
-            TstartPress = 0;
-            TlastPress = 0;
-            longPFlag = 0;      // release LP lock
-            if (_OnRelease) _OnRelease(this);
-        }
+        res |= Button::Low;
     }
-}
-
-void
-ButtonAdv::initState(Button::ButtonStatus_t ival)
-{
-    _initState(_getInput(ival));
-}
-
-void
-ButtonAdv::initState(uint8_t *bytevec)
-{
-    register uint8_t ival = bytevec[((_pin-1)>>3)];
-    ival = ((ival&(1<<((_pin-1)&0x07))) ? HIGH : LOW);
-    _initState(ival);
-}
-
-void
-ButtonAdv::_initState(uint8_t newi)
-{
-    valBit(newi == HIGH);
-    if (newi == HIGH) {
-        if (_OnPress) _OnPress(this);
-    } else {
-        if (_OnRelease) _OnRelease(this);
-    }
+    
+    process(res);
 }
 
 // end ButtonAdv.cpp

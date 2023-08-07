@@ -1,30 +1,14 @@
-/*
-*
-* File     : ButtonAna.h
-* Version  : 1.0
-* Released : 29/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonGroupManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* This file declares the ButtonAna class.
-* The ButtonAna object receives an analog value (unsigned 8-bit integer) describing the status
-* of the associated input or 'pins'; if the value falls between the defined thresholds (with
-* hysteresis), then the "equivalent" digital input is considered active, and callback functions are invoked
-* accordingly.
-* For current status, up/dn transitions etc see docs.
-*
-* Usage:
-* - Include ButtonAna.h and ButtonManager.h in your sketch
-* - Add a call to ButtonMgr.checkButtons() in your main loop
-* - Declare each button (corresponding to an input value range) and define the events using a ButtonAna constructor
-* - Declare the required event functions ( void OnXXX(ButtonAna* but) )
-* - See the comments in the code for more help
-*/
+// =======================================================================
+// @file        ButtonAna.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-07 18:09
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 #ifndef BUTTONANA_H
 #define BUTTONANA_H
@@ -66,8 +50,6 @@ public:
         char*       name,
         uint8_t     lthreshold =128,
         uint8_t     uthreshold =255,
-        uint16_t    repeatDelay=0,
-        uint16_t    repeatRate =0,
         uint8_t*    mirrorvar  =NULL,
         uint8_t     mirrorbit  =0
     );
@@ -77,32 +59,11 @@ public:
         uint16_t    code,
         uint8_t     lthreshold =128,
         uint8_t     uthreshold =255,
-        uint16_t    repeatDelay=0,
-        uint16_t    repeatRate =0,
         uint8_t*    mirrorvar  =NULL,
         uint8_t     mirrorbit  =0
     );
 
-    void
-    CButtonAna(uint16_t repeatDelay, uint16_t repeatRate);
-
-    // ======================================
-    // === Operation methods
-    // ======================================
-    //TODO These (for Analog button) are NOT overrides of Button::check()/initState():
-    // these require an analog value. The argument coincidentally has the same data type 
-    // as ButtonStatus_t, but they're not the same functions!
-    // Maybe add a second arg?
-
-    // Checks the state of the button and triggers events accordingly;
-    // Will be called from the ButtonGroupManager
-    void check(ButtonStatus_t value) override;
-
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
-    // These are usually associated to stable switches (as opposed to temporary pushbuttons),
-    // which require to have their position recorded at startup
-    void initState(ButtonStatus_t value) override;
+    void  CButtonAna(void);
 
     // ======================================
     // === Setup methods: common
@@ -129,15 +90,7 @@ public:
         return *this; 
     }
 
-
-    ButtonAna& params(uint16_t repeatDelay = 0, uint16_t repeatRate = 0)
-    {
-        setRepeatDelay(repeatDelay);
-        setRepeatRate(repeatRate);
-        return *this;
-    }
-
-    ButtonAna& anaParm(uint8_t lthreshold, uint8_t uthreshold, uint8_t hyst = 2)
+    ButtonAna& params(uint8_t lthreshold, uint8_t uthreshold, uint8_t hyst = 2)
     {
         lowerAnaThrs = lthreshold;
         upperAnaThrs = uthreshold;
@@ -150,15 +103,6 @@ public:
     // === Setters (single params)
     // ======================================
 
-    // Sets the debounce time (milliseconds)
-    void    setDebounce(unsigned int delay) { debounceTime = delay; };
-    // Sets the delay (milliseconds) before the keypress event is repeated
-    // Rounded to nearest 100 ms; effective range 100ms..25.5s
-    void    setRepeatDelay(uint16_t delay);
-    // Sets the time (milliseconds) between each repeated keypress event
-    // Rounded to next 10 ms; effective range 10ms..2.55s
-    void    setRepeatRate(uint16_t repeat);
-
     void    setHysteresis(uint8_t hys)      {hysteresis = hys;}
 
     void    setOnPress(ABcallback f)        {_OnPress   = f;}
@@ -170,14 +114,48 @@ public:
 
     // - none -
 
+    // ======================================
+    // === Operation methods
+    // ======================================
+
+    // Triggers the appropriate events according to the state of the button,
+    // which is normally supplied by an external button manager.
+    // 'Status' is a bit pattern with following meaning:
+    //      Button::Curr    Current input status
+    //      Button::Dn      Input just became active
+    //      Button::Up      Input was just released
+    //      Button::Rpt     A repeat interval just expired
+    //      Button::Long    The long press interval just expired
+    // All flags except Button::curr are expected to be only set for the call right after the event occurs.
+    // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
+    // WARNING (for HW reading only): digital inputs are considered ACTIVE (yielding HIGH) if closed to GND.
+    void    process(uint8_t status) override;
+
+    // Checks the state of the button: 
+    // polls status value internally and triggers events accordingly.
+    void    check(bool force = false) override;
+
+    // Variant of 'check()' with input value (analog or digital, as supported)
+    // passed from outside by the caller. Status flags are computed internally.
+    void    checkVal(uint8_t val, bool force = false) override;
+
+    // Variant of 'checkVal()' for digital input vectors (specific to derived class)
+    // Gets its input source from the passed byte array according to pin#:
+    // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
+    // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
+    //
+    // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
+    void    checkVec(uint8_t *bytevec, bool force = false) override;
+
+    // Translates the analog value to the corresponding digital state.
+    bool ana2dig(uint8_t val) override;
+
+
 private:
 
     static ABcallback   _OnPress;
     static ABcallback   _OnRelease;
 
-    uint8_t         debounceTime;       // internally in ms
-    uint8_t         repeatDelay;        // internally in ms*100; range 100ms..25.5s
-    uint8_t         repeatRate;         // internally in ms*10; range 10ms..2.55s
     unsigned long   TlastChange;
     unsigned long   TstartPress;
     unsigned long   TlastPress;
@@ -186,7 +164,7 @@ private:
     uint8_t         upperAnaThrs;   // 0..255
     uint8_t         hysteresis;     // 0..255
 
-    uint8_t         _getInput(uint8_t ival);
+    uint8_t         _getInput(void);
 };
 
 #endif

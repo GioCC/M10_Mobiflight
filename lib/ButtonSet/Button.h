@@ -1,33 +1,13 @@
-/*
-*
-* File     : Button.h
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* This file declares the base class for all ButtonXXX classes.
-* ButtonXXX objects receive a set of I/O flags describing the status of its associated input or 'pin'
-* (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-* Callbacks are all defined in the derived classes.
-*
-* 'Tag' and 'Data' attibutes can be of several types (they are unions); currently there is no provision
-* to discriminate which of the possible types is used, the caller is responsible for their correct
-* interpretation!
-*
-* Usage:
-* - Include ButtonXXX.h (for all relevant XXX types) and if required ButtonManager.h in your code
-* - Add a call to ButtonManager->check(...) in your main loop
-* - Declare each button and define the events using a ButtonXXX constructor
-* - Declare the required event functions ( void OnKeyYYY(ButtonXXX *but) )
-* - See the comments in the code for more help
-*
-*/
+// =======================================================================
+// @file        Button.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-08 10:39
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
 
 #ifndef BUTTON_H
 #define BUTTON_H
@@ -47,7 +27,7 @@
 //#define MAKE_NEW(obj)   new obj()
 
 #include <Arduino.h>
-
+#include <new>
 #ifdef USE_BTN_MGR
 class ButtonManager;    // Fwd declaration
 #endif
@@ -105,10 +85,21 @@ class Button
 
 public:
 
-    // typedef uint8_t ButtonStatus_t;
-    using ButtonStatus_t = union {
+    using ButtonValue_t = union {
         uint8_t aVal;
         uint8_t dVal;
+    };
+
+    // Status values in the bit pattern passed as argument to check()
+    using ButtonStatus_t = enum {
+        High = 0x01,    // Constant for Current status = 1
+        Low  = 0x00,    // Constant for Current status = 0
+        None = 0x00,    // Constant for no trigger
+        Curr = 0x01,    // Current status
+        Dn   = 0x02,    // Transitioned High->Low
+        Up   = 0x04,    // Transitioned Low->High
+        Rpt  = 0x08,    // Repeat activation triggered
+        Long = 0x10,    // Long press activation triggered
     };
 
     // Bitmasks for 'flags'
@@ -122,14 +113,6 @@ public:
         //hasString   = 0x01,   // Name must be interpreted as string ptr (rather than uint_t code)
     } t_flags;
 
-    // Status values in the bit pattern passed as argument to check()
-    enum {
-        Curr = 0x01,
-        Dn   = 0x02,
-        Up   = 0x04,
-        Rpt  = 0x08,
-        Long = 0x10,
-    } t_digstatus;
 
     // Bitmasks for bit nos. used for src and mirror vars
     enum {
@@ -159,7 +142,9 @@ protected:
     }
 
     void valBit(uint8_t v) {
+        // Record current input value
         flagChg(_flags, Button::lastState, v);
+        
         #ifdef MIRRORVAR
         mirrorBit(v);
         #endif
@@ -282,41 +267,54 @@ public:
     // === Operation methods
     // ======================================
 
-    // Checks the state of the button: Polls status value and triggers events accordingly.
+    // Triggers the appropriate events according to the state of the button.
+    // 'Status' is a bit pattern with following meaning:
+    //      Button::Curr    Current input status
+    //      Button::Dn      Input just became active
+    //      Button::Up      Input was just released
+    //      Button::Rpt     A repeat interval just expired
+    //      Button::Long    The long press interval just expired
+    // All flags except Button::curr are expected to be only set for the call right after the event occurs.
+    virtual void process(uint8_t status) { UNUSED(status); }
+
+    // Checks the state of the button: 
+    // polls status value internally and triggers events accordingly.
     // This method must be (re)defined in the specific button type classes.
-    virtual void check(uint8_t force = 0) { UNUSED(force); } // = 0;
+    virtual void check(bool force = false) { UNUSED(force); }
 
-    // Version where the value is supplied from an external button manager.
-    // 'value' is either a byte value (for analog inputs)
-    // or a bit pattern with following meaning (where applicable):
-    //   Scurr    Current input status
-    //   Sdn      Input just became active
-    //   Sup      Input was just released
-    //   Srpt     A repeat interval just expired
-    //   Slong    The long press interval just expired
-    // All flags except Scurr are expected to be set for one call only,
-    // right after the event occurs.
-    virtual void checkVal(ButtonStatus_t value, uint8_t force = 0) { UNUSED(value); UNUSED(force); }
+    // Variant of 'check()' with input value (analog or digital, as supported)
+    // passed from outside by the caller. Status flags are computed internally.
+    virtual void checkVal(uint8_t val, bool force = false) { UNUSED(val); UNUSED(force); };
 
-    // A variant of 'check()' for digital input vectors (specific to derived class)
+    // Variant of 'checkVal()' for digital input vectors (specific to derived class)
     // Gets its input source from the passed byte array according to pin#:
     // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
     // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
     //
     // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
-    virtual void check(uint8_t *bytevec, uint8_t force = 0) { UNUSED(bytevec); UNUSED(force); };
+    virtual void checkVec(uint8_t *bytevec, bool force = false) { UNUSED(bytevec); UNUSED(force); };
+
+    // Supplied only by classes with analog inputs: translates the analog value to the corresponding digital state.
+    virtual bool ana2dig(uint8_t val) { return false; }
+
+    // ======================================
+    // === Initial syncing methods
+    // ======================================
 
     // initState is used to assign the initial value.
     // It differs from check() because it only triggers _OnPress/_OnRelease events.
     // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startutp
+    // which require to have their position synced at startutp
     void initState(void) { check(1); }
     
     // Version where the value is supplied from an external button manager
-    void initStateVal(ButtonStatus_t value) { checkVal(value, 1); }
+    void initState(uint8_t status) { process(status); }
 
+    // Version where the value is a direct input value
+    void initStateVal(uint8_t val) { checkVal(val, 1); };
+    
     // Version where the value is supplied from an external button manager as digital vector
-    void initState(uint8_t *bytevec) { check(bytevec, 1); };
+    void initStateVec(uint8_t *bytevec) { checkVec(bytevec, 1); };
     
     // ======================================
     // === Conditional definitions

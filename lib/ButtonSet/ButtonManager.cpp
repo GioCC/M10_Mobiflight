@@ -176,21 +176,22 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
     }
 #endif
     {
-        byte sts;
+        uint8_t sts;
         byte pin;
         for (int i=0; i< numButtons; i++) {
             // Setup values (where not done implicitly) for each button
-            sts = 0;
             pin = (buttons[i]->getPin())-1;
             if(buttons[i]->isHW()||buttons[i]->hasSrcVar()) {
                 // Button bound to HW pin or memory-(var-)based
                 // Nothing to do: the object fetches its value by itself
                 // The value for sts is dummy.
             } else if(buttons[i]->isAna()) {
+                sts = 0;
                 if(pin < nAnaVals) {
-                    sts = analogVals[pin];
+                    sts = buttons[i]->ana2dig(analogVals[pin]);
                 }
             } else {
+                sts = 0;
                 byte bnk = pin>>3;
                 byte msk = (0x01 << (pin&0x07));
                 if(vecIO[bnk]       & msk) sts |= Button::Curr;
@@ -201,7 +202,7 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
             }
 
             // Let each button check its state and trigger its own action
-            (doinit ? buttons[i]->initState(sts) : buttons[i]->check(sts));
+            (doinit ? buttons[i]->initState(sts) : buttons[i]->process(sts));
         }
     }
     FORALL_b {

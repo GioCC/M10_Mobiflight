@@ -84,6 +84,7 @@ class ButtonManager
 public:
 
     //static ButtonGroupManager *instance();
+    explicit 
     ButtonManager(uint16_t lpDelay=600, uint16_t rptDelay=400, uint16_t rptRate=200);
 
     // Parameter management for digital I/Os:
