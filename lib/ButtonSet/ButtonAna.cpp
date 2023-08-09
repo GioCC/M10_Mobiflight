@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-07 17:19
+// @modifiedby  GiorgioCC - 2023-08-09 12:01
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -59,15 +59,19 @@ ButtonAna::CButtonAna(void)
 uint8_t
 ButtonAna::_getInput(void)
 {
-    uint8_t newi;
+    uint8_t res;
     if(_flags & Button::HWinput) {
-        newi = ((analogRead(_pin)+2)>>2);    // Scale ADC value from 10 to 8 bits
-    } else if(hasSrcVar()) {
-        newi = getSrcVal();
+        res = ((analogRead(_pin)+2)>>2);    // Scale ADC value from 10 to 8 bits
+    } else 
+    if(hasSrcVar()) {
+        res = getSrcVal();
+    } else 
+    if(hasFetch()) {
+        res = fetchVal();
     } else {
-        newi = false;
+        res = false;
     }
-    return newi;
+    return res;
 }
 
 bool

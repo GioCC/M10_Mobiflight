@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-08 14:17
+// @modifiedby  GiorgioCC - 2023-08-09 12:08
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -141,6 +141,8 @@ private:
     unsigned long   TlastPress;
     uint8_t         debounceTime;   // internally in ms
     uint8_t         longPDelay;     // internally in ms*100; range 100ms..25.5s
+
+    uint8_t         _getInput(void);
 };
 
 #endif

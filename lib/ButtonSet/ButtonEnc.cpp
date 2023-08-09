@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-08 14:33
+// @modifiedby  GiorgioCC - 2023-08-09 12:08
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -45,6 +45,21 @@ ButtonEnc::setLongPDelay(uint16_t delay)
     longPDelay = (uint8_t)((delay+50)/100);    // rounded to the nearest 100ms
 }
 
+uint8_t
+ButtonEnc::_getInput(void)
+{
+    uint8_t res;
+    if(hasSrcVar()) {
+        res = getSrcVal();
+    } else 
+    if(hasFetch()) {
+        res = fetchVal();
+    } else {
+        res = false;
+    }
+    return res;
+}
+
 void
 ButtonEnc::process(uint8_t sts)
 {
@@ -59,7 +74,7 @@ ButtonEnc::process(uint8_t sts)
 void
 ButtonEnc::check(bool force)
 {
-    // Nothing to do: no autonomous input retrieval
+    checkVal(_getInput(), force);
 }
 
 void

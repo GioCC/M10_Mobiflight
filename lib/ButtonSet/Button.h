@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-08 10:39
+// @modifiedby  GiorgioCC - 2023-08-09 11:57
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -19,9 +19,12 @@
 /// #define USE_BTN_MGR to include methods to interface with a ButtonManager
 #define USE_BTN_MGR
 
-/// #define SOURCEVAR/MIRRORVAR if Source Var and Mirror Var features should be compiled
+/// #define SOURCEVAR / MIRRORVAR if Source Var / Mirror Var features should be compiled
 #define SOURCEVAR
 #define MIRRORVAR
+
+/// #define FETCH_CB if "Input Fetcher Callback" feature should be compiled
+#define FETCH_CB
 
 // #define MAKE_NEW to use alternative methods of allocation (defaults to standard "new")
 //#define MAKE_NEW(obj)   new obj()
@@ -82,9 +85,7 @@ public:
 
 class Button
 {
-
 public:
-
     using ButtonValue_t = union {
         uint8_t aVal;
         uint8_t dVal;
@@ -136,6 +137,9 @@ protected:
     uint8_t         *mirrVar;
     uint8_t         mirrBit;
 #endif
+#ifdef FETCH_CB
+    uint8_t         (*fetchCB)(void);
+#endif
 
     void modeAnalog(uint8_t v) {
         flagChg(_flags, Button::Analog, v);
@@ -172,7 +176,7 @@ protected:
         uint8_t     pin,
         uint8_t     useHWinput,
         const char  *name,
-        uint8_t     *mirrorvar=NULL,
+        uint8_t     *mirrorvar=nullptr,
         uint8_t     mirrorbit=0
         );
 
@@ -180,7 +184,7 @@ protected:
         uint8_t     pin,
         uint8_t     useHWinput,
         uint16_t    tag,
-        uint8_t     *mirrorvar=NULL,
+        uint8_t     *mirrorvar=nullptr,
         uint8_t     mirrorbit=0
         );
 
@@ -221,18 +225,27 @@ public:
     Button& data(byte *b)           { /*_data.bytes = b;   */ return *this; }
     Button& data(uint16_t code)     { /*_data.code = code; */ return *this; }
     
+    // Set source var reference
     Button& source(uint8_t* sourcevar, uint8_t sourcebit)
     #ifdef SOURCEVAR
-        { if(sourcevar!=nullptr) { srcVar = sourcevar; srcBit = sourcebit; } return *this; }
+        { srcVar = sourcevar; srcBit = sourcebit; return *this; }
     #else
         { UNUSED(sourcevar); UNUSED(sourcebit); return *this; }
     #endif
 
+    // Set mirror var reference
     Button& mirror(uint8_t *mirrorvar, uint8_t mirrorbit)
     #ifdef MIRRORVAR
-        { if(mirrVar==nullptr) { mirrVar = mirrorvar; mirrBit = mirrorbit; } return *this; }
+        { mirrVar = mirrorvar; mirrBit = mirrorbit; return *this; }
     #else
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
+    #endif
+
+    Button& fetchCallback(uint8_t (*callback)(void))
+    #ifdef FETCH_CB
+        { fetchCB = callback; return *this; }
+    #else
+        { UNUSED(callback); return *this; }
     #endif
 
     static Button& make(void)       { Button* pb = new Button;    return *pb; };
@@ -321,25 +334,35 @@ public:
     // ======================================
 
 #ifdef SOURCEVAR
-    uint8_t hasSrcVar(void)         {return (srcVar != NULL);}
-    uint8_t *getSrcVar(void)        {return srcVar; }
-    uint8_t getSrcVal(void)         {return ((_flags&Button::Analog) ? *srcVar : (((*(srcVar + (srcBit>>3))&(1<<(srcBit&0x07))) ? HIGH : LOW))); }
+    uint8_t     hasSrcVar(void)         {return (srcVar != nullptr);}
+    uint8_t*    getSrcVar(void)         {return srcVar; }
+    uint8_t     getSrcVal(void)         {return (isAna() ? *srcVar : (((*(srcVar + (srcBit>>3))&(1<<(srcBit&0x07))) ? HIGH : LOW))); }
 #else
-    uint8_t hasSrcVar(void)         {return false;}
-    uint8_t *getSrcVar(void)        {return NULL;}
-    uint8_t getSrcVal(void)         {return 0;}
+    uint8_t     hasSrcVar(void)         {return false;}
+    uint8_t*    getSrcVar(void)         {return nullptr;}
+    uint8_t     getSrcVal(void)         {return 0;}
 #endif
 
 #ifdef MIRRORVAR
-    uint8_t *getMVar(void)          {return mirrVar; }
-    void    setMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) |=  (1 << (mirrBit&0x07));}}
-    void    clrMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) &= ~(1 << (mirrBit&0x07));}}
-    void    mirrorBit(uint8_t st)   {st ? setMirror() : clrMirror();}
+    uint8_t     hasMVar(void)           {return (srcVar != nullptr);}
+    uint8_t*    getMVar(void)           {return mirrVar; }
+    void        setMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) |=  (1 << (mirrBit&0x07));}}
+    void        clrMirror(void)         {if(!isAna() && (mirrVar!=nullptr)) {*(mirrVar + (mirrBit>>3)) &= ~(1 << (mirrBit&0x07));}}
+    void        mirrorBit(uint8_t st)   {st ? setMirror() : clrMirror();}
 #else
-    uint8_t *getMVar(void)          {return NULL;}
-    void    setMirror(void)         {}
-    void    clrMirror(void)         {}
-    void    mirrorBit(uint8_t st)   {UNUSED(st);}
+    uint8_t     hasMVar(void)           {return false;}
+    uint8_t*    getMVar(void)           {return nullptr;}
+    void        setMirror(void)         {}
+    void        clrMirror(void)         {}
+    void        mirrorBit(uint8_t st)   {UNUSED(st);}
+#endif
+
+#ifdef FETCH_CB
+    uint8_t     hasFetch(void)       {return (fetchCB != nullptr);}
+    uint8_t     fetchVal(void)          {return (hasFetch() ? fetchCB() : LOW); }
+#else
+    uint8_t     hasFetch(void)       {return false;}
+    uint8_t     fetchVal(void)          {return LOW; }
 #endif
 
 };

@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-08 15:41
+// @modifiedby  GiorgioCC - 2023-08-09 11:57
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -103,6 +103,8 @@ ButtonAdv::_getInput()
         }
     } else if(hasSrcVar()) {
         res = getSrcVal();
+    } else if(hasFetch()) {
+        res = fetchVal();
     } else {
         res = false;
     }
