@@ -1,30 +1,31 @@
-/*
-*
-* This file implements the ButtonManager class
-*
-*/
+// =======================================================================
+// @file        ButtonManager.hpp
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-09 18:08
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
 
 #include <stdlib.h>
 #include "ButtonManager.h"
-//ButtonManager *ButtonManager::s_instance = 0;
 
 #define FORALL_b    for(byte b=0; b<NBANKS; b++)
 #define vv          vec[b]
 
-ButtonManager::ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRate)
-: longPDelay(lpDelay), repeatDelay(rptDelay), repeatInterval(rptRate)
+template<uint8_t MAXSIZE>
+ButtonManager<MAXSIZE>::
+ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRate)
+: lastPress(0), lastChange(0), lastRepeat(0),
+longPDelay(lpDelay), repeatDelay(rptDelay), repeatInterval(rptRate)
 {
     debounceTime = 20;
-    lastChange = 0;
-    lastRepeat = 0;
 
     FORALL_b {
-        vv.LastIO = 0;
-        vv.Change = 0;
-        vv.Down   = 0;
-        vv.Up     = 0;
-        vv.Repeat = 0;
-        vv.LongP  = 0;
+        vec[b]     = {0};
+        buttons[b] = nullptr;
     }
     numButtons  = 0;
     currBut     = 0;
@@ -32,8 +33,10 @@ ButtonManager::ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRa
     nAnaVals    = 0;
 }
 
+template<uint8_t MAXSIZE>
 uint8_t
-ButtonManager::setAnalogSource(uint8_t *aVals, uint8_t nVals)
+ButtonManager<MAXSIZE>::
+setAnalogSource(uint8_t *aVals, uint8_t nVals)
 {
     analogVals  = NULL;
     nAnaVals    = 0;
@@ -44,33 +47,41 @@ ButtonManager::setAnalogSource(uint8_t *aVals, uint8_t nVals)
 }
 
 // Set long pressure delay (in ms; rounded to nearest 100 ms; effective range 100ms..25.5s)
+template<uint8_t MAXSIZE>
 void
-ButtonManager::setLongPDelay(uint16_t delay)
+ButtonManager<MAXSIZE>::
+setLongPDelay(uint16_t delay)
 {
     if(delay > 25450) delay = 25450;
     longPDelay = (uint8_t)((delay+50)/100);    // rounded to the nearest 100ms
 }
 
 // Set start delay (in ms; rounded to nearest 100 ms; effective range 100ms..25.5s)
+template<uint8_t MAXSIZE>
 void
-ButtonManager::setRepeatDelay(uint16_t delay)
+ButtonManager<MAXSIZE>::
+setRepeatDelay(uint16_t delay)
 {
     if(delay > 25450) delay = 25450;
     repeatDelay = (uint8_t)((delay+50)/100);    // rounded to the nearest 100ms
 }
 
 // Set repeat time (in ms; rounded to next 10 ms; effective range 10ms..2.55s)
+template<uint8_t MAXSIZE>
 void
-ButtonManager::setRepeatRate(uint16_t rate)
+ButtonManager<MAXSIZE>::
+setRepeatRate(uint16_t rate)
 {
     if(rate > 2541) rate = 2541;
     repeatInterval = (uint8_t)((rate+9)/10);       // rounded to the next 10ms
 }
 
+template<uint8_t MAXSIZE>
 Button *
-ButtonManager::add(Button* but)
+ButtonManager<MAXSIZE>::
+add(Button* but)
 {
-    if (numButtons+1 < MAXBUTTONS) {
+    if (numButtons+1 < MAXSIZE) {
         numButtons++;
         buttons[numButtons-1]= but;
         return but;
@@ -78,20 +89,26 @@ ButtonManager::add(Button* but)
     return NULL;
 }
 
+template<uint8_t MAXSIZE>
 Button *
-ButtonManager::get(uint8_t nBut) {
+ButtonManager<MAXSIZE>::
+get(uint8_t nBut) {
     return ((nBut >= numButtons) ? ((nBut == 0xFF) ? buttons[currBut] : NULL) : buttons[nBut]);
 }
 
+template<uint8_t MAXSIZE>
 Button *
-ButtonManager::next(uint8_t nBut) {
+ButtonManager<MAXSIZE>::
+next(uint8_t nBut) {
     if(nBut != 0xFF) currBut = nBut;
     if(currBut >= numButtons) currBut = 0;
     return buttons[currBut++];
 }
 
+template<uint8_t MAXSIZE>
 void
-ButtonManager::initButtons(uint8_t *vecIO)
+ButtonManager<MAXSIZE>::
+initButtons(uint8_t *vecIO)
 {
     lastChange = millis() + debounceTime + 1;
     FORALL_b {
@@ -100,14 +117,18 @@ ButtonManager::initButtons(uint8_t *vecIO)
     _checkInit(vecIO, 1);
 }
 
+template<uint8_t MAXSIZE>
 void
-ButtonManager::checkButtons(uint8_t *vecIO)
+ButtonManager<MAXSIZE>::
+checkButtons(uint8_t *vecIO)
 {
     _checkInit(vecIO, 0);
 }
 
+template<uint8_t MAXSIZE>
 void
-ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
+ButtonManager<MAXSIZE>::
+_checkInit(uint8_t *vecIO, uint8_t doinit)
 {
     unsigned long now;
     uint8_t chg = 0;
@@ -209,3 +230,4 @@ ButtonManager::_checkInit(uint8_t *vecIO, uint8_t doinit)
     }
 }
 
+// end ButtonManager.hpp
