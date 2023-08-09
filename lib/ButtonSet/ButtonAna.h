@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-07 18:09
+// @modifiedby  GiorgioCC - 2023-08-09 12:25
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -164,7 +164,7 @@ private:
     uint8_t         upperAnaThrs;   // 0..255
     uint8_t         hysteresis;     // 0..255
 
-    uint8_t         _getInput(void);
+    // uint8_t         _getInput(void);
 };
 
 #endif

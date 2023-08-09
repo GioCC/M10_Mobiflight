@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 11:57
+// @modifiedby  GiorgioCC - 2023-08-09 14:43
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -138,7 +138,7 @@ protected:
     uint8_t         mirrBit;
 #endif
 #ifdef FETCH_CB
-    uint8_t         (*fetchCB)(void);
+    uint8_t         (*fetchCB)(uint8_t);
 #endif
 
     void modeAnalog(uint8_t v) {
@@ -241,7 +241,7 @@ public:
         { UNUSED(mirrorvar); UNUSED(mirrorbit); return *this; }
     #endif
 
-    Button& fetchCallback(uint8_t (*callback)(void))
+    Button& setFetchCallback(uint8_t (*callback)(uint8_t))
     #ifdef FETCH_CB
         { fetchCB = callback; return *this; }
     #else
@@ -275,6 +275,9 @@ public:
     void        getTag(uint16_t *tag)   { *tag =_tag.code; }
     // TagData *getData(void)          { return &_data; }
     // void    getData(uint16_t *data) { *data=_data.code; }
+
+    // Define 'getInput' as 'virtual' if required
+    uint8_t     getInput(void);
 
     // ======================================
     // === Operation methods
@@ -358,10 +361,10 @@ public:
 #endif
 
 #ifdef FETCH_CB
-    uint8_t     hasFetch(void)       {return (fetchCB != nullptr);}
-    uint8_t     fetchVal(void)          {return (hasFetch() ? fetchCB() : LOW); }
+    uint8_t     hasFetch(void)          {return (fetchCB != nullptr);}
+    uint8_t     fetchVal(void)          {return (hasFetch() ? fetchCB(_pin) : LOW); }
 #else
-    uint8_t     hasFetch(void)       {return false;}
+    uint8_t     hasFetch(void)          {return false;}
     uint8_t     fetchVal(void)          {return LOW; }
 #endif
 

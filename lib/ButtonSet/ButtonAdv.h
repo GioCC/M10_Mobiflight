@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-08 15:05
+// @modifiedby  GiorgioCC - 2023-08-09 12:24
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -44,7 +44,7 @@ public:
     ButtonAdv() {}     // for objects that will be completely filled in later
 
     ButtonAdv(  
-        uint8_t     in,
+        uint8_t     pin,
         uint8_t     hardware,
         char*       name,
         uint16_t    repeatDelay = 0,
@@ -57,7 +57,7 @@ public:
     );
 
     ButtonAdv(  
-        uint8_t     in,
+        uint8_t     pin,
         uint8_t     hardware,
         uint16_t    code,
         uint16_t    repeatDelay = 0,
@@ -210,7 +210,7 @@ private:
     uint8_t         upperAnaThrs;   // internally in 1/256th
     uint8_t         hysteresis;     // 0..255
 
-    uint8_t         _getInput(void);
+    //uint8_t         _getInput(void);
 };
 
 #endif

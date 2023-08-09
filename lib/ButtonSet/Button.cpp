@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-07 17:20
+// @modifiedby  GiorgioCC - 2023-08-09 12:45
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -38,6 +38,23 @@ Button::CButton(uint8_t useHWinput, uint8_t *mirrorvar, uint8_t mirrorbit)
     flagChg(_flags, Button::HWinput, useHWinput);
     setHW();
     mirror(mirrorvar, mirrorbit);
+}
+
+uint8_t  
+Button::getInput(void) {
+    uint8_t res = 0;
+    if(isHW()) {
+        if(isAna()) {
+            res = ana2dig((analogRead(_pin)+2)>>2); // Scale ADC value from 10 to 8 bits
+        } else {
+            res = !digitalRead(_pin);
+        }
+    } else if(hasSrcVar()) {
+        res = getSrcVal();
+    } else if(hasFetch()) {
+        res = fetchVal();
+    }
+    return res;
 }
 
 #ifdef USE_BTN_MGR

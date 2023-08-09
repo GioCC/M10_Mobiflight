@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 12:08
+// @modifiedby  GiorgioCC - 2023-08-09 12:25
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -142,7 +142,7 @@ private:
     uint8_t         debounceTime;   // internally in ms
     uint8_t         longPDelay;     // internally in ms*100; range 100ms..25.5s
 
-    uint8_t         _getInput(void);
+    // uint8_t         _getInput(void);
 };
 
 #endif

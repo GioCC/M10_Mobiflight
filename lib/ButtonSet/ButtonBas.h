@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-07 17:56
+// @modifiedby  GiorgioCC - 2023-08-09 12:24
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -128,7 +128,7 @@ public:
     // polls status value internally and triggers events accordingly.
     void    check(bool force = false) override;
 
-    // Variant of 'check()' with input value (analog or digital, as supported)
+    // Variant of 'check()' with input value (analog or digital, as selected)
     // passed from outside by the caller. Status flags are computed internally.
     void    checkVal(uint8_t val, bool force = false) override;
 
@@ -154,7 +154,7 @@ private:
     uint8_t         lowerAnaThrs;   // internally in 1/256th
     uint8_t         upperAnaThrs;   // internally in 1/256th
 
-    uint8_t         _getInput(void);
+    // uint8_t         _getInput(void);
 };
 
 #endif

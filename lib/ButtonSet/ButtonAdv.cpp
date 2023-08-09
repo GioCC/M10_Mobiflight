@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 11:57
+// @modifiedby  GiorgioCC - 2023-08-09 12:47
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -90,27 +90,6 @@ ButtonAdv::setLongPDelay(uint16_t delay)
     longPDelay = (uint8_t)((delay+50)/100);    // rounded to the nearest 100ms
 }
 
-uint8_t
-ButtonAdv::_getInput()
-{
-    uint8_t res;
-
-    if(isHW()) {
-        if(isAna()) {
-            res = ana2dig((analogRead(_pin)+2)>>2); // Scale ADC value from 10 to 8 bits
-        } else {
-            res = !digitalRead(_pin);
-        }
-    } else if(hasSrcVar()) {
-        res = getSrcVal();
-    } else if(hasFetch()) {
-        res = fetchVal();
-    } else {
-        res = false;
-    }
-    return (res ? HIGH : LOW);
-}
-
 bool
 ButtonAdv::ana2dig(uint8_t val)
 {
@@ -134,7 +113,7 @@ ButtonAdv::process(uint8_t sts)
 void
 ButtonAdv::check(bool force)
 {
-    checkVal(_getInput(), force);
+    checkVal(getInput(), force);
 }
 
 void

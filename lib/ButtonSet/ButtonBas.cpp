@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 11:57
+// @modifiedby  GiorgioCC - 2023-08-09 12:47
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -55,26 +55,6 @@ ButtonBas::CButtonBas(uint8_t lthreshold, uint8_t uthreshold)
     valBit(0);
 }
 
-uint8_t
-ButtonBas::_getInput(void)
-{
-    uint8_t res;
-    if(isHW()) {
-        if(isAna()) {
-            res = ana2dig((analogRead(_pin)+2)>>2); // Scale ADC value from 10 to 8 bits
-        } else {
-            res = !digitalRead(_pin);
-        }
-    } else if(hasSrcVar()) {
-        res = getSrcVal();
-    } else if(hasFetch()) {
-        res = fetchVal();
-    } else {
-        res = false;
-    }
-    return (res ? HIGH : LOW);
-}
-
 bool
 ButtonBas::ana2dig(uint8_t val)
 {
@@ -95,7 +75,7 @@ ButtonBas::process(uint8_t sts)
 void
 ButtonBas::check(bool force)
 {
-    checkVal(_getInput(), force);
+    checkVal(getInput(), force);
 }
 
 void
