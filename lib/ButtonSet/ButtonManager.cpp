@@ -11,8 +11,6 @@
 #define FORALL_b    for(byte b=0; b<NBANKS; b++)
 #define vv          vec[b]
 
-// ButtonManager ButtonMgr;
-
 ButtonManager::ButtonManager(uint16_t lpDelay, uint16_t rptDelay, uint16_t rptRate)
 : longPDelay(lpDelay), repeatDelay(rptDelay), repeatInterval(rptRate)
 {

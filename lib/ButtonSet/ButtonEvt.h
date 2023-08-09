@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-07 18:05
+// @modifiedby  GiorgioCC - 2023-08-09 17:43
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -41,8 +41,6 @@ public:
     // ======================================
 
     // This constructor allows to define each individual button.
-    // Buttons are automatically added to the collection in the ButtonManager named 'ButtonMgr'
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage:
     // - pushbuttons will only supply 'OnKeyPress' (and possibly 'OnKeyLong' and/or 'rptEnabled', if required);

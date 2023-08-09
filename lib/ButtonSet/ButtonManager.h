@@ -22,18 +22,11 @@
 #define BM_STRAIGHT
 
 // define the max number of buttons
-// This must be consistent with the length of the passed vector (currently an uint32).
-// define MAXBUTTONS sizeof(Tvector)
-// If other button types are used, or less buttons are needed, better specify the number explicitly
 #ifndef MAXBUTTONS
-#define MAXBUTTONS 64
+#define MAXBUTTONS 24
 #endif
 
 #define NBANKS  ((MAXBUTTONS+7)/8)
-
-#define LAST  (ButtonMgr.getButton())
-
-//typedef uint8_t* TPvector;
 
 class ButtonManager
 {
@@ -125,7 +118,5 @@ public:
     Button *next(uint8_t nBut = 0xFF);
 
 };
-
-// extern  ButtonManager ButtonMgr;
 
 #endif

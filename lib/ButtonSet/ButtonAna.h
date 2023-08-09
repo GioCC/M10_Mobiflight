@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 12:25
+// @modifiedby  GiorgioCC - 2023-08-09 17:43
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -35,8 +35,6 @@ public:
 
     // This constructor allows to define each individual 'button' associated to a subrange of the
     // whole analog input range.
-    // Buttons are automatically added to the collection in the ButtonManager named 'ButtonMgr'
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage, the definition for each subrange will either supply 'OnKeyPress' and 'hasRepeat'
     // (if required), or 'OnKeyDown' and 'OnKeyRelease' (if required).
