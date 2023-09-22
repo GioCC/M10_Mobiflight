@@ -1,27 +1,14 @@
-/*
-*
-* File     : ButtonEnc.h
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* This file defines the ButtonEnc class.
-* The ButtonEnc receives a set of I/O flags describing the status of its associated input or 'pin'
-* (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-*
-* Usage:
-* - Include ButtonEnc.h and ButtonManager.h in your sketch
-* - Add a call to BtnMgr.checkButtons() in your main loop
-* - Declare each button and define the events using a ButtonEnc constructor
-* - Declare the required event functions ( void OnKeyXXX(ButtonEnc* but) )
-* - See the comments in the code for more help
-*/
+// =======================================================================
+// @file        ButtonEnc.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-09 12:25
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 // NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
 // this may or may not be as intended.
@@ -107,38 +94,42 @@ public:
     // === Setters (single params)
     // ======================================
 
-    void setOnPress(EBcallback f)   {_OnPress   = f;}
-    void setOnRelease(EBcallback f) {_OnRelease = f;}
-    void setOnLong(EBcallback f)    {_OnLong    = f;}
+    // Sets the delay (milliseconds) before the long-keypress event is triggered
+    // Rounded to nearest 100 ms; effective range 100ms..25.5s
+    void setLongPDelay(uint16_t delay);
 
-    // ======================================
-    // === Getters
-    // ======================================
-
-    // - none -
+    void setOnPress(EBcallback f)   { _OnPress   = f; }
+    void setOnRelease(EBcallback f) { _OnRelease = f; }
+    void setOnLong(EBcallback f)    { _OnLong    = f; }
 
     // ======================================
     // === Operation methods
     // ======================================
 
-    // Checks the state of the button and triggers events accordingly;
-    // Will be called from the ButtonGroupManager
-    // 'value' is a bit pattern with following meaning (see base class):
-    //   Button::curr    Current input status
-    //   Button::dn      Input just became active
-    //   Button::up      Input was just released
-    //   Button::rpt     A repeat interval just expired
-    //   Button::long    The long press interval just expired
-    // All flags except Button::curr are expected to be set for one call only,
-    // right after the event occurs.
-    // IMPORTANT: Input status is expected to be already debounced.
-    void    check(ButtonStatus_t value) override;
+    // Version where the value is supplied from an external button manager.
+    // 'status' is a bit pattern with following meaning (see also base class):
+    //      Button::curr    Current input status
+    //      Button::dn      Input just became active
+    //      Button::up      Input was just released
+    //      Button::rpt     (ignored)
+    //      Button::long    The long press interval just expired
+    // All flags except Button::curr are expected to be only set for the call right after the event occurs.
+    void    process(uint8_t status) override;
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startup
-    void    initState(ButtonStatus_t value) override;
+    // Checks the state of the button (retrieving it internally)
+    // and triggers events accordingly
+    void    check(bool force = false) override;
+    
+    // A variant of 'check()' for single digital inputs
+    // The current status is passed; status flags are computed internally,
+    // then process() is called.
+    void    checkVal(uint8_t val, bool force = false) override;
+
+    // A variant of 'checkVal()' for digital input vectors (specific to derived class)
+    // Gets its input source from the passed byte array according to pin#:
+    // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
+    // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
+    void    checkVec(uint8_t *bytevec, bool force = false) override;
 
 private:
 
@@ -146,6 +137,12 @@ private:
     static EBcallback _OnRelease;
     static EBcallback _OnLong;
 
+    unsigned long   TlastChange;
+    unsigned long   TlastPress;
+    uint8_t         debounceTime;   // internally in ms
+    uint8_t         longPDelay;     // internally in ms*100; range 100ms..25.5s
+
+    // uint8_t         _getInput(void);
 };
 
 #endif

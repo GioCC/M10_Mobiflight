@@ -1,56 +1,21 @@
-/*
-* File     : ButtonAdv.h
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
-* input values supplied by an underlying I/O reader.
-*
-* This file declares the ButtonAdv class.
-*
-* The ButtonAdv reads a value either:
-* - directly from a digital I/O pin
-* - directly from an analog I/O pin
-* - an argument passed to the polling routine, digital or analog
-* and, after processing, invokes callback functions accordingly.
-* Analog values are used for multi-position switches (thus are converted to a digital value
-* for a specified range); for each position a different ButtonAdv object must be defined (each
-* with its own range).
-* One of the four modes above can be chosen by using the corresponding constructor.
-*
-* Timings (for debounce, repeat etc) are handled internally.
-*
-* There are some peculiarities with respect to other classes in the family:
-* - this class can deal with physical inputs directly
-* - this class can handle independent timings when using data from a supplied input value;
-* - this class can take an analog value supplied as input.
-* In the first case, independent timings are mandatory (because no global vector-level timings are available);
-* in the second case, the internal implementation of timings may be exploited if several inputs require their
-* own different timing parameters.
-*
-* For uniformity, the polling method always takes a ButtonStatus_t argument, which however is ignored if hardware
-* inputs are used.
-*
-* Usage:
-* - Include ButtonAdv.h and ButtonGroupManager.h in your sketch
-* - Add a call to ButtonGrpManager.checkButtons() in your main loop
-* - Declare each button and define the events using a ButtonAdv constructor
-* - Declare the required event functions ( void OnKeyXXX(ButtonAdv* but) )
-* - See the comments in the code for more help
-*/
+// =======================================================================
+// @file        ButtonAdv.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-09 12:24
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
 
-/*
-NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
-this may or may not be as intended.
-A possible improvement: if a "LongPress" callback is used, the "Press" event is handled differently
-so as to match a "ShortPress" (which is actually activated on release before the LongPress time).
-Better: a mode flag tells whether to use two available callbacks either as "Press/Release" or "Short/Long press"
-(Repeat would be feasible in both modes).
-*/
+
+// NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
+// this may or may not be as intended.
+// A possible improvement: if a "LongPress" callback is used, the "Press" event is handled differently
+// so as to match a "ShortPress" (which is actually activated on release before the LongPress time).
+// Better: a mode flag tells whether to use two available callbacks either as "Press/Release" or "Short/Long press"
+// (Repeat would be feasible in both modes).
 
 #ifndef BUTTONADV_H
 #define BUTTONADV_H
@@ -79,7 +44,7 @@ public:
     ButtonAdv() {}     // for objects that will be completely filled in later
 
     ButtonAdv(  
-        uint8_t     in,
+        uint8_t     pin,
         uint8_t     hardware,
         char*       name,
         uint16_t    repeatDelay = 0,
@@ -92,7 +57,7 @@ public:
     );
 
     ButtonAdv(  
-        uint8_t     in,
+        uint8_t     pin,
         uint8_t     hardware,
         uint16_t    code,
         uint16_t    repeatDelay = 0,
@@ -105,12 +70,13 @@ public:
     );
 
     void
-    CButtonAdv( uint16_t    repeatDelay,
-                uint16_t    repeatRate,
-                uint16_t    longPress,
-                uint8_t     lthreshold,
-                uint8_t     uthreshold
-            );
+    CButtonAdv( 
+        uint16_t    repeatDelay,
+        uint16_t    repeatRate,
+        uint16_t    longPress,
+        uint8_t     lthreshold,
+        uint8_t     uthreshold
+    );
 
     // ======================================
     // === Setup methods: common
@@ -171,55 +137,54 @@ public:
     // Rounded to nearest 100 ms; effective range 100ms..25.5s
     void    setLongPDelay(uint16_t delay);
 
-    void    setHysteresis(uint8_t hys)  {hysteresis = hys;}
+    void    setHysteresis(uint8_t hys)  { hysteresis = hys; }
 
-    void    setOnPress(BAcallback f)    {_OnPress   = f;}
-    void    setOnRelease(BAcallback f)  {_OnRelease = f;}
-    void    setOnLong(BAcallback f)     {_OnLong    = f;}
+    void    setOnPress(BAcallback f)    { _OnPress   = f; }
+    void    setOnRelease(BAcallback f)  { _OnRelease = f; }
+    void    setOnLong(BAcallback f)     { _OnLong    = f; }
 
     // ======================================
     // === Getters
     // ======================================
 
     //Retrieve the amount of milliseconds since the input vector is validated
-    uint16_t getPressTime(void) {return (uint16_t)(millis() - TstartPress);}
+    uint16_t getPressTime(void) { return (uint16_t)(millis() - TstartPress); }
 
     // ======================================
     // === Operation methods
     // ======================================
 
-    // Checks the state of the button and triggers events accordingly;
-    // Will be called from the ButtonGroupManager
-    // 'value' is either:
-    // - an analog value (0..255)
-    // - for digital values, a bit pattern of type Button::ButtonStatus_t,
-    //   with following meaning (see also base class):
-    //      Button::curr    Current input status
-    //      Button::dn      Input just became active
-    //      Button::up      Input was just released
-    //      Button::rpt     A repeat interval just expired
-    //      Button::long    The long press interval just expired
-    //   All flags except Button::curr are expected to be only set for the call right after the event occurs.
+    // Triggers the appropriate events according to the state of the button,
+    // which is normally supplied by an external button manager.
+    // 'Status' is a bit pattern with following meaning:
+    //      Button::Curr    Current input status
+    //      Button::Dn      Input just became active
+    //      Button::Up      Input was just released
+    //      Button::Rpt     A repeat interval just expired
+    //      Button::Long    The long press interval just expired
+    // All flags except Button::curr are expected to be only set for the call right after the event occurs.
     // If the button is configured for direct HW pin reading, this value is ignored and HW value fetch is performed.
-    void    check(ButtonStatus_t value) override;
+    // WARNING (for HW reading only): digital inputs are considered ACTIVE (yielding HIGH) if closed to GND.
+    void    process(uint8_t status) override;
 
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startup.
-    // Argument: same as check(..).
-    void    initState(ButtonStatus_t value) override;
+    // Checks the state of the button: 
+    // polls status value internally and triggers events accordingly.
+    void    check(bool force = false) override;
 
-    // A variant of 'check()' for digital inputs only (specific to derived class)
+    // Variant of 'check()' with input value (analog or digital, as supported)
+    // passed from outside by the caller. Status flags are computed internally.
+    void    checkVal(uint8_t value, bool force = false) override;
+
+    // Variant of 'checkVal()' for digital input vectors (specific to derived class)
     // Gets its input source from the passed byte array according to pin#:
     // bytevec[0] contains values of pins 1..8 (bits 0..7), bytevec[1] contains pins 9..16 etc
     // It is responsibilty of the caller to assure that bytevec[] has a size compatible with the button's pin no.
     //
     // If the button is configured for direct HW pin reading or Analog source, a call to this method has NO EFFECT.
-    void    check(uint8_t *bytevec);
+    void    checkVec(uint8_t *bytevec, bool force = false) override;
 
-    // Variant of initState
-    void    initState(uint8_t *bytevec);
+    // Translates the analog value to the corresponding digital state.
+    bool    ana2dig(uint8_t val) override;
 
 private:
 
@@ -227,22 +192,25 @@ private:
     static BAcallback   _OnRelease;
     static BAcallback   _OnLong;
 
-    uint8_t         debounceTime;       // internally in ms
-    uint8_t         repeatDelay;        // internally in ms*100; range 100ms..25.5s
-    uint8_t         repeatRate;         // internally in ms*10; range 10ms..2.55s
-    uint8_t         longPDelay;         // internally in ms*100; range 100ms..25.5s
+    // Debounce:
     unsigned long   TlastChange;
+    uint8_t         debounceTime;   // internally in ms
+    
+    // Repeat:
+    unsigned long   TlastPress; 
+    uint8_t         repeatDelay;    // internally in ms*100; range 100ms..25.5s
+    uint8_t         repeatRate;     // internally in ms*10; range 10ms..2.55s
+    
+    // Long pressure:
     unsigned long   TstartPress;
-    unsigned long   TlastPress;
+    uint8_t         longPDelay;     // internally in ms*100; range 100ms..25.5s
     uint8_t         longPFlag;
 
     uint8_t         lowerAnaThrs;   // internally in 1/256th
     uint8_t         upperAnaThrs;   // internally in 1/256th
     uint8_t         hysteresis;     // 0..255
 
-    void            _check(uint8_t value);      // Helper for check() methods
-    void            _initState(uint8_t value);  // Helper for initState() methods
-    uint8_t         _getInput(Button::ButtonStatus_t ival);
+    //uint8_t         _getInput(void);
 };
 
 #endif

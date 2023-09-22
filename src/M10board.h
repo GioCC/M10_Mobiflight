@@ -71,20 +71,24 @@ class M10board
         uint8_t*        AINS = nullptr;     // Array of used analog inputs
         uint8_t         nAINS = 0;          // Number of used analog inputs
 
+        // ******* Buttons / Switches
+    
+        ButtonManager   ButtonMgr;
+
         // ******* Encoders
     
         //TODO: if the AP module can be split, the max number of encoder reserved (common to all boards) can be decreased from 5 to 3
-        EncoderSet       Encs;
-        int              EncCount[ENCSLOTS];
-        uint8_t          EncModes[ENCSLOTS];
-        byte             EncMap[3] = {0xFF, 0xFF, 0xFF};  // Encoder mappings; handles only up to 3 source encoders to spare memory
-        uint32_t         encInputs;     // Input vector directly read for encoders
-        //uint16_t       encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
+        EncoderSet      Encs;
+        int             EncCount[ENCSLOTS];
+        uint8_t         EncModes[ENCSLOTS];
+        byte            EncMap[3] = {0xFF, 0xFF, 0xFF};  // Encoder mappings; handles only up to 3 source encoders to spare memory
+        uint32_t        encInputs;     // Input vector directly read for encoders
+        //uint16_t      encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
 
         // ******* I/O expanders
 
-        MCP*             MCPIO1;
-        MCP*             MCPIO2;
+        MCP*            MCPIO1;
+        MCP*            MCPIO2;
         
         // ******* LED/LCD Display drivers
         union {
@@ -120,7 +124,7 @@ class M10board
         // R/W functions operate on buffers 'Din'/'Dout', therefore require the invocation of ScanInOut(),
         // either before (for inputs) or after (for outputs).
 
-        void    ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
+        void        ScanInOut(byte mode=0);   // Mode: 0=R+W, 1=R, 2=W
 
         // In the functions below, pin = 1..32
         
@@ -153,6 +157,13 @@ class M10board
         void        setupAnaIns(uint16_t AIvector);
         // Read n-th configured analog input (scaled to 0..255)
         uint8_t     readAI(uint8_t n)   { return ( n < nAINS ? ((analogRead(AINS[n])+2) >> 2) : 0);  }
+
+        /// ====================================================
+        /// Switch/button management
+        /// ====================================================
+
+        // After a fresh input scan, process switches and buttons
+        void    ProcessSwitches(void);
 
         /// ====================================================
         /// Encoder management
@@ -210,6 +221,9 @@ class M10board
         // toPos   = 1..10
         void    remapEncoder(byte fromPos, byte toPos);
         
+        // After a fresh input scan, process encoder inputs
+        void    ProcessEncoders(void);
+
         // For custom processing, an encoder object made available (based on the digital input vector),
         EncoderSet  *Encoders(void)       { return &Encs; }
 

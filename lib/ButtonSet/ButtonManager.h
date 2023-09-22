@@ -1,7 +1,13 @@
-/*
-* This file defines the ButtonManager class.
-*
-*/
+// =======================================================================
+// @file        ButtonManager.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-09 18:09
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
 
 #ifndef BUTTONMANAGER_H
 #define BUTTONMANAGER_H
@@ -22,37 +28,24 @@
 #define BM_STRAIGHT
 
 // define the max number of buttons
-// This must be consistent with the length of the passed vector (currently an uint32).
-// define MAXBUTTONS sizeof(Tvector)
-// If other button types are used, or less buttons are needed, better specify the number explicitly
-#ifndef MAXBUTTONS
-#define MAXBUTTONS 64
-#endif
+// #ifndef MAXBUTTONS
+// #define MAXBUTTONS 24
+// #endif
 
-#define NBANKS  ((MAXBUTTONS+7)/8)
+// #define NBANKS  ((MAXBUTTONS+7)/8)
 
-#define LAST  (ButtonMgr.getButton())
-
-//typedef uint8_t* TPvector;
-
+template<uint8_t MAXSIZE>
 class ButtonManager
 {
     uint8_t         numButtons;
     uint8_t         currBut;
-    Button          *buttons[MAXBUTTONS];
+    Button          *buttons[MAXSIZE] = {nullptr};
+    constexpr uint8_t NBanks = ((MAXSIZE&0x07)+1)>>3;
 
     // Event flags for digital I/O banks
-    /*
-    uint8_t    vecLastIO[NBANKS];
-    uint8_t    vecDown[NBANKS];
-    uint8_t    vecUp[NBANKS];
-    uint8_t    vecRepeat[NBANKS];
-    uint8_t    vecLongP[NBANKS];
-    uint8_t    vecLPflag[NBANKS];
-    */
     // Each status marker for an element is 1 byte wide, because it contains the corresponding flags
     // for all 8 bits of the (element=)bank.
-    struct {
+    using _flags = struct {
         uint8_t    LastIO;
         uint8_t    Change;
         uint8_t    Down;
@@ -60,7 +53,9 @@ class ButtonManager
         uint8_t    Repeat;
         uint8_t    LongP;
         uint8_t    LPflag;
-    } vec[NBANKS];
+    };
+    
+    _flags vec[NBanks] = {0};
 
     // Pointers to analog input values (externally supplied)
     uint8_t         *analogVals;
@@ -75,15 +70,13 @@ class ButtonManager
     uint8_t         repeatDelay;    // internally in ms*100; range 100ms..25.5s
     uint8_t         repeatInterval; // internally in ms*10; range 10ms..2.55s
 
-    //static ButtonManager *s_instance;
-    //ButtonManager();
-
     // Helper for checkButtons()/initButtons()
     void _checkInit(uint8_t *vecIO, uint8_t doinit=0);
 
 public:
 
     //static ButtonGroupManager *instance();
+    explicit 
     ButtonManager(uint16_t lpDelay=600, uint16_t rptDelay=400, uint16_t rptRate=200);
 
     // Parameter management for digital I/Os:
@@ -125,6 +118,10 @@ public:
 
 };
 
-// extern  ButtonManager ButtonMgr;
+//===================================================================================
+//   Implementation of templated method bodies
+//===================================================================================
+
+#include "ButtonManager.hpp"
 
 #endif

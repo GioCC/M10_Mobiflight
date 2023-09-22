@@ -15,6 +15,7 @@
 
 #include "M10board.h"
 
+ButtonManager   ButtonMgr;
 
 MCPS            _MCPIO1(0,10);
 MCPS            _MCPIO2(0,15);  // PCB v1.0
@@ -123,7 +124,6 @@ M10board::setBoardPostCfg(void)
         //TODO
     }
 }
-
 
 void M10board::setIOMode(uint8_t bank, uint16_t IOmode)
 { 
@@ -296,65 +296,66 @@ M10board::ScanInOut(byte mode)
             Din.writeW(2, iovec);
         }
 
-        //  Handle encoder input mirroring
-        // ===================================
-        if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
-            // collect physical enc inputs
-            if(cfg->nEncoders > 3) {
-                // assert(cfg->nVirtEncoders == 0); // Virtual encoders only available if no 2nd bank is used!
-                encInputs = (Din.valW(2) & 0x01FF);    // Encoders 4..6 (2nd bank)
-                encInputs <<= 9;
-            }
-            encInputs |= (Din.valW(0) & 0x01FF);   // Encoders 1..3 (1st bank)
-
-            if(cfg->nVirtEncoders!=0) {
-                // remap encoders if required (ineffective otherwise)
-                mirrorEncoder(1);
-                mirrorEncoder(2);
-                mirrorEncoder(3);
-            }
-        }
-
-        //  Handle button/switch processing
-        // ===================================
-        ButtonMgr.checkButtons(Din.val());
-
-        //  Handle encoder input processing
-        // ===================================
-        if(cfg->nEncoders + cfg->nVirtEncoders != 0) {
-            
-            // Use EITHER physical OR virtual encoders, not both!
-            if(cfg->nVirtEncoders==0) {
-                Encs.update(encInputs);     // Feed inputs to encoder processors
-            } else {
-                Encs.update(virtEncInputs);  // Feed inputs to (virtual)encoder processors
-            }
-            
-            // Detect encoders transitions/counts
-            // Since the version of EncManager with no callbacks is used, copy relevant data to local vars and pass those along
-            // (the version with callbacks would inquire the encoder data directly through indexed provider functions -
-            // actually, the very same ones we are using here...)
-            uint8_t ne = (cfg->nVirtEncoders==0 ? cfg->nEncoders : cfg->nVirtEncoders);
-            for(uint8_t i=0; i < ne; i++) {
-                EncCount[i] = Encs.getEncCount(i+1, 1);     // Get DIFF count
-                //EncCount[i] = Encs.getEncCount(i, 0);     // Get ABSOLUTE count
-                EncModes[i] = Encs.getMode(i+1);
-            }
-
-            //  Handle encoder processing
-            // ===================================
-            
-            // Register counts
-            EncMgr.checkEncs(EncCount, EncModes);
-            // If required, also register transitions
-            EncMgr.checkEncs(Encs.getEncChangeUp(), Encs.getEncChangeDn(), Encs.getEncChangeQUp(), Encs.getEncChangeQDn(), EncModes);
-
-            // Manage encoder switch lines
-            // (done as ordinary switches - nothing to do here)
-        }
         // TODO
     }
 }
 
+void
+M10board::ProcessSwitches(void)
+{
+    //  Handle button/switch processing
+    // ===================================
+    ButtonMgr.checkButtons(Din.val());
+}
+
+void
+M10board::ProcessEncoders(void)
+{
+    if(cfg->nEncoders + cfg->nVirtEncoders == 0) return;
+    
+    //  Handle encoder input mirroring
+    // ===================================
+    // collect physical enc inputs
+    if(cfg->nEncoders > 3) {
+        // assert(cfg->nVirtEncoders == 0); // Virtual encoders only available if no 2nd bank is used!
+        encInputs = (Din.valW(2) & 0x01FF);    // Encoders 4..6 (2nd bank)
+        encInputs <<= 9;
+    }
+    encInputs |= (Din.valW(0) & 0x01FF);   // Encoders 1..3 (1st bank)
+
+    if(cfg->nVirtEncoders!=0) {
+        // remap encoders if required (ineffective otherwise)
+        mirrorEncoder(1);
+        mirrorEncoder(2);
+        mirrorEncoder(3);
+    }
+
+    //  Handle encoder input processing
+    // ===================================
+
+    Encs.update(encInputs);     // Feed inputs to encoder processors
+    
+    // Detect encoders transitions/counts
+    // Since the version of EncManager with no callbacks is used, copy relevant data to local vars and pass those along
+    // (the version with callbacks would inquire the encoder data directly through indexed provider functions -
+    // actually, the very same ones we are using here...)
+    uint8_t ne = (cfg->nVirtEncoders==0 ? cfg->nEncoders : cfg->nVirtEncoders);
+    for(uint8_t i=0; i < ne; i++) {
+        EncCount[i] = Encs.getEncCount(i+1, 1);     // Get DIFF count
+        //EncCount[i] = Encs.getEncCount(i, 0);     // Get ABSOLUTE count
+        EncModes[i] = Encs.getMode(i+1);
+    }
+
+    //  Handle encoder event processing
+    // ===================================
+    
+    // Register counts
+    EncMgr.checkEncs(EncCount, EncModes);
+    // If required, also register transitions
+    EncMgr.checkEncs(Encs.getEncChangeUp(), Encs.getEncChangeDn(), Encs.getEncChangeQUp(), Encs.getEncChangeQDn(), EncModes);
+
+    // Manage encoder switch lines
+    // (done as ordinary switches - nothing to do here)
+}
 
 //END M10board.cpp

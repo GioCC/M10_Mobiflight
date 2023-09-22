@@ -1,0 +1,10 @@
+
+              Flash    RAM
+Button          164     18
+ButtonAdv       726     38
+ButtonBas       536     25
+ButtonEnc       614     28
+ButtonAna       374     33
+ButtonEvt       158     18
+                   
+ButtonManager   276    205

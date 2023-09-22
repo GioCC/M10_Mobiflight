@@ -1,27 +1,14 @@
-/*
-*
-* File     : ButtonGrp.h
-* Version  : 1.0
-* Released : 12/03/2017
-* Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
-*
-* Inspired by the ButtonAdv+ButtonManager library by Bart Meijer (bart@sbo-dewindroos.nl)
-*
-* This library allows to conveniently define pushbutton actions with callbacks for several events.
-* It is meant to work jointly with a ButtonManager, which in turn receives (and passes along)
-* input flags supplied by an underlaying I/O reader (digital buttons only).
-*
-* This file defines the ButtonGrp class.
-* The ButtonGrp receives a set of I/O flags describing the status of its associated input or 'pin'
-* (for current status, up/dn transitions etc - see doc) and invokes callback functions accordingly.
-*
-* Usage:
-* - Include ButtonGrp.h and ButtonManager.h in your sketch
-* - Add a call to ButtonMgr.checkButtons() in your main loop
-* - Declare each button and define the events using a ButtonGrp constructor
-* - Declare the required event functions ( void OnKeyXXX(ButtonGrp* but) )
-* - See the comments in the code for more help
-*/
+// =======================================================================
+// @file        ButtonEvt.h
+//
+// @project     
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
+// @modifiedby  GiorgioCC - 2023-08-09 17:43
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 // NOTE: Currently, a "long press" triggers both the "Press" and the "LongPress" events;
 // this may or may not be as intended.
@@ -39,11 +26,11 @@
 #include "ButtonManager.h"
 #endif
 
-class ButtonGrp;
+class ButtonEvt;
 
-using GBcallback = void (*)(ButtonGrp*);
+using EVBcallback = void (*)(ButtonEvt*);
 
-class ButtonGrp
+class ButtonEvt
 : public Button
 {
 
@@ -54,8 +41,6 @@ public:
     // ======================================
 
     // This constructor allows to define each individual button.
-    // Buttons are automatically added to the collection in the ButtonManager named 'ButtonMgr'
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage:
     // - pushbuttons will only supply 'OnKeyPress' (and possibly 'OnKeyLong' and/or 'rptEnabled', if required);
@@ -64,9 +49,9 @@ public:
     // The name is optional, as are the mirror variable and flag (bit# in var).
     // If the mirror var is not NULL, the button state is automatically mirrored into it.
 
-    ButtonGrp() {}     // for objects that will be completely filled in later
+    ButtonEvt() {}     // for objects that will be completely filled in later
 
-    ButtonGrp(  
+    ButtonEvt(  
         uint8_t     pin,
         char*       name,
         uint8_t     rptEnabled   = 0,
@@ -74,7 +59,7 @@ public:
         uint8_t     mirrorbit   = 0
     );
 
-    ButtonGrp(  
+    ButtonEvt(  
         uint8_t     pin,
         uint16_t    code,
         uint8_t     rptEnabled   = 0,
@@ -94,13 +79,13 @@ public:
     // the object, and nothing more.
     // For details, see comments in Button.h.
 
-    DEFINE_BASIC_METHODS(ButtonGrp)
+    DEFINE_BASIC_METHODS(ButtonEvt)
 
     // ======================================
     // === Setup methods: specialized
     // ======================================
 
-    ButtonGrp& callbacks(GBcallback OnPress, GBcallback OnRelease = nullptr, GBcallback OnLong = nullptr)
+    ButtonEvt& callbacks(EVBcallback OnPress, EVBcallback OnRelease = nullptr, EVBcallback OnLong = nullptr)
     {
         setOnPress(OnPress); 
         setOnRelease(OnRelease); 
@@ -108,7 +93,7 @@ public:
         return *this; 
     }
 
-    ButtonGrp& params(uint8_t rptEnabled)            { enableRepeat(rptEnabled); return *this; }
+    ButtonEvt& params(uint8_t rptEnabled)            { enableRepeat(rptEnabled); return *this; }
 
     // ======================================
     // === Setters (single params)
@@ -116,9 +101,9 @@ public:
 
     void    enableRepeat(uint8_t r)      { flagChg(_flags, Button::rptEnabled, r); }
 
-    void    setOnPress(GBcallback f)     {_OnPress   = f;}
-    void    setOnRelease(GBcallback f)   {_OnRelease = f;}
-    void    setOnLong(GBcallback f)      {_OnLong    = f;}
+    void    setOnPress(EVBcallback f)     {_OnPress   = f;}
+    void    setOnRelease(EVBcallback f)   {_OnRelease = f;}
+    void    setOnLong(EVBcallback f)      {_OnLong    = f;}
 
     // ======================================
     // === Getters
@@ -130,30 +115,22 @@ public:
     // === Operation methods
     // ======================================
 
-    // Checks the state of the button and triggers events accordingly;
-    // Will be called from the ButtonGroupManager
-    // 'value' is a bit pattern with following meaning (see base class):
-    //   Button::curr    Current input status
-    //   Button::dn      Input just became active
-    //   Button::up      Input was just released
-    //   Button::rpt     A repeat interval just expired
-    //   Button::long    The long press interval just expired
-    // All flags except Button::curr are expected to be set for one call only,
-    // right after the event occurs.
-    // IMPORTANT: Input status is expected to be already debounced.
-    void    check(ButtonStatus_t value) override;
-
-    // initState is used to assign the initial value.
-    // It differs from check() because it only triggers OnKeyPress/OnKeyRelease events.
-    // These are usually associated to stable switches (rather than temporary pushbuttons),
-    // which require to have their position recorded at startup
-    void    initState(ButtonStatus_t value) override;
+    // Triggers the appropriate events according to the passed state,
+    // which is normally supplied by an external button manager.
+    // 'Status' is a bit pattern with following meaning:
+    //      Button::Curr    Current input status
+    //      Button::Dn      Input just became active
+    //      Button::Up      Input was just released
+    //      Button::Rpt     A repeat interval just expired
+    //      Button::Long    The long press interval just expired
+    // All flags except Button::curr are expected to be only set for the call right after the event occurs.
+    void    process(uint8_t status) override;
 
 private:
 
-    static GBcallback _OnPress;
-    static GBcallback _OnRelease;
-    static GBcallback _OnLong;
+    static EVBcallback _OnPress;
+    static EVBcallback _OnRelease;
+    static EVBcallback _OnLong;
 
 };
 
