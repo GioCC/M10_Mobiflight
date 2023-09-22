@@ -53,10 +53,11 @@
 #ifndef ENCMANAGER_H
 #define ENCMANAGER_H
 
-// This include is just for usage with M10 boards (in order to tailor storage requirements); it is not for the general purpose library
-//#include "config_board.h"
+// This include is just for usage with M10 boards (in order to tailor storage requirements); 
+// it is not for the general purpose library
+//#include "boardDefine.h"
 
-#include "config_board.h"
+#include "boardDefine.h"
 // define the number of encoders
 #ifndef MAXENCS
 #define MAXENCS 10

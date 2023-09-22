@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-undef.inc
+//  board_def_clean.inc
 //
 // Board peripheral set compile-time configuration
 //
@@ -11,8 +11,11 @@
 // NO INCLUDE GUARDS - this file is meant to be included repeatedly in place!
 
 // Convenience helper macro for Digital I/O banks:
+#ifdef  pat(a, b)
 #undef  pat(a, b)
 #define pat(a, b)   ((((uint16_t)(a))<<8)|(b))
+#endif  //
+
 // Usage example:
 //          I/O numbering:    16......9   8......1
 //#define DIG_INPUTS      pat(B11111110, B00000000)

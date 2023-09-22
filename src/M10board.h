@@ -1,8 +1,16 @@
-/**
- *  M10board.h
- *
- *  Defines a unit with the hardware resources of a generic M10 board
-*/
+// =======================================================================
+// @file        M10board.h
+//
+// @project     M10_Mobiflight
+// 
+// @details     Defines a generic individual M10 board 
+//              with its the hardware resources
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
+// @modifiedby  GiorgioCC - 2023-09-23 00:02
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
 
 
 #ifndef M10BOARD_H
@@ -15,7 +23,7 @@
 //================================
 // Board I/O configuration
 //================================
-#include "config_board.h"
+#include "boardDefine.h"
 
 #include "bitmasks.h"
 #include "conversions.h"

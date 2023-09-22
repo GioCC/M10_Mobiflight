@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-board.inc
+//  board_def_board.inc
 //
 // Board peripheral set compile-time configuration
 //

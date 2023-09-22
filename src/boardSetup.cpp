@@ -1,13 +1,13 @@
 // =======================================================================
+// @file        boardSetup.cpp
 // @file        main.cpp
 //
 // @project     M10_Mobiflight
 //
-// @details     Main application body
-//              (Currently just a test rig)
+// @details     Board setup related code
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-23 00:04
+// @modifiedby  GiorgioCC - 2023-09-22 23:59
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -16,20 +16,82 @@
 #include "main.h"
 
 // =================================
-//  Global vars
-// =================================
-
-memPool<MEM_POOL_SIZE>  pool;
-M10board                Board[Config::MAX_BOARDS];
-
-// =================================
 //  Local vars
 // =================================
+uint16_t        ConfigBoardFlags;
 
 // =================================
 //  Functions
 // =================================
 
+bool isBoardAttached(uint8_t slot)
+{
+    return ((ConfigBoardFlags & (1<<slot))!=0);
+}
+
+uint16_t readBoardSelector(void)
+{
+    //TODO: Check CPOL!
+    // We may setup the lines here as well
+    pinMode(CFG_SR_CLK, OUTPUT); digitalWrite(CFG_SR_CLK, HIGH);
+    pinMode(CFG_SR_LAT, OUTPUT); digitalWrite(CFG_SR_LAT, HIGH);
+    pinMode(CFG_SR_DIN, INPUT);
+
+    digitalWrite(CFG_SR_LAT, LOW);
+    ConfigBoardFlags = (~shiftIn(CFG_SR_DIN, CFG_SR_CLK, MSBFIRST)) << 8;
+    ConfigBoardFlags |= ~shiftIn(CFG_SR_DIN, CFG_SR_CLK, MSBFIRST);
+    digitalWrite(CFG_SR_LAT, HIGH);
+}
+
+void boardSetup(void)
+{
+    // uint8_t  slot = 0;
+    
+    ConfigBoardFlags = readBoardSelector(); 
+
+    //TODO For each board assigned to a slot: initialize board object (Board[n])
+    // with proper parameters
+
+    if(isBoardAttached(0)) {
+        //....
+    }
+    if(isBoardAttached(1)) {
+        //....
+    }
+    if(isBoardAttached(2)) {
+        //....
+    }
+    if(isBoardAttached(3)) {
+        //....
+    }
+    if(isBoardAttached(4)) {
+        //....
+    }
+    if(isBoardAttached(5)) {
+        //....
+    }
+    if(isBoardAttached(6)) {
+        //....
+    }
+    if(isBoardAttached(7)) {
+        //....
+    }
+    if(isBoardAttached(8)) {
+        //....
+    }
+    if(isBoardAttached(9)) {
+        //....
+    }
+    if(isBoardAttached(10)) {
+        //....
+    }
+    if(isBoardAttached(11)) {
+        //....
+    }
+    if(isBoardAttached(12)) {
+        //....
+    }
+}
 
 // =================================
 //  Test stuff
@@ -41,10 +103,8 @@ byte toggle1 = 1;
 unsigned long ticker2;
 byte toggle2 = 1;
 
-M10board_cfg    cfg;
-M10board        board;
-
 char dispbuf[8];
+
 // Converts a counter in a displayable string for LED displays
 char *counter2buf(byte cntno) {
     unsigned long cc = counter[cntno&0x03];

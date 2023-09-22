@@ -1,7 +1,17 @@
-/**
- *  M10board.cpp
- *
-*/
+// =======================================================================
+// @file        M10board.cpp
+//
+// @project     M10_Mobiflight
+// 
+// @details     Defines a generic individual M10 board 
+//              with its the hardware resources
+//
+// @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
+// @modifiedby  GiorgioCC - 2023-09-22 21:58
+//
+// Copyright (c) 2022 - 2023 GiorgioCC
+// =======================================================================
+
 
 #include "M10board.h"
 

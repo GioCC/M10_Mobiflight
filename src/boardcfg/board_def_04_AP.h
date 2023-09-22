@@ -18,9 +18,6 @@
 // CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
 //===================================================================================
 
-// Clean-slate the #define namespace
-#include "config_board-undef.inc"
-
 #define BOARDTYPE   M10_04_AP
 
 #define BANK2           1

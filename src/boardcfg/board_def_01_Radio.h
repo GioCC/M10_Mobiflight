@@ -1,5 +1,5 @@
 //===================================================
-//  config_board-03_XPDR_OBS_CLK.h
+//  config_board-01_Radio.h
 //
 //  Board peripheral set compile-time configuration
 //
@@ -18,39 +18,29 @@
 // CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
 //===================================================================================
 
-// Clean-slate the #define namespace
-#include "config_board-undef.inc"
-
-#define BOARDTYPE   M10_03_XPDR_OBS_CLK
+#define BOARDTYPE   M10_01_Radio1
 
 #define MAXBUTTONS 10
-#define MAXENCS 5
-// #define MAXCMDEVENTS 20
+#define MAXENCS 8
+#define MAXCMDEVENTS 20
 
 // I/O numbering:           16......9  8......1
-#define DIG_INPUTS      pat(B11111100,B00000000)
+#define DIG_INPUTS      pat(B11111110,B00000000)
 #define DIG_OUTPUTS     pat(B00000000,B00000000)
 #define DIG_INPUTS2     pat(B00000000,B00000000)
 #define DIG_OUTPUTS2    pat(B00000000,B00000000)
 #define ANA_INPUTS      pat(B00000000,B00000000)
-#define N_ENCODERS      3
-#define N_VIRT_ENCODERS 0
+#define N_ENCODERS      2
+#define N_VIRT_ENCODERS 4
 #define N_DISPLAYS1     2
-#define N_DISPLAYS2     0
-#define N_LEDS_ON_MAX   10
-#define LEDS_ON_MAX     { \
-    {0, 3, 7}, \    
-    {0, 2, 7}, \
-    {0, 1, 7}, \
-    {0, 0, 7}, \
-    {0, 7, 0}, \
-    {0, 7, 6}, \
-    {0, 7, 3}, \
-    {0, 7, 7}, \
-    {1, 1, 7}, \
-    {1, 3, 7}, \
-}
+#define N_DISPLAYS2     2
 #define N_LCD           0
+
+// Reminder for MF config:
+// #define VIEWPORT1       {1,3, 5} //6}
+// #define VIEWPORT2       {1,11,5} //6}
+// #define VIEWPORT3       {2,3, 5} //6}
+// #define VIEWPORT4       {2,11,5} //6}
 
 #endif  // BUILDING_CONFIG_DATA
 
@@ -61,28 +51,24 @@
 //===================================================================================
 
 // TODO Add board-specific prefix to avoid name clashes!
-#define ENC_XDPR        1
-#define ENC_OBS         2
-#define ENC_CLK         3
+#define ENC_SIDE_A      1
+#define ENC_SIDE_B      2
+#define PB_ENC_A        3
+#define PB_ENC_B        6
+#define PB_PROGRAM      10
+#define SW_COM_NAV_A    11
+#define SW_1_2_A        12
+#define SW_COM_NAV_B    13
+#define SW_1_2_B        14
+#define PB_SWAP_A       15
+#define PB_SWAP_B       16
 
-#define PB_ENC_XPDR     3
-#define PB_ENC_OBS      6
-#define PB_ENC_CLK      9
-#define SW_CLK_TMR      11
-#define SW_XPDR_ON      12
-#define PB_OBS_RVS      13
-#define PB_CLK_START    14
-#define PB_CLK_PAUSE    15
-#define PB_CLK_ZERO     16
-
-#define LD_XPDR_D1      DP1
-#define LD_XPDR_D2      DP2
-#define LD_XPDR_D3      DP3
-#define LD_XPDR_D4      DP4
-#define LD_OBS_RVS      DP8
-#define LD_OBS_VOR1     SEG_A8
-#define LD_OBS_VOR2     SEG_G8
-#define LD_OBS_ADF      SEG_D8
-
+{
+    // Define INPUTS (buttons)
+    // Define ENCODERS
+    // Define OUTPUTS
+    // Define DISPLAYS (MAX)
+    //......
+}
 #endif  // BUILDING_CONFIG_RUNTIME
 // end
