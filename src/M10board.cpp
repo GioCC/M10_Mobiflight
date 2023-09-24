@@ -7,7 +7,7 @@
 //              with its the hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-22 21:58
+// @modifiedby  GiorgioCC - 2023-09-24 15:38
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -15,19 +15,10 @@
 
 #include "M10board.h"
 
-ButtonManager   ButtonMgr;
-
-MCPS            _MCPIO1(0,10);
-MCPS            _MCPIO2(0,15);  // PCB v1.0
-//MCP           _MCPIO2(1,10);  // PCB v1.1
-
-// LedControl      _LEDCTRL1(3,2,4, 2);   //pin #s (dta, clk, cs, cnt), #units
-// LedControl      _LEDCTRL2(5,2,6, 2);   //pin #s (dta, clk, cs, cnt), #units
-//LiquidCrystal   _LCDCTRL(8,2,3, 4,5,6,7);
-
 // -----------------------------------------------------
 
-M10board::M10board(void)
+M10board::M10board(void* memAllocator(uint16_t)) 
+: memAlloc(memAllocator)
 {
     nAINS = 0;
 }
@@ -35,19 +26,28 @@ M10board::M10board(void)
 void
 M10board::setupAnaIns(uint16_t ai)
 {
+    uint16_t    msk;
+    uint16_t    AINSsize = 0;
+
     nAINS = 0;
     AINS = NULL;
     if(ai == 0) return;
-    uint16_t    msk;
 
     msk = 0x0001;
-    for(uint8_t i=0; i<16; i++, msk<<=1) { if(ai & msk) nAINS++; }
+    for(uint8_t i=0; i<16; i++, msk<<=1) { 
+        if((ai & msk)==0) continue;
+        nAINS++; AINSsize += sizeof(uint8_t);
+    }
     //AINS = new uint8_t[nAINS];
-    AINS = (uint8_t *)calloc(nAINS, sizeof(uint8_t));
+    //AINS = (uint8_t *)calloc(nAINS, sizeof(uint8_t));
+    AINS = (uint8_t *)memAlloc(AINSsize);
 
     nAINS = 0;
     msk = 0x0001;
-    for(uint8_t i=0; i<16; i++, msk<<=1) { if(ai & msk) AINS[nAINS++]=(A0+i);}
+    for(uint8_t i=0; i<16; i++, msk<<=1) { 
+        if((ai & msk)==0) continue;
+        AINS[nAINS++]=(A0+i);
+    }
 }
 
 void
@@ -61,16 +61,18 @@ M10board::setBoardCfg(M10board_cfg *c)
     //memcpy(&cfg, c, sizeof(M10board_cfg));
     cfg = c;
 
-    MCPIO1 = &_MCPIO1;
-    _MCPIO1.begin();
-    _MCPIO1.inputInvert(0xFFFF);
+    MCPIO1 = &_MCPIO1;  // TEST!!! TO BE REMOVED
+    //! TODO Allocate in reserved area using memAlloc (or decide to use fixed class attribute)
+    MCPIO1->begin();
+    MCPIO1->inputInvert(0xFFFF);
     setIOMode(0,~cfg->digOutputs);
     setPUMode(0,~cfg->digOutputs);
 
     if(cfg->hasBank2) {
-        MCPIO2 = &_MCPIO2;
-        _MCPIO2.begin();
-        _MCPIO2.inputInvert(0xFFFF);
+        MCPIO2 = &_MCPIO2;  // TEST!!! TO BE REMOVED
+        //! TODO Allocate in reserved area using memAlloc (or decide to use fixed class attribute)
+        MCPIO2->begin();
+        MCPIO2->inputInvert(0xFFFF);
         setIOMode(1,~cfg->digOutputs2);
         setPUMode(1,~cfg->digOutputs2);
     }

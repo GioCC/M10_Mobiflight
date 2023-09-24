@@ -4,10 +4,10 @@
 // @project     M10_Mobiflight
 // 
 // @details     Defines a generic individual M10 board 
-//              with its the hardware resources
+//              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-09-23 00:02
+// @modifiedby  GiorgioCC - 2023-09-24 15:34
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -16,7 +16,10 @@
 #ifndef M10BOARD_H
 #define M10BOARD_H
 
-//#define __M10_board__     // Unused (now implicit in customised code)
+
+// TODO:
+// - Add parameter for BoardTag (to be used for output event messages)
+// - Add parameter (fn *) for output event
 
 #include <Arduino.h>
 
@@ -38,12 +41,6 @@
 #include "LedControlMod.h"
 #include "LiquidCrystal.h"
 
-#define   ENCSLOTS    6     // TODO REDUCE AS POSSIBLE
-
-constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
-constexpr uint8_t LCsize  = sizeof(LedControl);
-constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
-
 #define UNUSED(x)       ((void)(x))
 #define BYTESIZE(x)     ((x+7)>>3)
 
@@ -54,7 +51,17 @@ constexpr uint8_t DOUT_COUNT = 32;
 
 class M10board
 {
+
+    public:
+        static constexpr uint8_t ENCSLOTS = 6;         // TODO REDUCE AS POSSIBLE
+        static constexpr uint8_t MAXBUTTONS = 16;      // TODO CHECK; REDUCE AS POSSIBLE
+        
     private:
+        static constexpr uint8_t LCDsize = sizeof(LiquidCrystal);
+        static constexpr uint8_t LCsize  = sizeof(LedControl);
+        static constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
+
+        void* (*memAlloc)(uint16_t);
 
         // ******* Configuration
 
@@ -68,12 +75,12 @@ class M10board
         uint16_t        IOcfg[BYTESIZE(DIN_COUNT)];     // In (1) or Out (0)
         uint16_t        IOpullup[BYTESIZE(DIN_COUNT)];  // On (1) or Off (0)
 
-        uint8_t*        AINS = nullptr;     // Array of used analog inputs
+        uint8_t*        AINS = nullptr;     // Table array of used analog input pins
         uint8_t         nAINS = 0;          // Number of used analog inputs
 
         // ******* Buttons / Switches
     
-        ButtonManager   ButtonMgr;
+        ButtonManager<MAXBUTTONS>   ButtonMgr;
 
         // ******* Encoders
     
@@ -90,11 +97,23 @@ class M10board
         MCP*            MCPIO1;
         MCP*            MCPIO2;
         
+        // TEST - TO BE REMOVED
+        // TODO Change init parameters of MCPS to allow full delayed config (including HW addreaa)
+        MCPS            _MCPIO1(0,10);
+        MCPS            _MCPIO2(0,15);  // PCB v1.0
+        //MCP           _MCPIO2(1,10);  // PCB v1.1
+
+
         // ******* LED/LCD Display drivers
         union {
             LedControl*      LEDCTRL;
             LiquidCrystal*   LCDCTRL;
         };
+
+        // TEST - TO BE REMOVED
+        // LedControl      _LEDCTRL1(3,2,4, 2);   //pin #s (dta, clk, cs, cnt), #units
+        // LedControl      _LEDCTRL2(5,2,6, 2);   //pin #s (dta, clk, cs, cnt), #units
+        // LiquidCrystal   _LCDCTRL(8,2,3, 4,5,6,7);
 
         // ******* LED Display driver handles
 
@@ -102,7 +121,7 @@ class M10board
 
     public:
 
-        M10board(void);
+        M10board(void* memAllocator(uint16_t));
 
         /// ====================================================
         /// Config functions
