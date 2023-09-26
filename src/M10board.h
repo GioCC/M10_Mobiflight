@@ -7,7 +7,7 @@
 //              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-09-24 15:34
+// @modifiedby  GiorgioCC - 2023-09-26 18:05
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -61,7 +61,7 @@ class M10board
         static constexpr uint8_t LCsize  = sizeof(LedControl);
         static constexpr uint8_t DispSize = ((LCDsize > 2*LCsize) ? LCDsize : 2*LCsize);
 
-        void* (*memAlloc)(uint16_t);
+        static void* (*memAlloc)(uint16_t);
 
         // ******* Configuration
 
@@ -94,16 +94,9 @@ class M10board
 
         // ******* I/O expanders
 
-        MCP*            MCPIO1;
-        MCP*            MCPIO2;
+        MCP*            MCPIO1 = nullptr;
+        MCP*            MCPIO2 = nullptr;
         
-        // TEST - TO BE REMOVED
-        // TODO Change init parameters of MCPS to allow full delayed config (including HW addreaa)
-        MCPS            _MCPIO1(0,10);
-        MCPS            _MCPIO2(0,15);  // PCB v1.0
-        //MCP           _MCPIO2(1,10);  // PCB v1.1
-
-
         // ******* LED/LCD Display drivers
         union {
             LedControl*      LEDCTRL;
@@ -121,6 +114,7 @@ class M10board
 
     public:
 
+        explicit 
         M10board(void* memAllocator(uint16_t));
 
         /// ====================================================

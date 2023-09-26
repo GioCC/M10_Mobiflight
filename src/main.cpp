@@ -7,7 +7,7 @@
 //              (Currently just a test rig)
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-23 00:04
+// @modifiedby  GiorgioCC - 2023-09-26 18:11
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -15,11 +15,13 @@
 
 #include "main.h"
 
+void crashHandler(void);
+
 // =================================
 //  Global vars
 // =================================
 
-memPool<MEM_POOL_SIZE>  pool;
+memPool<MEM_POOL_SIZE>  pool(crashHandler);
 M10board                Board[Config::MAX_BOARDS];
 
 // =================================
@@ -30,6 +32,12 @@ M10board                Board[Config::MAX_BOARDS];
 //  Functions
 // =================================
 
+// Landing spot for irrecoverable system errors
+void crashHandler(void) 
+{
+    // No exit.
+    // If available, flash a LED or something.
+}
 
 // =================================
 //  Test stuff

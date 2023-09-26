@@ -13,7 +13,7 @@
 // of a known pre-defined total memory occupation.
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-21
-// @modifiedby  GiorgioCC - 2023-07-21 17:59
+// @modifiedby  GiorgioCC - 2023-09-26 18:10
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -27,14 +27,19 @@
 template <uint16_t SIZE_BYTES>
 class memPool
 {
+public:
+    using T_crash_handler = void (*)(void);
+
 private:
 
-    static uint8_t  mem[SIZE_BYTES];
-    uint16_t        ptr;
+    static T_crash_handler  crash_handler = nullptr;
+    static uint8_t          mem[SIZE_BYTES];
+    uint16_t                ptr;
 
 public:
 
-    memPool(): ptr(0) {}
+    explicit 
+    memPool(T_crash_handler chf = nullptr): ptr(0), crash_handler(chf) {}
 
     static const uint16_t getCapacity(void)   { return (SIZE_BYTES);}
     const uint16_t        getAvailable(void)  { return (SIZE_BYTES-ptr);}
@@ -43,7 +48,10 @@ public:
     
     void* reserve(uint16_t size) 
         {
-            if(!isAvailable(size)) return nullptr;
+            if(!isAvailable(size)) {
+                if(crash_handler != nullptr) crash_handler() else return nullptr;
+            }
+
             void* res = (void*)&mem[ptr];
             ptr += size;
             return res; 

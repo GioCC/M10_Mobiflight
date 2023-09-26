@@ -7,7 +7,7 @@
 //              with its the hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-24 15:38
+// @modifiedby  GiorgioCC - 2023-09-26 18:05
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -18,8 +18,8 @@
 // -----------------------------------------------------
 
 M10board::M10board(void* memAllocator(uint16_t)) 
-: memAlloc(memAllocator)
 {
+    memAlloc = memAllocator;
     nAINS = 0;
 }
 
@@ -61,16 +61,17 @@ M10board::setBoardCfg(M10board_cfg *c)
     //memcpy(&cfg, c, sizeof(M10board_cfg));
     cfg = c;
 
-    MCPIO1 = &_MCPIO1;  // TEST!!! TO BE REMOVED
-    //! TODO Allocate in reserved area using memAlloc (or decide to use fixed class attribute)
+    // MCPIO1 = &_MCPIO1;  // TEST!!! TO BE REMOVED
+    MCPIO1 = new (memAlloc(sizeof(MCPS))) MCPS(0,10);
     MCPIO1->begin();
     MCPIO1->inputInvert(0xFFFF);
     setIOMode(0,~cfg->digOutputs);
     setPUMode(0,~cfg->digOutputs);
 
     if(cfg->hasBank2) {
-        MCPIO2 = &_MCPIO2;  // TEST!!! TO BE REMOVED
-        //! TODO Allocate in reserved area using memAlloc (or decide to use fixed class attribute)
+        // MCPIO2 = &_MCPIO2;  // TEST!!! TO BE REMOVED
+        MCPIO2 = new (memAlloc(sizeof(MCPS))) MCPS(0,15);   // PCB v1.0
+        //MCPIO2 = new (memAlloc(sizeof(MCPS))) MCPS(1,10);   // PCB v1.1
         MCPIO2->begin();
         MCPIO2->inputInvert(0xFFFF);
         setIOMode(1,~cfg->digOutputs2);
