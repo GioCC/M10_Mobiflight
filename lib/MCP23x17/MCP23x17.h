@@ -69,7 +69,7 @@
 class MCP {
   public:
 
-    MCP(uint8_t);                            // Constructor to instantiate a discrete IC as an object, address 0-7
+    explicit MCP(void);
 
     // Customizable functions for derived classes
     virtual void init(void);

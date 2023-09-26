@@ -12,33 +12,34 @@
 
 // Here we have things for the SPI bus configuration
 #define    CLOCK_DIVIDER (2)           // SPI bus speed to be 1/2 of the processor clock speed - 8MHz on most Arduinos
-// Control byte and configuration register information - Control Byte: "0100 A2 A1 A0 R/W" -- W=0
-#define    ADDR_ENABLE   (0b00001000)  // Configuration register for MCP23S17, the only thing we change is enabling hardware addressing
-
-
+// Control byte and configuration register information:
+// Control Byte: "0100 A2 A1 A0 R/W" -- W=0
+// Configuration register: for MCP23S17, the only thing we change is enabling hardware addressing
+#define    ADDR_ENABLE   (0b00001000)  
 
 // Constructor to instantiate an instance of MCP to a specific chip (address)
 // Requires init() (or begin()) to be called later
 MCPS::MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin)
-: MCP(hwaddress), _ss(nCs_pin), _rst(nReset_pin), _address(0)
+: MCP(), _ss(nCs_pin), _rst(nReset_pin), _address(0)
 {
-    _make_opcode(hwaddress);
+    _make_opcode(hwaddress & 0x07);
     //init();
 }
 
 // Constructor for delayed setup
 // ONLY STORES VALUES, does not setup pins or activate peripherals yet
 // Requires config(), then init() (or begin()) to be called later
-MCPS::MCPS(uint8_t hwaddress) 
-: MCP(hwaddress), _rst(0xFF), _ss(0xFF), _address(0)
+MCPS::MCPS(void) 
+: MCP(), _rst(0xFF), _ss(0xFF), _address(0)
 {
-    _make_opcode(hwaddress);
+    _make_opcode(0);
 }
 
 // Constructor to instantiate an instance of MCP to a specific chip (address)
 // ONLY STORES VALUES, does not setup pins or activate peripherals yet
-void MCPS::config(uint8_t nCs_pin, uint8_t nReset_pin)
+void MCPS::config(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin)
 {
+    _make_opcode(hwaddress & 0x07);
     _ss  = nCs_pin; 
     _rst = nReset_pin;
 }

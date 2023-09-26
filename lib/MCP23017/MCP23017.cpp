@@ -13,10 +13,16 @@
 // Constructor to instantiate an instance of MCP to a specific chip (address)
 
 MCP0::MCP0(uint8_t hwaddress)
-: MCP(hwaddress), _ibuf{0}
+: MCP(), _ibuf{0}
+{
+    config(hwaddress);
+    //init();
+}
+
+void
+MCP0::config(uint8_t hwaddress)
 {
     _hwaddress = 0x40+((hwaddress<<1)&0x0E);
-    //init();
 }
 
 void

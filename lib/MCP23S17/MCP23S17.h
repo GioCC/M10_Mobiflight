@@ -19,9 +19,9 @@ class MCPS :
 public MCP
 {
   public:
-    explicit MCPS(uint8_t hwaddress);
+    explicit MCPS(void);
              MCPS(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin=0);
-    void     config(uint8_t nCs_pin, uint8_t nReset_pin=0);
+    void     config(uint8_t hwaddress, uint8_t nCs_pin, uint8_t nReset_pin=0);
     void     init(void)  override;
     void     begin(void) override;
 

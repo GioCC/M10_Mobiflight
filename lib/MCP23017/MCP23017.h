@@ -21,7 +21,8 @@ class MCP0 :
 public MCP
 {
   public:
-    explicit    MCP0(uint8_t hwaddress);    // Beware: HWaddress is 7-bit (will be <<1 by the class)
+    explicit    MCP0(uint8_t hwaddress = 0);    // Beware: HWaddress is 7-bit (will be <<1 by the class)
+    void        config(uint8_t hwaddress);
     void        init(void)  override;
     void        begin()     override;       // Get hold of the I2C Bus
 

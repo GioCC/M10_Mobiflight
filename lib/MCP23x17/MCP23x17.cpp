@@ -31,9 +31,8 @@
 
 // Constructor to instantiate an instance of MCP to a specific chip (address)
 
-MCP::MCP(uint8_t hwaddress)
+MCP::MCP(void)
 {
-    UNUSED(hwaddress);
     // init(); // Init must be performed by derived classes - tx must already be setup!
 }
 
