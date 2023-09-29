@@ -21,7 +21,7 @@
 #define BOARDTYPE   M10_09_EFIS
 
 // M10_09_EFIS has an additional "Ana-to-Dig" 8-pos digital rotary switch based on analog input A1;
-// it is not defined anyhow in the 'M10board_cfg' struct, therefore it must be managed separately
+// it is not defined anyhow in the 'M10BoardConfig' struct, therefore it must be managed separately
 
 #define BANK2           1
 

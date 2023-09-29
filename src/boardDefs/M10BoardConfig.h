@@ -1,10 +1,10 @@
 // =======================================================================
-// @file        M10board_cfg.h
+// @file        M10BoardConfig.h
 //
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-08-03 11:42
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -12,14 +12,16 @@
 #ifndef __M10BOARD_CFG__H__
 #define __M10BOARD_CFG__H__
 
+// This struct defined the position of a LED 
+// driven as a MAX7219's individual segment 
 using LEDonMAX = struct {
     byte unit     : 2;
     byte digit    : 3;
     byte segment  : 3;
 };
 
-// typedef struct { //M10board_cfg
-using M10board_cfg = struct {
+// typedef struct { //M10BoardConfig
+using M10BoardConfig = struct {
     
     //! TODO (M10) Add control pins on the Mega for the specific board:
     //! PX_SSn, (PX_IRQn), LD_CSAn/LD_CSBn, (LCD_ENn)
@@ -59,7 +61,7 @@ using M10board_cfg = struct {
             uint8_t     LCDLines;
         }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
     };
-// } M10board_cfg;
+// } M10BoardConfig;
 };
 
 

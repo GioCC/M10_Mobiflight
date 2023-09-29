@@ -4,7 +4,7 @@
 // @project     M10-MobiFlight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-09-23 00:02
+// @modifiedby  GiorgioCC - 2023-09-29 14:35
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -17,7 +17,7 @@
 // This file declares the struct for objects containing 
 // the configuration parameters for a board;
 // therse are collected in an array defined in  
-#include "M10board_cfg.h"
+#include "M10BoardConfig.h"
 
 namespace Config {
 
@@ -65,7 +65,7 @@ constexpr uint8_t MAX_BOARDS = 12;
 //--------------------------------------------
 
 // Board parameter definitions
-extern const M10board_cfg   BoardCfg[] PROGMEM;
+extern const M10BoardConfig   BoardCfg[] PROGMEM;
 
 // The BoardCfgs[] array is defined (as array of constants) in "config_board.cpp".
 // Individual elements are defined through a template of constants (in 'board-def-board.inc'),

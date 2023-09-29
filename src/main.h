@@ -4,7 +4,7 @@
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-09-22
-// @modifiedby  GiorgioCC - 2023-09-22 23:07
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -45,7 +45,7 @@ constexpr uint16_t MEM_POOL_SIZE  (50*sizeof(ButtonBas)); // TODO
 extern memPool<MEM_POOL_SIZE>   pool;
 extern M10board                 Board[Config::MAX_BOARDS];
 
-// extern M10board_cfg    cfg;
+// extern M10BoardConfig    cfg;
 // extern M10board        board;
 
 //--------------------------------------------

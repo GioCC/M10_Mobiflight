@@ -7,7 +7,7 @@
 // @details     Board setup related code
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-22 23:59
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -137,7 +137,7 @@ void setup() {
     board.setPUMode(1,0xFFFF);            // Pull-ups on all inputs
 
     // Board base configuration
-    // board.setBoardCfg((M10board_cfg *)&BOARD_CFG);
+    // board.setBoardCfg((M10BoardConfig *)&BOARD_CFG);
     // Custom app config
     //board.init();
     // Board configuration adjustments after custom cfg

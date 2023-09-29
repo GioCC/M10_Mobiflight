@@ -20,7 +20,7 @@ namespace Config {
 #define BUILDING_CONFIG_DATA
 
 const
-M10board_cfg BoardCfg[MAX_BOARDS] PROGMEM = {
+M10BoardConfig BoardCfg[MAX_BOARDS] PROGMEM = {
 
 #include "board_def_clean.inc"
 #include "board_def_01_Radio.h"
@@ -70,7 +70,7 @@ M10board_cfg BoardCfg[MAX_BOARDS] PROGMEM = {
 #include "board_def_08_Kbd.h"    // Aux
 #include "board_def_board.inc"
 
-#clean BUILDING_CONFIG_DATA
+#undef BUILDING_CONFIG_DATA
 };
 
 }

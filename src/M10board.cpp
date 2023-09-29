@@ -7,7 +7,7 @@
 //              with its the hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-26 18:05
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -51,14 +51,14 @@ M10board::setupAnaIns(uint16_t ai)
 }
 
 void
-M10board::setBoardCfg(M10board_cfg *c)
+M10board::setBoardCfg(M10BoardConfig *c)
 {
     //! TODO - WARNING: <c> is in PROGMEM! Either:
     //  - change cfg from pointer to var (uses RAM)
     //  - move BoardCfgs[] out of PROGMEM (uses RAM)
     //  - assign "cfg = F(c)" rather than "cfg = c" (or whatever corrects to progmem reference)
     
-    //memcpy(&cfg, c, sizeof(M10board_cfg));
+    //memcpy(&cfg, c, sizeof(M10BoardConfig));
     cfg = c;
 
     // MCPIO1 = &_MCPIO1;  // TEST!!! TO BE REMOVED

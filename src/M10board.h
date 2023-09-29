@@ -7,7 +7,7 @@
 //              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-09-26 18:05
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -65,7 +65,7 @@ class M10board
 
         // ******* Configuration
 
-        M10board_cfg*    cfg;
+        M10BoardConfig*    cfg;
 
         // ******* Internal data storage:
 
@@ -123,7 +123,7 @@ class M10board
 
         void    init(void) {};
 
-        void    setBoardCfg(M10board_cfg *cfg);
+        void    setBoardCfg(M10BoardConfig *cfg);
         void    setBoardPostCfg(void);
 
         void    setIOMode(uint8_t bank, uint16_t IOmode);   // Mode 0 = Out, 1 = In

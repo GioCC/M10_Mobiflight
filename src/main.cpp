@@ -7,7 +7,7 @@
 //              (Currently just a test rig)
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-26 18:11
+// @modifiedby  GiorgioCC - 2023-09-29 14:32
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -49,7 +49,7 @@ byte toggle1 = 1;
 unsigned long ticker2;
 byte toggle2 = 1;
 
-M10board_cfg    cfg;
+M10BoardConfig    cfg;
 M10board        board;
 
 char dispbuf[8];
@@ -85,7 +85,7 @@ void setup() {
     board.setPUMode(1,0xFFFF);            // Pull-ups on all inputs
 
     // Board base configuration
-    // board.setBoardCfg((M10board_cfg *)&BOARD_CFG);
+    // board.setBoardCfg((M10BoardConfig *)&BOARD_CFG);
     // Custom app config
     //board.init();
     // Board configuration adjustments after custom cfg
