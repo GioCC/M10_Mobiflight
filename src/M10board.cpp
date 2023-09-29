@@ -7,7 +7,7 @@
 //              with its the hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-09-29 16:07
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -55,7 +55,7 @@ M10board::setBoardCfg(M10BoardConfig *c)
 {
     //! TODO - WARNING: <c> is in PROGMEM! Either:
     //  - change cfg from pointer to var (uses RAM)
-    //  - move BoardCfgs[] out of PROGMEM (uses RAM)
+    //  - move BoardCfg[] out of PROGMEM (uses RAM)
     //  - assign "cfg = F(c)" rather than "cfg = c" (or whatever corrects to progmem reference)
     
     //memcpy(&cfg, c, sizeof(M10BoardConfig));

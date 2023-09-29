@@ -4,7 +4,7 @@
 // @project     M10-MobiFlight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-09-29 15:44
+// @modifiedby  GiorgioCC - 2023-09-29 17:01
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -28,16 +28,15 @@ namespace Config {
 
 // Currently available M10 board types:
 enum {
-    M10_01_Radio1,
-    M10_01_Radio2,
-    M10_02_ADF_DME,
-    M10_03_XPDR_OBS_CLK,
-    M10_04_AP,
-    M10_05_Radio_LCD,
-    M10_06_Multi_LCD,
-    M10_07_AP_LCD,
-    M10_08_Kbd,
-    M10_09_EFIS,
+    T_01_Radio,
+    T_02_ADF_DME,
+    T_03_XPDR_OBS_CLK,
+    T_04_AP,
+    T_05_Radio_LCD,
+    T_06_Multi_LCD,
+    T_07_AP_LCD,
+    T_08_Kbd,
+    T_09_EFIS,
 } T_BoardType;
 
 // ==========================================================
@@ -63,7 +62,8 @@ enum {
 // Costants
 //--------------------------------------------
 
-constexpr uint8_t MAX_BOARDS = 12;
+constexpr uint8_t MAX_BOARD_TYPES = 9;
+constexpr uint8_t MAX_BOARDS      = 12;
 
 //--------------------------------------------
 // Exported vars
@@ -72,7 +72,7 @@ constexpr uint8_t MAX_BOARDS = 12;
 // Board parameter definitions
 extern const M10BoardConfig   BoardCfg[] PROGMEM;
 
-// The BoardCfgs[] array is defined (as array of constants) in "config_board.cpp".
+// The BoardCfg[] array is defined (as array of constants) in "config_board.cpp".
 // Individual elements are defined through a template of constants (in 'board-def-board.inc'),
 // whose values are redefined (through macros) between elements, through #defines contained
 // in the 'board-def-<nn>*.inc' files (one per each actual board).
@@ -85,6 +85,10 @@ extern const M10BoardConfig   BoardCfg[] PROGMEM;
 //--------------------------------------------
 // Compute required allocation space
 //--------------------------------------------
+
+// Following computation must account for the (max) total number
+// of actual connectable boards; the list sequence is therefore
+// different from the one used for the initialization of BoardCfg[].
 
 #define  ADD_BOARD \
     ( (sizeof(MCPS) * N_IOEXP) \

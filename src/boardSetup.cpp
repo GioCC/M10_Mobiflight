@@ -7,7 +7,7 @@
 // @details     Board setup related code
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-09-29 17:01
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -53,42 +53,51 @@ void boardSetup(void)
     // with proper parameters
 
     if(isBoardAttached(0)) {
+        // Type 1: Radio 1
         //....
     }
     if(isBoardAttached(1)) {
+        // Type 1: Radio 2
         //....
     }
     if(isBoardAttached(2)) {
+        // Type 2: ADF/DME
         //....
     }
     if(isBoardAttached(3)) {
+        // Type 3: XPDR/OBS/CLK
         //....
     }
     if(isBoardAttached(4)) {
+        // Type 4: AP
         //....
     }
     if(isBoardAttached(5)) {
+        // Type 9: EFIS
         //....
     }
     if(isBoardAttached(6)) {
+        // Type 5: Radio LCD
         //....
     }
     if(isBoardAttached(7)) {
+        // Type 6: Multi LCD
         //....
     }
     if(isBoardAttached(8)) {
+        // Type 7: AP-LCD
         //....
     }
     if(isBoardAttached(9)) {
+        // Type 8: Kbd (AP)
         //....
     }
     if(isBoardAttached(10)) {
+        // Type 8: Kbd (Radio (Audio))
         //....
     }
     if(isBoardAttached(11)) {
-        //....
-    }
-    if(isBoardAttached(12)) {
+        // Type 8: Kbd (Aux)
         //....
     }
 }

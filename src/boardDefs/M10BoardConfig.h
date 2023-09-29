@@ -4,7 +4,7 @@
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-09-29 17:02
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -20,12 +20,12 @@ using LEDonMAX = struct {
     byte segment  : 3;
 };
 
-// typedef struct { //M10BoardConfig
 using M10BoardConfig = struct {
     
     //! TODO (M10) Add control pins on the Mega for the specific board:
     //! PX_SSn, (PX_IRQn), LD_CSAn/LD_CSBn, (LCD_ENn)
-    
+    uint8_t     type;           // Type code (enum T_BoardType)
+
     // pins not defined as either input or output are configured as inputs anyway, however it is apparent from the definition that they are unused
     uint16_t    digInputs;      // Map of digital inputs (1=input) for MCP on main board
     uint16_t    digOutputs;     // Map of digital outputs (1=output) for MCP on main board
@@ -61,8 +61,7 @@ using M10BoardConfig = struct {
             uint8_t     LCDLines;
         }; //lcd;  // uncomment if compiler doesn't allow anon structs (gcc should)
     };
-// } M10BoardConfig;
-};
+}; // M10BoardConfig;
 
 
 #endif  //M10BOARD_CFG__H

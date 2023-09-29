@@ -7,7 +7,7 @@
 // It is divided in two parts (selectively activated through the 
 // BUILDING_CONFIG_DATA and BUILDING_CONFIG_RUNTIME symbols):
 // the first is used to declare the vector of configuration records 
-// BoardCfgs[] (in config_board.cpp),
+// BoardCfg[] (in config_board.cpp),
 // whereas the second is used in the initialization phase.
 
 #include <binary.h>
@@ -18,9 +18,9 @@
 // CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
 //===================================================================================
 
-#define BOARDTYPE   M10_09_EFIS
+#define BOARDTYPE   T_09_EFIS
 
-// M10_09_EFIS has an additional "Ana-to-Dig" 8-pos digital rotary switch based on analog input A1;
+// T_09_EFIS has an additional "Ana-to-Dig" 8-pos digital rotary switch based on analog input A1;
 // it is not defined anyhow in the 'M10BoardConfig' struct, therefore it must be managed separately
 
 #define MAXBUTTONS 32

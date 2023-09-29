@@ -10,12 +10,12 @@ Fa riferimento ai file di cfg singoli da trovare nel path '.\boardcfg\'.
 
 Valori per 'BOARDTYPE':
 
-M10_01_Radio
-M10_02_ADF_DME
-M10_03_XPDR_OBS_CLK
-M10_04_AP
-M10_05_Radio_LCD
-M10_06_Multi_LCD
-M10_07_AP_LCD
-M10_08_Audio
-M10_09_EFIS
+T01_Radio
+T02_ADF_DME
+T03_XPDR_OBS_CLK
+T04_AP
+T05_Radio_LCD
+T06_Multi_LCD
+T07_AP_LCD
+T08_Audio
+T09_EFIS

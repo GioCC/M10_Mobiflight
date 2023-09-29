@@ -7,7 +7,7 @@
 // It is divided in two parts (selectively activated through the 
 // BUILDING_CONFIG_DATA and BUILDING_CONFIG_RUNTIME symbols):
 // the first is used to declare the vector of configuration records 
-// BoardCfgs[] (in config_board.cpp),
+// BoardCfg[] (in config_board.cpp),
 // whereas the second is used in the initialization phase.
 
 #include <binary.h>
@@ -18,7 +18,7 @@
 // CONSTANTS USED TO BUILD THE CONFIGURATION DATA STRUCT
 //===================================================================================
 
-#define BOARDTYPE   M10_08_Kbd
+#define BOARDTYPE   T_08_Kbd
 
 #define MAXBUTTONS 10
 #define MAXENCS 0

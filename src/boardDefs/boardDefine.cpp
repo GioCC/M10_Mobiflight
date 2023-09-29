@@ -20,12 +20,11 @@ namespace Config {
 
 #define BUILDING_CONFIG_DATA
 
-const
-M10BoardConfig BoardCfg[MAX_BOARDS] PROGMEM = {
+// This array is the set of BOARD TYPE CONFIGURATIONS,
+// not the complete set of board instances.
 
-#include "board_def_clean.inc"
-#include "board_def_01_Radio.h"
-#include "board_def_board.inc"
+const
+M10BoardConfig BoardCfg[MAX_BOARD_TYPES] PROGMEM = {
 
 #include "board_def_clean.inc"
 #include "board_def_01_Radio.h"
@@ -44,10 +43,6 @@ M10BoardConfig BoardCfg[MAX_BOARDS] PROGMEM = {
 #include "board_def_board.inc"
 
 #include "board_def_clean.inc"
-#include "board_def_09_EFIS.h"
-#include "board_def_board.inc"
-
-#include "board_def_clean.inc"
 #include "board_def_05_Radio_LCD.h"
 #include "board_def_board.inc"
 
@@ -60,15 +55,11 @@ M10BoardConfig BoardCfg[MAX_BOARDS] PROGMEM = {
 #include "board_def_board.inc"
 
 #include "board_def_clean.inc"
-#include "board_def_08_Kbd.h"    // AP
+#include "board_def_08_Kbd.h"
 #include "board_def_board.inc"
 
 #include "board_def_clean.inc"
-#include "board_def_08_Kbd.h"    // Radio (Audio)
-#include "board_def_board.inc"
-
-#include "board_def_clean.inc"
-#include "board_def_08_Kbd.h"    // Aux
+#include "board_def_09_EFIS.h"
 #include "board_def_board.inc"
 
 #undef BUILDING_CONFIG_DATA

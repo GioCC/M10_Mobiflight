@@ -4,10 +4,13 @@
 // Board peripheral set compile-time configuration
 //
 // This file is used by config_board.c as a template to build initialization lines
-// for the BoardCfgs[] array
+// for the BoardCfg[] array.
+// The values below must match the attributes of the <M10BoardConfig> struct.
 
-// NO INCLUDE GUARDS - this file is meant to be included repeatedly in place!
+// >>> NO INCLUDE GUARDS <<< - this file is not a .h, it is meant to be included repeatedly in place!
+
 {
+    BOARDTYPE,
     DIG_INPUTS,
     DIG_OUTPUTS,
     (N_IOEXP==2),       // was 'HAS_BANK2'

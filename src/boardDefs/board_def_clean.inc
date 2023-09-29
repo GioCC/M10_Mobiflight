@@ -4,11 +4,12 @@
 // Board peripheral set compile-time configuration
 //
 // This file UNdefines the symbols used for the common parameters of board configurations.
-// It is meant to be invoked by each board configuration header so as to 
-// "recycle" the same parameter names and replace them with their own.
+// It is meant to be invoked before including each board configuration header 
+// (or at the beginning of the headers) so as to "recycle" the same parameter names
+// and replace them with their own.
 // It can also be used as a "cheat sheet" reminder for the set of parameter names.
 
-// NO INCLUDE GUARDS - this file is meant to be included repeatedly in place!
+// >>> NO INCLUDE GUARDS <<< - this file is not a .h, it is meant to be included repeatedly in place!
 
 // Convenience helper macro for Digital I/O banks:
 #ifdef  pat(a, b)
@@ -24,27 +25,25 @@
 //  ALL DEFINITIONS BELOW ARE MANDATORY except where otherwise specified
 // ------------------------------------------------------------------------
 
-// Currently available M10 board types:
-// M10_01_Radio1
-// M10_01_Radio2
-// M10_02_ADF_DME
-// M10_03_XPDR_OBS_CLK
-// M10_04_AP
-// M10_05_Radio_LCD
-// M10_06_Multi_LCD
-// M10_07_AP_LCD
-// M10_08_Audio
-// M10_09_EFIS
+// Currently available M10 board types (enum T_BoardType):
+// T_01_Radio2
+// T_02_ADF_DME
+// T_03_XPDR_OBS_CLK
+// T_04_AP
+// T_05_Radio_LCD
+// T_06_Multi_LCD
+// T_07_AP_LCD
+// T_08_Audio
+// T_09_EFIS
 
 #undef BOARDTYPE
 
 // Number of control elements and input datarefs:
+
 // Buttons/switches/digital inputs
 #undef MAXBUTTONS
 // Encoders (INCLUDING VIRTUAL ONES!)
 #undef MAXENCS
-// Datarefs (FS 'offsets') used
-//#undef MAXCMDEVENTS
 
 // Digital I/O banks
 // Note: neither encoder nor enc. switches are to be considered

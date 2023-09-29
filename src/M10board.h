@@ -7,7 +7,7 @@
 //              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-09-29 18:22
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -27,6 +27,7 @@
 // Board I/O configuration
 //================================
 #include "boardDefine.h"
+#include "M10board_pins.h"
 
 #include "bitmasks.h"
 #include "conversions.h"
@@ -63,9 +64,20 @@ class M10board
 
         static void* (*memAlloc)(uint16_t);
 
+
         // ******* Configuration
 
         M10BoardConfig*    cfg;
+
+        // ******* Control pins
+
+        struct {
+            int8_t PX_SS   = -1;    // Port expander SPI SEL output
+            int8_t PX_IRQ  = -1;    // Port expander IRQ input
+            int8_t LD_CSA  = -1;    // LED Display #1 SPI CS
+            int8_t LD_CSB  = -1;    // LED Display #2 SPI CS
+            int8_t LCD_EN  = -1;    // LCD /EN 
+        } pins;
 
         // ******* Internal data storage:
 
