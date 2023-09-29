@@ -38,8 +38,6 @@
 
 #undef BOARDTYPE
 
-#undef BANK2        // <<< Only required if the board has 2nd bank
-
 // Number of control elements and input datarefs:
 // Buttons/switches/digital inputs
 #undef MAXBUTTONS
@@ -64,11 +62,9 @@
 #undef N_ENCODERS
 #undef N_VIRT_ENCODERS
 
-// Only required if the board has displays:
+#undef N_IOEXP
 #undef N_DISPLAYS1
 #undef N_DISPLAYS2
-
-// Only required if the board has an LCD:
 #undef LCD_COLS
 #undef LCD_LINES
 

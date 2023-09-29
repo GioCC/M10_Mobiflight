@@ -32,6 +32,7 @@
 #define N_ENCODERS      0
 #define N_VIRT_ENCODERS 0
 
+#define N_IOEXP         1
 #define N_DISPLAYS1     0
 #define N_DISPLAYS2     0
 #define N_LCD           0

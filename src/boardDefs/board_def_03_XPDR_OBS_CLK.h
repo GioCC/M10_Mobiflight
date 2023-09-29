@@ -32,6 +32,8 @@
 #define ANA_INPUTS      pat(B00000000,B00000000)
 #define N_ENCODERS      3
 #define N_VIRT_ENCODERS 0
+
+#define N_IOEXP         1
 #define N_DISPLAYS1     2
 #define N_DISPLAYS2     0
 #define N_LEDS_ON_MAX   10

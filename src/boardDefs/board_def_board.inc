@@ -10,7 +10,7 @@
 {
     DIG_INPUTS,
     DIG_OUTPUTS,
-    HAS_BANK2,
+    (N_IOEXP==2),       // was 'HAS_BANK2'
     DIG_INPUTS2,
     DIG_OUTPUTS2,
     ANA_INPUTS,
@@ -35,5 +35,4 @@
 #endif
 },
 
-#undef HAS_DISPLAYS
 // end

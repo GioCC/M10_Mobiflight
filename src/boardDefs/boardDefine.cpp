@@ -11,11 +11,12 @@
 
 #include "boardDefine.h"
 
-namespace Config {
+// Includes for object size info
+#include "MCP23S17.h"
+#include "LedControlMod.h"
+#include "LiquidCrystal.h"
 
-#define HAS_DISPLAYS ((N_DISPLAYS1+N_DISPLAYS2)!=0)
-#define HAS_LCD (N_LCD!=0)
-#define HAS_BANK2 (defined(BANK2))
+namespace Config {
 
 #define BUILDING_CONFIG_DATA
 

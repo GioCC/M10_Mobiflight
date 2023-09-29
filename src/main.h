@@ -4,7 +4,7 @@
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-09-22
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-09-29 15:46
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -21,7 +21,10 @@
 // Costants
 //--------------------------------------------
 
-constexpr uint16_t MEM_POOL_SIZE  (50*sizeof(ButtonBas)); // TODO
+// constexpr uint16_t MEM_POOL_SIZE = (50*sizeof(ButtonBas)); 
+// TODO: Check for additional size required
+constexpr uint16_t SpareRoom = 64;
+constexpr uint16_t MEM_POOL_SIZE = Config::TotObjectMemSize() + SpareRoom; 
 
 //--------------------------------------------
 // Macros

@@ -4,7 +4,7 @@
 // @project     M10-MobiFlight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-09-29 14:35
+// @modifiedby  GiorgioCC - 2023-09-29 15:44
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -13,6 +13,11 @@
 #define __CONFIG_BOARD__H__
 
 #include <Arduino.h>
+
+#define HAS_DISPLAY1 (N_DISPLAYS1!=0)
+#define HAS_DISPLAY2 (N_DISPLAYS2!=0)
+#define HAS_DISPLAYS ((N_DISPLAYS1+N_DISPLAYS2)!=0)
+#define HAS_LCD (N_LCD!=0)
 
 // This file declares the struct for objects containing 
 // the configuration parameters for a board;
@@ -75,8 +80,62 @@ extern const M10BoardConfig   BoardCfg[] PROGMEM;
 //--------------------------------------------
 // Exported functions
 //--------------------------------------------
-// -none-
+// - none -
 
+//--------------------------------------------
+// Compute required allocation space
+//--------------------------------------------
+
+#define  ADD_BOARD \
+    ( (sizeof(MCPS) * N_IOEXP) \
+    + (sizeof(LedControl) * (HAS_DISPLAY1 ? 1 : 0)) \
+    + (sizeof(LedControl) * (HAS_DISPLAY2 ? 1 : 0)) \
+    + (sizeof(LiquidCrystal) * (HAS_LCD ? 1 : 0)) \
+    )
+
+#define BUILDING_CONFIG_DATA
+
+constexpr uint16_t TotObjectMemSize(void) {
+     return 0
+#include "board_def_clean.inc"
+#include "board_def_01_Radio.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_01_Radio.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_02_ADF_DME.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_03_XPDR_OBS_CLK.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_04_AP.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_09_EFIS.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_05_Radio_LCD.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_06_Multi_LCD.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_07_AP_LCD.h"
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_08_Kbd.h"    // AP
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_08_Kbd.h"    // Radio (Audio)
+    + ADD_BOARD
+#include "board_def_clean.inc"
+#include "board_def_08_Kbd.h"    // Aux
+    + ADD_BOARD
+; }
+
+#undef BUILDING_CONFIG_DATA
 
 }
 

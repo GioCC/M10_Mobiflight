@@ -23,8 +23,6 @@
 // M10_09_EFIS has an additional "Ana-to-Dig" 8-pos digital rotary switch based on analog input A1;
 // it is not defined anyhow in the 'M10BoardConfig' struct, therefore it must be managed separately
 
-#define BANK2           1
-
 #define MAXBUTTONS 32
 #define MAXENCS     1
 //#define MAXCMDEVENTS 20
@@ -38,6 +36,7 @@
 #define N_ENCODERS      2
 #define N_VIRT_ENCODERS 4
 
+#define N_IOEXP         2
 #define N_DISPLAYS1     0
 #define N_DISPLAYS2     0
 #define N_LCD           0

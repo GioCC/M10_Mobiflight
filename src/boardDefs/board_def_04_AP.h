@@ -20,8 +20,6 @@
 
 #define BOARDTYPE   M10_04_AP
 
-#define BANK2           1
-
 #define MAXBUTTONS 20
 #define MAXENCS 8
 // #define MAXCMDEVENTS 30
@@ -35,6 +33,7 @@
 #define N_ENCODERS      5
 #define N_VIRT_ENCODERS 0
 
+#define N_IOEXP         2
 #define N_DISPLAYS1     2
 #define N_DISPLAYS2     1
 #define N_LEDS_ON_MAX   17
