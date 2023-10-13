@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 18:09
+// @modifiedby  GiorgioCC - 2023-10-13 17:59
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -27,20 +27,13 @@
 
 #define BM_STRAIGHT
 
-// define the max number of buttons
-// #ifndef MAXBUTTONS
-// #define MAXBUTTONS 24
-// #endif
-
-// #define NBANKS  ((MAXBUTTONS+7)/8)
-
 template<uint8_t MAXSIZE>
 class ButtonManager
 {
     uint8_t         numButtons;
     uint8_t         currBut;
     Button          *buttons[MAXSIZE] = {nullptr};
-    constexpr uint8_t NBanks = ((MAXSIZE&0x07)+1)>>3;
+    constexpr uint8_t NBanks = ((MAXSIZE|0x07)+1)>>3;
 
     // Event flags for digital I/O banks
     // Each status marker for an element is 1 byte wide, because it contains the corresponding flags
