@@ -58,17 +58,9 @@
 //#include "boardDefine.h"
 
 #include "boardDefine.h"
-// define the number of encoders
-#ifndef MAXENCS
-#define MAXENCS 10
-#endif // MAXENCS
 
 #include <Arduino.h>
 #include "ManagedEnc.h"
-
-class  EncManager;
-extern EncManager  EncMgr;
-
 
 // Encoder polling callbacks:
 // - getCount()     returns the current total count of the encoder
@@ -79,13 +71,14 @@ extern EncManager  EncMgr;
 // - getFastDn()    returns TRUE if there has been a single (or more) FAST pulse in the DOWN direction
 // The latter four functions can also return a number of pulses >1, however their value is only regarded as boolean.
 
+template<uint8_t MAXSIZE>
 class EncManager
 {
 
     uint8_t       numEncs;
     uint8_t       currEnc;
 
-    ManagedEnc    *encs[MAXENCS];
+    ManagedEnc    *encs[MAXSIZE];
 
 #ifdef USE_CALLBACKS
     int  (*_getCount)(byte);        // ptr to function that returns encoder count for encoder #n
@@ -167,6 +160,13 @@ public:
     ManagedEnc *getEnc(uint8_t nEnc = 0);    // nEnc = 1..254; 0 is current
     ManagedEnc *nextEnc(uint8_t nEnc = 0);   // nEnc = 1..254; 0 is next
 };
+
+//===================================================================================
+//   Implementation of templated method bodies
+//===================================================================================
+
+#include "EncManager.hpp"
+
 
 #endif
 

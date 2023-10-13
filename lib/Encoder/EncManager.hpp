@@ -1,6 +1,6 @@
 /*
 *
-* File     : EncManager.cpp
+* File     : EncManager.hpp
 * Version  : 1.0
 * Released : 12/03/2017
 * Author   : Giorgio CROCI CANDIANI (g.crocic@gmail.com)
@@ -21,10 +21,12 @@
 #include <stdlib.h>
 #include "bitmasks.h"
 
-EncManager  EncMgr;
+//EncManager  EncMgr;
 
 #ifdef USE_CALLBACKS
-EncManager::EncManager(
+template<uint8_t MAXSIZE>
+EncManager<MAXSIZE>
+::EncManager(
     int  (*getCount)(byte),
     byte (*getUp)(byte),
     byte (*getDn)(byte),
@@ -46,7 +48,9 @@ EncManager::EncManager(
 }
 #endif // USE_CALLBACKS
 
-EncManager::EncManager(void)
+template<uint8_t MAXSIZE>
+EncManager<MAXSIZE>::
+EncManager(void)
 {
     numEncs = 0;
     currEnc = 0;
@@ -57,25 +61,31 @@ EncManager::EncManager(void)
     _getFastUp = NULL;
     _getFastDn = NULL;
     _clean = NULL;
-#endif // USE_CALLBACKS
+#endif
 }
 
+template<uint8_t MAXSIZE>
 void
-EncManager::addEnc(ManagedEnc* enc)
+EncManager<MAXSIZE>::
+addEnc(ManagedEnc* enc)
 {
-    if (numEncs+1 < MAXENCS) {
+    if (numEncs+1 < MAXSIZE) {
         numEncs++;
         encs[numEncs-1]= enc;
     }
 }
 
-ManagedEnc *
-EncManager::getEnc(uint8_t nEnc) {
+template<uint8_t MAXSIZE>
+ManagedEnc*
+EncManager<MAXSIZE>::
+getEnc(uint8_t nEnc) {
     return (((nEnc-1) >= numEncs) ? NULL : encs[nEnc-1]);
 }
 
-ManagedEnc *
-EncManager::nextEnc(uint8_t nEnc) {
+template<uint8_t MAXSIZE>
+ManagedEnc*
+EncManager<MAXSIZE>::
+nextEnc(uint8_t nEnc) {
     if(nEnc != 0) currEnc = nEnc-1;
     if(currEnc >= numEncs) currEnc = 0;
     return encs[currEnc++];
@@ -83,7 +93,9 @@ EncManager::nextEnc(uint8_t nEnc) {
 
 #ifdef USE_CALLBACKS
 void
-EncManager::checkEncs(byte encno)
+template<uint8_t MAXSIZE>
+EncManager<MAXSIZE>::
+checkEncs(byte encno)
 {
     ManagedEnc *ee;
     for(int i=((encno==0xFF) ? 0 : encno);
@@ -107,8 +119,10 @@ EncManager::checkEncs(byte encno)
 
 #else
 
+template<uint8_t MAXSIZE>
 void
-EncManager::checkEncs(int counts[], uint8_t modes[], byte encno)
+EncManager<MAXSIZE>::
+checkEncs(int counts[], uint8_t modes[], byte encno)
 {
     uint8_t m = 0;
     // scan all encoders or just the one if so specified
@@ -120,8 +134,10 @@ EncManager::checkEncs(int counts[], uint8_t modes[], byte encno)
     }
 }
 
+template<uint8_t MAXSIZE>
 void
-EncManager::checkEncs(uint16_t flgUp, uint16_t flgDn, uint16_t flgFastUp, uint16_t flgFastDn, uint8_t modes[], byte encno)
+EncManager<MAXSIZE>::
+checkEncs(uint16_t flgUp, uint16_t flgDn, uint16_t flgFastUp, uint16_t flgFastDn, uint8_t modes[], byte encno)
 {
     uint8_t m = 0;
     // scan all encoders or just the one if so specified

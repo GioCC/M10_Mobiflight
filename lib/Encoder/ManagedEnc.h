@@ -17,7 +17,7 @@
 */
 
 /// The purpose of this class is:
-/// - to check for encoder transitions/count changes and call the proper callback funtions accordingly
+/// - to check for encoder transitions/count changes and call the proper callback functions accordingly
 /// - to keep some additional information for user convenience (a string ptr for a name or user string,
 ///   or int code values)
 ///
@@ -29,10 +29,12 @@
 /// The user code feeds inputs to the processor class, and triggers the checks of the processor class' results
 /// by the ManagedEnc class (either directly ot through an EncoderManager).
 
-#include <Arduino.h>
 
 #ifndef MANAGEDENC_H
 #define MANAGEDENC_H
+
+#include <Arduino.h>
+#include "boardDefine.h"
 
 // Define this if callbacks are common to all ManagedEncoders
 #define  ME_STATIC_CB
@@ -85,7 +87,7 @@ private:
 
     uint8_t     flags;
 
-    static EncManager* EncMgr;     // Referens to object collector if required
+    static EncManager<MAX_TOT_ENCS>* EncMgr;     // Referens to object collector if required
 
 public:
 
@@ -129,7 +131,7 @@ public:
     // =============
     // Setup methods
 
-    static void setManager(EncManager* mgr) { EncMgr = mgr; }
+    static void setManager(EncManager<MAX_TOT_ENCS>* mgr) { EncMgr = mgr; }
 
     void setOnChange(MEcallback f)  __attribute__((always_inline))  {_OnChange = (*f);}
     void setOnUp(MEcallback f)      __attribute__((always_inline))  {_OnUp = (*f);}

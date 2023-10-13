@@ -11,15 +11,17 @@
 *
 * Usage:
 * - Include ManagedEnc.h and EncManager.h in your sketch
-* - Declare each encoder and define the events using a overload of ManagedEnc
+* - Declare each encoder and define the events using an overload of ManagedEnc
 * - Declare the required event functions ( void OnXXX(ManagedEnc* enc) )
 * - See the comments below for more help
 */
 
+//#include "boardDefine.h"  //included by "EncManager.h"
+
 #include "EncManager.h"
 #include "ManagedEnc.h"
 
-EncManager* ManagedEnc::EncMgr = nullptr;
+EncManager<MAX_TOT_ENCS>* ManagedEnc::EncMgr = nullptr;
 
 ManagedEnc::ManagedEnc(
     uint8_t     index,

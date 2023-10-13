@@ -4,7 +4,7 @@
 // @project     M10-MobiFlight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-07-19
-// @modifiedby  GiorgioCC - 2023-09-29 17:01
+// @modifiedby  GiorgioCC - 2023-10-13 18:25
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -64,6 +64,17 @@ enum {
 
 constexpr uint8_t MAX_BOARD_TYPES = 9;
 constexpr uint8_t MAX_BOARDS      = 12;
+
+// Following values should ideally be computed from definition files
+// of individual boards, but let's not overthink it
+
+// Max number of buttons across ALL boards
+// constexpr uint8_t MAX_TOT_BUTTONS = (132 + 2);     // Leave 2 for margin
+#define MAX_TOT_BUTTONS (132 + 2)     // Leave 2 for margin
+
+// Max number of encoders across ALL boards
+// constexpr uint8_t MAX_TOT_ENCS    = (52 + 2);     // Leave 2 for margin
+#define MAX_TOT_ENCS    (52 + 2)     // Leave 2 for margin
 
 //--------------------------------------------
 // Exported vars
