@@ -57,9 +57,11 @@
 // it is not for the general purpose library
 //#include "boardDefine.h"
 
-#include "boardDefine.h"
 
 #include <Arduino.h>
+#include "boardDefine.h"
+
+using defaultEncManager = EncManager<MAX_TOT_ENCS>;
 #include "ManagedEnc.h"
 
 // Encoder polling callbacks:
@@ -166,7 +168,6 @@ public:
 //===================================================================================
 
 #include "EncManager.hpp"
-
 
 #endif
 

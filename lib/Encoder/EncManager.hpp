@@ -92,8 +92,8 @@ nextEnc(uint8_t nEnc) {
 }
 
 #ifdef USE_CALLBACKS
-void
 template<uint8_t MAXSIZE>
+void
 EncManager<MAXSIZE>::
 checkEncs(byte encno)
 {

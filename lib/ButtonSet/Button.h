@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 14:43
+// @modifiedby  GiorgioCC - 2023-10-13 18:50
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -32,7 +32,7 @@
 #include <Arduino.h>
 #include <new>
 #ifdef USE_BTN_MGR
-class ButtonManager;    // Fwd declaration
+class defaultButtonManager;    // Fwd declaration
 #endif
 
 #define flagChg(value, bitmsk, cond) ((cond) ? (value |= bitmsk) : (value &= ~bitmsk) )
@@ -59,9 +59,9 @@ static derived& make(void* p)                 { derived* pb = new(p) derived; re
 #ifdef USE_BTN_MGR
 #define DEFINE_BASIC_METHODS(derived) \
 _DEFINE_BASIC_METHODS_NONMGR(derived) \
-derived& addTo(ButtonManager& mgr)                      { mgr.add(this); return *this; } \
-static derived& make(ButtonManager& mgr)                { derived* pb = new derived;    mgr.add(pb); return *pb; } \
-static derived& make(derived* p,  ButtonManager& mgr)   { derived* pb = new(p) derived; mgr.add(pb); return *pb; } 
+derived& addTo(defaultButtonManager& mgr)                      { mgr.add(this); return *this; } \
+static derived& make(defaultButtonManager& mgr)                { derived* pb = new derived;    mgr.add(pb); return *pb; } \
+static derived& make(derived* p,  defaultButtonManager& mgr)   { derived* pb = new(p) derived; mgr.add(pb); return *pb; } 
 #else
 #define DEFINE_BASIC_METHODS(derived)         _DEFINE_BASIC_METHODS_NONMGR(derived)
 #endif
@@ -254,12 +254,12 @@ public:
     #ifdef USE_BTN_MGR
     // Add the button to the collection in the specified ButtonManager,
     // to allow centralized polling. From there they can also be retrieved for custom operations.
-    Button& addTo(ButtonManager& mgr);
+    Button& addTo(defaultButtonManager& mgr);
 
     // Create a Button and add it to the collection in the specified ButtonManager.
-    static Button& make(ButtonManager& mgr);
+    static Button& make(defaultButtonManager& mgr);
     // Same, but in pre-allocated space
-    static Button& make(void* p, ButtonManager& mgr);
+    static Button& make(void* p, defaultButtonManager& mgr);
     #endif
 
     // ======================================

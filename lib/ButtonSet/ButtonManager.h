@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-10-13 17:59
+// @modifiedby  GiorgioCC - 2023-10-13 18:49
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -14,6 +14,8 @@
 
 #include <Arduino.h>
 #include "Button.h"
+
+using defaultButtonManager = ButtonManager<MAX_TOT_BUTTONS>;
 
 // If the following "BM_STRAIGHT" token is defined, the manager only reports the current "static",
 // i.e. not timing-related values (current value, change flags) to buttons.

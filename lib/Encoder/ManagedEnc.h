@@ -35,6 +35,7 @@
 
 #include <Arduino.h>
 #include "boardDefine.h"
+#include "EncManager.h"
 
 // Define this if callbacks are common to all ManagedEncoders
 #define  ME_STATIC_CB
@@ -48,8 +49,8 @@
 
 class ManagedEnc;
 
-typedef     void (*MEcallback)(ManagedEnc*);
-typedef     int  CountType;
+using     MEcallback = void (*)(ManagedEnc*);
+using     CountType  = int;
 
 class ManagedEnc
 {
@@ -87,7 +88,7 @@ private:
 
     uint8_t     flags;
 
-    static EncManager<MAX_TOT_ENCS>* EncMgr;     // Referens to object collector if required
+    static defaultEncManager* EncMgr;     // Reference to object collector if required
 
 public:
 

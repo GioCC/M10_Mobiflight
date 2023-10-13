@@ -7,7 +7,7 @@
 //              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-09-29 18:22
+// @modifiedby  GiorgioCC - 2023-10-13 18:50
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -92,7 +92,7 @@ class M10board
 
         // ******* Buttons / Switches
     
-        ButtonManager<MAXBUTTONS>   ButtonMgr;
+        //defaultButtonManager   ButtonMgr;  // Use global object
 
         // ******* Encoders
     
@@ -103,6 +103,8 @@ class M10board
         byte            EncMap[3] = {0xFF, 0xFF, 0xFF};  // Encoder mappings; handles only up to 3 source encoders to spare memory
         uint32_t        encInputs;     // Input vector directly read for encoders
         //uint16_t      encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
+        
+        //defaultEncManager   EncMgr;  // Use global object
 
         // ******* I/O expanders
 

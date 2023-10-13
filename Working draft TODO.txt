@@ -37,6 +37,7 @@ LED displays:
 LCD displays:
 - messages forwarded almost without change, except possibly internal business logic
 
-Encoders:
+Encoders / Buttons:
 - (EncoderSet) Remove switch handling; upgrade to 16 encoders (15 currently required)
 - Collate EncManager and ManagedEnc?
+- Use single ButtonManager and EncManager, not one for each board (wasteful because of templating!)
