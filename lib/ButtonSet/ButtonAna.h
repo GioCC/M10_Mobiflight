@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 17:43
+// @modifiedby  GiorgioCC - 2023-10-16 22:09
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -15,9 +15,6 @@
 
 #include <Arduino.h>
 #include "Button.h"
-#ifdef USE_BTN_MGR
-#include "ButtonManager.h"
-#endif
 
 class ButtonAna;
 
@@ -67,7 +64,7 @@ public:
     // === Setup methods: common
     // ======================================
     // These methods, all returning the object itself, are meant to allow chained configuration calls like:
-    //   add().tag("MyName").data(0x6E)
+    //   make().tag("MyName").data(0x6E)
     // These methods can't be overrides of 'virtual' methods in the base class: in order to insure compatibility
     // with out specialized setup methods (if any), derived objects have to redefine these methods 
     // WITH THE SAME NAME AND SIGNATURE but RETURNING THEIR OWN TYPE. 

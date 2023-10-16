@@ -4,7 +4,7 @@
 // @project     M10_Mobiflight
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2023-09-22
-// @modifiedby  GiorgioCC - 2023-09-29 15:46
+// @modifiedby  GiorgioCC - 2023-10-16 21:38
 //
 // Copyright (c) 2023 GiorgioCC
 // =======================================================================
@@ -48,14 +48,9 @@ constexpr uint16_t MEM_POOL_SIZE = Config::TotObjectMemSize() + SpareRoom;
 extern memPool<MEM_POOL_SIZE>   pool;
 extern M10board                 Board[Config::MAX_BOARDS];
 
-// extern M10BoardConfig    cfg;
-// extern M10board        board;
-
 //--------------------------------------------
 // User vars
 //--------------------------------------------
-
-// extern int lights;
 
 //--------------------------------------------
 // Fn prototypes

@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-10-13 18:50
+// @modifiedby  GiorgioCC - 2023-10-16 22:52
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -15,9 +15,6 @@
 //======================================
 //=== Compilation options
 //======================================
-
-/// #define USE_BTN_MGR to include methods to interface with a ButtonManager
-#define USE_BTN_MGR
 
 /// #define SOURCEVAR / MIRRORVAR if Source Var / Mirror Var features should be compiled
 #define SOURCEVAR
@@ -31,9 +28,6 @@
 
 #include <Arduino.h>
 #include <new>
-#ifdef USE_BTN_MGR
-class defaultButtonManager;    // Fwd declaration
-#endif
 
 #define flagChg(value, bitmsk, cond) ((cond) ? (value |= bitmsk) : (value &= ~bitmsk) )
 #define times10(n)  ((n<<1)+(n<<3))
@@ -43,7 +37,8 @@ class defaultButtonManager;    // Fwd declaration
 
 // Following macro is used in the derived classes to automatically define aliases for all
 // basic setup methods.
-#define _DEFINE_BASIC_METHODS_NONMGR(derived) \
+
+#define DEFINE_BASIC_METHODS(derived) \
 derived& pin(uint8_t npin, uint8_t isHW)      { Button::pin(npin, isHW); return *this; } \
 derived& tag(const char *s)                   { Button::tag(s);     return *this; } \
 derived& tag(byte *b)                         { Button::tag(b);     return *this; } \
@@ -53,18 +48,8 @@ derived& data(byte *b)                        { Button::data(b);    return *this
 derived& data(uint16_t code)                  { Button::data(code); return *this; } \
 derived& mirror(uint8_t *mvar, uint8_t mbit)  { Button::mirror(mvar, mbit); return *this; } \
 derived& source(uint8_t *svar, uint8_t sbit)  { Button::source(svar, sbit); return *this; } \
-static derived& make(void)                    { derived* pb = new derived;    return *pb; } \
-static derived& make(void* p)                 { derived* pb = new(p) derived; return *pb; }
-
-#ifdef USE_BTN_MGR
-#define DEFINE_BASIC_METHODS(derived) \
-_DEFINE_BASIC_METHODS_NONMGR(derived) \
-derived& addTo(defaultButtonManager& mgr)                      { mgr.add(this); return *this; } \
-static derived& make(defaultButtonManager& mgr)                { derived* pb = new derived;    mgr.add(pb); return *pb; } \
-static derived& make(derived* p,  defaultButtonManager& mgr)   { derived* pb = new(p) derived; mgr.add(pb); return *pb; } 
-#else
-#define DEFINE_BASIC_METHODS(derived)         _DEFINE_BASIC_METHODS_NONMGR(derived)
-#endif
+static derived& make(void)                    { derived* pb = new derived;    if(_collect != nullptr) _collect(pb); return *pb; } \
+static derived& make(void* p)                 { derived* pb = new(p) derived; if(_collect != nullptr) _collect(pb); return *pb; }
 
 // Aux class for tag/Data fields
 
@@ -86,6 +71,7 @@ public:
 class Button
 {
 public:
+    
     using ButtonValue_t = union {
         uint8_t aVal;
         uint8_t dVal;
@@ -122,7 +108,16 @@ public:
     } t_bitno;
 
 
+    // Define type of injected function to automatically add a new button to a given collection
+    using BTNcollector = void (*)(Button*);
+
 protected:
+
+    // If non-null, this callback is invoked when a new Button object is created with a "make" factory function,
+    // so the new Button is automatically added to a given collection/manager object.
+    // BEWARE: it is NOT called if the object is created directly (must be called manually, if desired, through 
+    // its public alias "Collect()")
+    static BTNcollector _collect;
 
     uint8_t         _pin;
     uint8_t         _flags;
@@ -171,7 +166,6 @@ protected:
     /// mirrored into it.
     /// _pin = 1...n
 
-
     Button( 
         uint8_t     pin,
         uint8_t     useHWinput,
@@ -201,11 +195,21 @@ protected:
 
 public:
 
+    static Button& make(void)       
+        { Button* pb = new Button;    if(_collect != nullptr) _collect(pb); return *pb; }
+    static Button& make(void *p)    
+        { Button* pb = new(p) Button; if(_collect != nullptr) _collect(pb); return *pb; }
+
+    static void setCollector(BTNcollector cb) { _collect = cb; }
+
+    Button& Collect(void) 
+        { if(_collect != nullptr) _collect(this); return *this;}
+
     // ======================================
     // === Setup methods
     // ======================================
     // These methods, all returning the object itself, are meant to allow chained configuration calls like:
-    //   add().tag("MyName").data(0x6E)
+    //   make().tag("MyName").data(0x6E)
     // These methods can't be declared 'virtual': in order to insure compatibility with their specialized
     // setup methods, derived objects will have to redefine these methods WITH THE SAME NAME AND SIGNATURE
     // but RETURNING THEIR OWN TYPE. The redefined methods must ONLY call the corresponding base class methods
@@ -246,20 +250,6 @@ public:
         { fetchCB = callback; return *this; }
     #else
         { UNUSED(callback); return *this; }
-    #endif
-
-    static Button& make(void)       { Button* pb = new Button;    return *pb; };
-    static Button& make(void *p)    { Button* pb = new(p) Button; return *pb; };
-
-    #ifdef USE_BTN_MGR
-    // Add the button to the collection in the specified ButtonManager,
-    // to allow centralized polling. From there they can also be retrieved for custom operations.
-    Button& addTo(defaultButtonManager& mgr);
-
-    // Create a Button and add it to the collection in the specified ButtonManager.
-    static Button& make(defaultButtonManager& mgr);
-    // Same, but in pre-allocated space
-    static Button& make(void* p, defaultButtonManager& mgr);
     #endif
 
     // ======================================

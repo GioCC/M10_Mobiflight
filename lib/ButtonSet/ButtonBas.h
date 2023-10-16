@@ -4,7 +4,7 @@
 // @project     
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-18
-// @modifiedby  GiorgioCC - 2023-08-09 12:24
+// @modifiedby  GiorgioCC - 2023-10-16 21:55
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -15,9 +15,6 @@
 
 #include <Arduino.h>
 #include "Button.h"
-#ifdef USE_BTN_MGR
-#include "ButtonManager.h"
-#endif
 
 class ButtonBas;
 
