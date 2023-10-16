@@ -21,8 +21,6 @@
 #include "EncManager.h"
 #include "ManagedEnc.h"
 
-EncManager<MAX_TOT_ENCS>* ManagedEnc::EncMgr = nullptr;
-
 ManagedEnc::ManagedEnc(
     uint8_t     index,
     char*       nm,
@@ -48,7 +46,7 @@ ManagedEnc::ManagedEnc(
 #endif
 {
     setName(nm);
-    if(EncMgr) EncMgr->addEnc(this);
+    // Collect();
 
 #ifdef  ME_STATIC_CB
     _OnChange = nullptr;
@@ -82,7 +80,7 @@ ManagedEnc::ManagedEnc(
 #endif
 {
     setTag(codeh, codel);
-    if(EncMgr) EncMgr->addEnc(this);
+    // Collect();
 
 #ifdef  ME_STATIC_CB
     _OnChange = nullptr;

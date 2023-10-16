@@ -54,8 +54,17 @@ using     CountType  = int;
 
 class ManagedEnc
 {
+public:
+    // Define type of injected function to automatically add a new button to a given collection
+    using MEcollector = void (*)(ManagedEnc*);
 
 private:
+
+    // If non-null, this callback is invoked when a new Button object is created with a "make" factory function,
+    // so the new Button is automatically added to a given collection/manager object.
+    // BEWARE: it is NOT called if the object is created directly (must be called manually, if desired, through 
+    // its public alias "Collect()")
+    static MEcollector _collect;
 
 #ifdef  ME_STATIC_CB
     static MEcallback _OnChange;
@@ -88,12 +97,10 @@ private:
 
     uint8_t     flags;
 
-    static defaultEncManager* EncMgr;     // Reference to object collector if required
-
 public:
 
     // These constructors allow to define each individual encoder.
-    // Encoders are automatically added to the collection in the EncManager named 'EncMgr' (if set)
+    // Encoders can be automatically added to the collection in an EncManager (if set through setCollector)
     // to allow centralized polling. From there they can also be retrieved for custom operations.
     //
     // In ordinary usage, two types of encoders may be defined:
@@ -132,7 +139,19 @@ public:
     // =============
     // Setup methods
 
-    static void setManager(EncManager<MAX_TOT_ENCS>* mgr) { EncMgr = mgr; }
+    // Unlike buttons, ManagedEncs currently require a few parameters in the constructors,
+    // therefore "make()" methods are not yet implemented (they would be a little cumbersome).
+    // Automatic addition to an EncoderManager could be incorporated in the constructors
+    // (again unlike Buttons).
+    // 
+    // static ManagedEnc& make(void)       
+    //     { ManagedEnc* pe = new ManagedEnc;    if(_collect != nullptr) _collect(pe); return *pe; }
+    // static ManagedEnc& make(void *p)    
+    //     { ManagedEnc* pe = new(p) ManagedEnc; if(_collect != nullptr) _collect(pe); return *pe; }
+    static void setCollector(MEcollector cb) { _collect = cb; }
+
+    ManagedEnc& Collect(void) 
+        { if(_collect != nullptr) _collect(this); return *this;}
 
     void setOnChange(MEcallback f)  __attribute__((always_inline))  {_OnChange = (*f);}
     void setOnUp(MEcallback f)      __attribute__((always_inline))  {_OnUp = (*f);}

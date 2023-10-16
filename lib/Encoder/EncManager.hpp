@@ -67,7 +67,7 @@ EncManager(void)
 template<uint8_t MAXSIZE>
 void
 EncManager<MAXSIZE>::
-addEnc(ManagedEnc* enc)
+add(ManagedEnc* enc)
 {
     if (numEncs+1 < MAXSIZE) {
         numEncs++;
@@ -78,14 +78,14 @@ addEnc(ManagedEnc* enc)
 template<uint8_t MAXSIZE>
 ManagedEnc*
 EncManager<MAXSIZE>::
-getEnc(uint8_t nEnc) {
+get(uint8_t nEnc) {
     return (((nEnc-1) >= numEncs) ? NULL : encs[nEnc-1]);
 }
 
 template<uint8_t MAXSIZE>
 ManagedEnc*
 EncManager<MAXSIZE>::
-nextEnc(uint8_t nEnc) {
+next(uint8_t nEnc) {
     if(nEnc != 0) currEnc = nEnc-1;
     if(currEnc >= numEncs) currEnc = 0;
     return encs[currEnc++];

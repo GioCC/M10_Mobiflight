@@ -76,6 +76,11 @@ using defaultEncManager = EncManager<MAX_TOT_ENCS>;
 template<uint8_t MAXSIZE>
 class EncManager
 {
+    // If non-null, this callback is invoked when a new Button object is created with a "make" factory function,
+    // so the new Button is automatically added to a given collection/manager object.
+    // BEWARE: it is NOT called if the object is created directly (must be called manually, if desired, through 
+    // its public alias "Collect()")
+    static f_collector _collect;
 
     uint8_t       numEncs;
     uint8_t       currEnc;
@@ -158,9 +163,9 @@ public:
 
 #endif
 
-    void        addEnc(ManagedEnc* but);
-    ManagedEnc *getEnc(uint8_t nEnc = 0);    // nEnc = 1..254; 0 is current
-    ManagedEnc *nextEnc(uint8_t nEnc = 0);   // nEnc = 1..254; 0 is next
+    void        add(ManagedEnc* but);
+    ManagedEnc *get(uint8_t nEnc = 0);    // nEnc = 1..254; 0 is current
+    ManagedEnc *next(uint8_t nEnc = 0);   // nEnc = 1..254; 0 is next
 };
 
 //===================================================================================
