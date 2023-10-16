@@ -7,7 +7,7 @@
 //              with its hardware resources
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-11-22
-// @modifiedby  GiorgioCC - 2023-10-13 18:50
+// @modifiedby  GiorgioCC - 2023-10-16 22:27
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -92,7 +92,7 @@ class M10board
 
         // ******* Buttons / Switches
     
-        //defaultButtonManager   ButtonMgr;  // Use global object
+        //ButtonManager   ButtonMgr;  // Use global object
 
         // ******* Encoders
     
@@ -104,7 +104,7 @@ class M10board
         uint32_t        encInputs;     // Input vector directly read for encoders
         //uint16_t      encSwitches;       // Switches are read directly from I/O lines, not through M10Encoder
         
-        //defaultEncManager   EncMgr;  // Use global object
+        //EncManager   EncMgr;  // Use global object
 
         // ******* I/O expanders
 

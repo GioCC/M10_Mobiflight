@@ -7,7 +7,7 @@
 //              (Currently just a test rig)
 //
 // @author      GiorgioCC (g.crocic@gmail.com) - 2022-10-15
-// @modifiedby  GiorgioCC - 2023-09-29 14:32
+// @modifiedby  GiorgioCC - 2023-10-16 22:34
 //
 // Copyright (c) 2022 - 2023 GiorgioCC
 // =======================================================================
@@ -28,6 +28,9 @@ M10board                Board[Config::MAX_BOARDS];
 //  Local vars
 // =================================
 
+ButtonManager<MAX_TOT_BUTTONS>   BtnMgr;
+EncManager<MAX_TOT_ENCS>         EncMgr;
+
 // =================================
 //  Functions
 // =================================
@@ -38,6 +41,16 @@ void crashHandler(void)
     // No exit.
     // If available, flash a LED or something.
 }
+
+void AddButton(Button *bp) 
+{
+    BtnMgr.add(bp);
+} 
+
+void AddEncoder(ManagedEnc *ep) 
+{
+    EncMgr.add(ep);
+} 
 
 // =================================
 //  Test stuff
@@ -75,8 +88,16 @@ void SANDBOX(void) {
 
 //===========================================================================
 
-void setup() {
 
+void appSetup()
+{
+    Button::setCollector(AddButton);
+    ManagedEnc::setCollector(AddEncoder);
+}
+
+
+void boardSetup() 
+{
 // FOR EACH (installed) BOARD:
     //BoardNumber 1;
     board.setIOMode(0,0xFFFF);            // All inputs
@@ -103,7 +124,11 @@ void setup() {
     // board.dispWrite(4, (byte *)"F0123 ", 0x08);
     // board.dispTransmit(0);
 // END FOR
+}
 
+
+void setup() 
+{
     counter[0] = 0x00000000;
     counter[1] = 0x00000000;
     counter[2] = 0x00000000;
@@ -114,6 +139,11 @@ void setup() {
 
     //Serial.begin(115200);
     Serial.begin(19200);
+
+    appSetup();
+
+    boardSetup();
+
 }
 
 //===========================================================================

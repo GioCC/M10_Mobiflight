@@ -1,4 +1,4 @@
-// =======================================================================
+ =======================================================================
 // @file        main.cpp
 //
 // @project     
@@ -30,8 +30,8 @@ volatile ButtonBas   BBas;
 volatile ButtonEnc   BEnc;
 volatile ButtonEvt   BGrp;
 
-defaultButtonManager   BtnMgr;
-defaultEncManager      EncMgr;
+// ButtonManager<MAX_TOT_BUTTONS>   BtnMgr;
+// EncManager<MAX_TOT_ENCS>         EncMgr;
 
 constexpr uint8_t S_Btn  = sizeof(Button);
 constexpr uint8_t S_BAdv = sizeof(ButtonAdv);
@@ -40,8 +40,8 @@ constexpr uint8_t S_BBas = sizeof(ButtonBas);
 constexpr uint8_t S_BEnc = sizeof(ButtonEnc);
 constexpr uint8_t S_BEvt = sizeof(ButtonEvt);
 
-constexpr uint8_t S_BtnMgr  = sizeof(defaultButtonManager);
-constexpr uint8_t S_EncMgr  = sizeof(defaultEncManager);
+constexpr uint8_t S_BtnMgr  = sizeof(ButtonManager<MAX_TOT_BUTTONS>);
+constexpr uint8_t S_EncMgr  = sizeof(EncManager<MAX_TOT_ENCS>);
 
 void report(void)
 {
