@@ -22,6 +22,10 @@ enum {
     kTypeInputShifter,        // 12 Input shift register support (example: 74HC165)
     kTypeMuxDriver,           // 13 Multiplexer selector support (generates select outputs)
     kTypeDigInMux,            // 14 Digital input multiplexer support (example: 74HCT4067, 74HCT4051)
+    kTypeStepper,             // 15 new stepper type with settings for backlash and deactivate output
+    kTypeLedSegmentMulti,     // 16 new led segment with MAX7219 and TM1637 support
+    kTypeCustomDevice,        // 17 Custom Device
+    kTypeMax                  // if new device types are added, this MUST be before this one!
 };
 
 // extern const char *MFname;

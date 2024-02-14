@@ -56,6 +56,8 @@ void OnTrigger()
     //TODO: build input "trigger" function (initial setting) (EXTERNAL) 
     // Button::OnTrigger();
     // InputShifter::OnTrigger();
+    // DigInMux::OnTrigger();
+    // Analog::OnTrigger();
 }
 
 // commandmessenger.cpp
